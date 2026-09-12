@@ -270,7 +270,9 @@ export const es: TranslationSchema = {
     totalWithdrawn: "Total retirado",
     totalEarned: "Total ganado",
     country: "País",
+    noData: "Aún no hay entradas — ¡sé el primero en la tabla de clasificación!",
   },
+
   support: {
     title: "Centro de ayuda y soporte",
     subtitle: "¿Necesita ayuda con una oferta o retiro? Nuestro equipo está disponible 24/7.",

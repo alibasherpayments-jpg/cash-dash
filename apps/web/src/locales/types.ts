@@ -279,7 +279,9 @@ export interface TranslationSchema {
     totalWithdrawn: string;
     totalEarned: string;
     country: string;
+    noData: string;
   };
+
   support: {
     title: string;
     subtitle: string;

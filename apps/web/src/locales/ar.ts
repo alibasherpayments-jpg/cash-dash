@@ -270,7 +270,9 @@ export const ar: TranslationSchema = {
     totalWithdrawn: "إجمالي المسحوب",
     totalEarned: "إجمالي المكتسب",
     country: "الدولة",
+    noData: "لا توجد بيانات بعد — كن أول من يتصدر القائمة!",
   },
+
   support: {
     title: "مركز المساعدة والدعم الفني",
     subtitle: "هل واجهت مشكلة في احتساب عرض أو سحب؟ فريقنا جاهز لمساعدتك 24/7.",

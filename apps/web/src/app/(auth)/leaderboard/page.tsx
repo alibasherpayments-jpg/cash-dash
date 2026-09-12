@@ -1,42 +1,162 @@
-"use client";
+﻿"use client";
 
 import React, { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { Skeleton } from "@/components/ui/skeleton";
 import { useTranslation } from "@/providers/i18n-provider";
 import { AvatarWithFallback } from "@/components/common/avatar-with-fallback";
-import { Trophy, Medal, Crown, TrendingUp, Users, ShieldCheck } from "lucide-react";
-import { formatCash, formatPoints, formatPointsAsCash } from "@/lib/formatters";
+import { Trophy, Crown, Wallet } from "lucide-react";
+import { formatPointsAsCash, formatPoints } from "@/lib/formatters";
+import { useLeaderboard, type LeaderboardEntry } from "@/hooks/use-leaderboard";
 
-interface LeaderboardUser {
-  rank: number;
-  username: string;
-  avatarUrl?: string;
-  withdrawn: number;
-  earned: number;
-  country: string;
+// ─── Skeleton loaders ───────────────────────────────────────────────────────
+
+function PodiumSkeleton() {
+  return (
+    <div className="grid grid-cols-1 md:grid-cols-3 gap-6 pt-4 items-end">
+      {[1, 2, 3].map((i) => (
+        <div key={i} className="p-6 rounded-2xl bg-card border border-border space-y-3 text-center">
+          <Skeleton className="h-8 w-8 rounded-full mx-auto" />
+          <Skeleton className="h-12 w-12 rounded-full mx-auto" />
+          <Skeleton className="h-4 w-24 mx-auto" />
+          <Skeleton className="h-10 w-full rounded-xl" />
+        </div>
+      ))}
+    </div>
+  );
 }
 
-const TOP_USERS: LeaderboardUser[] = [
-  { rank: 1, username: "alex_dash", withdrawn: 482000, earned: 964000, country: "US" },
-  { rank: 2, username: "mia_rewards", withdrawn: 451000, earned: 902000, country: "UK" },
-  { rank: 3, username: "sam_earner", withdrawn: 412000, earned: 824000, country: "CA" },
-  { rank: 4, username: "elena_crypto", withdrawn: 375000, earned: 750000, country: "DE" },
-  { rank: 5, username: "david_surveys", withdrawn: 340000, earned: 680000, country: "FR" },
-  { rank: 6, username: "sarah_gamer", withdrawn: 310000, earned: 620000, country: "AU" },
-  { rank: 7, username: "marcus_tech", withdrawn: 285000, earned: 570000, country: "US" },
-  { rank: 8, username: "yuki_tokyo", withdrawn: 260000, earned: 520000, country: "JP" },
-  { rank: 9, username: "lucas_saopaulo", withdrawn: 235000, earned: 470000, country: "BR" },
-  { rank: 10, username: "chloe_points", withdrawn: 210000, earned: 420000, country: "NL" },
-];
+function TableSkeleton() {
+  return (
+    <Card className="border-border">
+      <CardContent className="p-0">
+        <div className="divide-y divide-border">
+          {Array.from({ length: 7 }).map((_, i) => (
+            <div key={i} className="p-4 flex items-center justify-between">
+              <div className="flex items-center gap-4">
+                <Skeleton className="h-4 w-4 rounded" />
+                <Skeleton className="h-9 w-9 rounded-full" />
+                <div className="space-y-1">
+                  <Skeleton className="h-3 w-28" />
+                  <Skeleton className="h-2 w-16" />
+                </div>
+              </div>
+              <div className="space-y-1 text-end">
+                <Skeleton className="h-3 w-16 ml-auto" />
+                <Skeleton className="h-2 w-20 ml-auto" />
+              </div>
+            </div>
+          ))}
+        </div>
+      </CardContent>
+    </Card>
+  );
+}
+
+// ─── Empty state ────────────────────────────────────────────────────────────
+
+function EmptyState({ message }: { message: string }) {
+  return (
+    <div className="flex flex-col items-center justify-center py-20 text-center gap-3">
+      <Trophy className="h-12 w-12 text-muted-foreground/30" />
+      <p className="text-muted-foreground text-sm">{message}</p>
+    </div>
+  );
+}
+
+// ─── Podium card ─────────────────────────────────────────────────────────────
+
+interface PodiumCardProps {
+  user: LeaderboardEntry;
+  position: 1 | 2 | 3;
+  activeTab: "WITHDRAWALS" | "EARNERS";
+  t: any;
+}
+
+function PodiumCard({ user, position, activeTab, t }: PodiumCardProps) {
+  const value =
+    activeTab === "WITHDRAWALS" ? user.totalWithdrawn : user.totalEarned;
+
+  if (position === 1) {
+    return (
+      <div className="order-1 md:order-2 p-6 sm:p-8 rounded-2xl bg-gradient-to-b from-amber-500/15 via-card to-card border border-amber-500/40 shadow-xl shadow-amber-500/10 text-center space-y-4 relative md:-translate-y-4">
+        <div className="mx-auto h-10 w-10 rounded-full bg-amber-500 text-slate-950 font-black text-base flex items-center justify-center shadow-lg shadow-amber-500/30">
+          <Crown className="h-5 w-5" />
+        </div>
+        <AvatarWithFallback username={user.username} size="lg" className="mx-auto ring-4 ring-amber-500/30" />
+        <div>
+          <Badge className="bg-amber-500/20 text-amber-500 border-amber-500/30 text-[10px] font-bold mb-1">
+            #1 CHAMPION
+          </Badge>
+          <h3 className="font-black text-lg text-foreground">{user.username}</h3>
+          {user.country && (
+            <span className="text-xs text-muted-foreground uppercase">{user.country}</span>
+          )}
+        </div>
+        <div className="p-3 rounded-xl bg-amber-500/10 border border-amber-500/20">
+          <span className="text-[10px] uppercase font-bold text-amber-500 block">
+            {activeTab === "WITHDRAWALS" ? t.leaderboard.totalWithdrawn : t.leaderboard.totalEarned}
+          </span>
+          <span className="text-2xl font-black text-emerald-500">
+            {activeTab === "WITHDRAWALS" ? formatPointsAsCash(value) : formatPoints(value)}
+          </span>
+        </div>
+        {user.lastPayoutMasked && activeTab === "WITHDRAWALS" && (
+          <div className="flex items-center justify-center gap-1.5 text-[10px] text-muted-foreground font-mono">
+            <Wallet className="h-3 w-3 shrink-0" />
+            <span>{user.lastPayoutMasked}</span>
+          </div>
+        )}
+      </div>
+    );
+  }
+
+  const colors = position === 2
+    ? { border: "border-slate-700/60", badge: "bg-slate-400/20 text-slate-300" }
+    : { border: "border-amber-800/40", badge: "bg-amber-800/20 text-amber-600" };
+
+  return (
+    <div className={`order-${position === 2 ? "2 md:order-1" : "3"} p-6 rounded-2xl bg-card border ${colors.border} shadow-lg text-center space-y-3 relative`}>
+      <div className={`mx-auto h-8 w-8 rounded-full ${colors.badge} font-black text-sm flex items-center justify-center`}>
+        {position}
+      </div>
+      <AvatarWithFallback username={user.username} size="lg" className="mx-auto" />
+      <div>
+        <h4 className="font-bold text-base text-foreground">{user.username}</h4>
+        {user.country && (
+          <span className="text-xs text-muted-foreground uppercase">{user.country}</span>
+        )}
+      </div>
+      <div className="p-2.5 rounded-xl bg-accent/5 border border-border">
+        <span className="text-[10px] uppercase font-bold text-muted-foreground block">
+          {activeTab === "WITHDRAWALS" ? t.leaderboard.totalWithdrawn : t.leaderboard.totalEarned}
+        </span>
+        <span className="text-lg font-black text-foreground">
+          {activeTab === "WITHDRAWALS" ? formatPointsAsCash(value) : formatPoints(value)}
+        </span>
+      </div>
+      {user.lastPayoutMasked && activeTab === "WITHDRAWALS" && (
+        <div className="flex items-center justify-center gap-1.5 text-[10px] text-muted-foreground font-mono">
+          <Wallet className="h-3 w-3 shrink-0" />
+          <span>{user.lastPayoutMasked}</span>
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ─── Main page ───────────────────────────────────────────────────────────────
 
 export default function LeaderboardPage() {
   const { t } = useTranslation();
   const [activeTab, setActiveTab] = useState<"WITHDRAWALS" | "EARNERS">("WITHDRAWALS");
+  const { withdrawers, earners, isLoading } = useLeaderboard();
 
-  const top3 = TOP_USERS.slice(0, 3);
-  const remaining = TOP_USERS.slice(3);
+  const users = activeTab === "WITHDRAWALS" ? withdrawers : earners;
+  const top3 = users.slice(0, 3);
+  const remaining = users.slice(3);
 
   return (
     <div className="max-w-5xl mx-auto space-y-8">
@@ -71,117 +191,72 @@ export default function LeaderboardPage() {
         </div>
       </div>
 
-      {/* ─── Top 3 Podium Cards ──────────────────────────────────── */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 pt-4 items-end">
-        {/* #2 Silver */}
-        <div className="order-2 md:order-1 p-6 rounded-2xl bg-card border border-slate-700/60 shadow-lg text-center space-y-3 relative">
-          <div className="mx-auto h-8 w-8 rounded-full bg-slate-400/20 text-slate-300 font-black text-sm flex items-center justify-center">
-            2
-          </div>
-          <AvatarWithFallback username={top3[1].username} size="lg" className="mx-auto" />
-          <div>
-            <h4 className="font-bold text-base text-foreground">{top3[1].username}</h4>
-            <span className="text-xs text-muted-foreground uppercase">{top3[1].country}</span>
-          </div>
-          <div className="p-2.5 rounded-xl bg-accent/5 border border-border">
-            <span className="text-[10px] uppercase font-bold text-muted-foreground block">
-              {activeTab === "WITHDRAWALS" ? t.leaderboard.totalWithdrawn : t.leaderboard.totalEarned}
-            </span>
-            <span className="text-lg font-black text-foreground">
-              {activeTab === "WITHDRAWALS"
-                ? formatPointsAsCash(top3[1].withdrawn)
-                : formatPoints(top3[1].earned)}
-            </span>
-          </div>
+      {/* ─── Top 3 Podium ──────────────────────────────────────── */}
+      {isLoading ? (
+        <PodiumSkeleton />
+      ) : top3.length === 0 ? (
+        <EmptyState message={t.leaderboard.noData ?? "No data yet — be the first on the leaderboard!"} />
+      ) : (
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6 pt-4 items-end">
+          {top3[1] && <PodiumCard user={top3[1]} position={2} activeTab={activeTab} t={t} />}
+          {top3[0] && <PodiumCard user={top3[0]} position={1} activeTab={activeTab} t={t} />}
+          {top3[2] && <PodiumCard user={top3[2]} position={3} activeTab={activeTab} t={t} />}
         </div>
+      )}
 
-        {/* #1 Gold (Elevated) */}
-        <div className="order-1 md:order-2 p-6 sm:p-8 rounded-2xl bg-gradient-to-b from-amber-500/15 via-card to-card border-amber-500/40 shadow-xl shadow-amber-500/10 text-center space-y-4 relative md:-translate-y-4">
-          <div className="mx-auto h-10 w-10 rounded-full bg-amber-500 text-slate-950 font-black text-base flex items-center justify-center shadow-lg shadow-amber-500/30">
-            <Crown className="h-5 w-5" />
-          </div>
-          <AvatarWithFallback username={top3[0].username} size="lg" className="mx-auto ring-4 ring-amber-500/30" />
-          <div>
-            <Badge className="bg-amber-500/20 text-amber-500 border-amber-500/30 text-[10px] font-bold mb-1">
-              #1 CHAMPION
-            </Badge>
-            <h3 className="font-black text-lg text-foreground">{top3[0].username}</h3>
-            <span className="text-xs text-muted-foreground uppercase">{top3[0].country}</span>
-          </div>
-          <div className="p-3 rounded-xl bg-amber-500/10 border border-amber-500/20">
-            <span className="text-[10px] uppercase font-bold text-amber-500 block">
-              {activeTab === "WITHDRAWALS" ? t.leaderboard.totalWithdrawn : t.leaderboard.totalEarned}
-            </span>
-            <span className="text-2xl font-black text-emerald-500">
-              {activeTab === "WITHDRAWALS"
-                ? formatPointsAsCash(top3[0].withdrawn)
-                : formatPoints(top3[0].earned)}
-            </span>
-          </div>
-        </div>
+      {/* ─── Ranks 4 - 10 Table ────────────────────────────────── */}
+      {isLoading ? (
+        <TableSkeleton />
+      ) : remaining.length > 0 ? (
+        <Card className="border-border">
+          <CardHeader className="p-5 pb-3">
+            <CardTitle className="text-base font-bold">{t.leaderboard.title}</CardTitle>
+            <CardDescription className="text-xs">
+              {t.leaderboard.subtitle}
+            </CardDescription>
+          </CardHeader>
 
-        {/* #3 Bronze */}
-        <div className="order-3 md:order-3 p-6 rounded-2xl bg-card border border-amber-800/40 shadow-lg text-center space-y-3 relative">
-          <div className="mx-auto h-8 w-8 rounded-full bg-amber-800/20 text-amber-600 font-black text-sm flex items-center justify-center">
-            3
-          </div>
-          <AvatarWithFallback username={top3[2].username} size="lg" className="mx-auto" />
-          <div>
-            <h4 className="font-bold text-base text-foreground">{top3[2].username}</h4>
-            <span className="text-xs text-muted-foreground uppercase">{top3[2].country}</span>
-          </div>
-          <div className="p-2.5 rounded-xl bg-accent/5 border border-border">
-            <span className="text-[10px] uppercase font-bold text-muted-foreground block">
-              {activeTab === "WITHDRAWALS" ? t.leaderboard.totalWithdrawn : t.leaderboard.totalEarned}
-            </span>
-            <span className="text-lg font-black text-foreground">
-              {activeTab === "WITHDRAWALS"
-                ? formatPointsAsCash(top3[2].withdrawn)
-                : formatPoints(top3[2].earned)}
-            </span>
-          </div>
-        </div>
-      </div>
+          <CardContent className="p-0">
+            <div className="divide-y divide-border">
+              {remaining.map((user) => (
+                <div key={user.userId} className="p-4 flex items-center justify-between hover:bg-accent/5 transition-colors">
+                  <div className="flex items-center gap-4 min-w-0">
+                    <span className="font-mono text-sm font-bold text-muted-foreground w-6 text-center shrink-0">
+                      #{user.rank}
+                    </span>
+                    <AvatarWithFallback username={user.username} size="sm" />
+                    <div className="min-w-0">
+                      <p className="font-bold text-sm text-foreground truncate">{user.username}</p>
+                      <div className="flex items-center gap-1.5 flex-wrap">
+                        {user.country && (
+                          <span className="text-[10px] text-muted-foreground uppercase">{user.country}</span>
+                        )}
+                        {user.lastPayoutMasked && activeTab === "WITHDRAWALS" && (
+                          <span className="text-[10px] text-muted-foreground font-mono flex items-center gap-0.5">
+                            <Wallet className="h-2.5 w-2.5" />
+                            {user.lastPayoutMasked}
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                  </div>
 
-      {/* ─── Ranks 4 - 10 Table ───────────────────────────────────── */}
-      <Card className="border-border">
-        <CardHeader className="p-5 pb-3">
-          <CardTitle className="text-base font-bold">{t.leaderboard.title}</CardTitle>
-          <CardDescription className="text-xs">
-            {t.leaderboard.subtitle}
-          </CardDescription>
-        </CardHeader>
-
-        <CardContent className="p-0">
-          <div className="divide-y divide-border">
-            {remaining.map((user) => (
-              <div key={user.rank} className="p-4 flex items-center justify-between hover:bg-accent/5 transition-colors">
-                <div className="flex items-center gap-4 min-w-0">
-                  <span className="font-mono text-sm font-bold text-muted-foreground w-6 text-center">
-                    #{user.rank}
-                  </span>
-                  <AvatarWithFallback username={user.username} size="sm" />
-                  <div className="min-w-0">
-                    <p className="font-bold text-sm text-foreground truncate">{user.username}</p>
-                    <p className="text-[10px] text-muted-foreground uppercase">{user.country}</p>
+                  <div className="text-end shrink-0">
+                    <span className="font-bold text-sm text-foreground block">
+                      {activeTab === "WITHDRAWALS"
+                        ? formatPointsAsCash(user.totalWithdrawn)
+                        : formatPoints(user.totalEarned)}
+                    </span>
+                    <span className="text-[10px] text-muted-foreground font-mono">
+                      {formatPoints(activeTab === "WITHDRAWALS" ? user.totalWithdrawn : user.totalEarned)}
+                    </span>
                   </div>
                 </div>
-
-                <div className="text-end">
-                  <span className="font-bold text-sm text-foreground block">
-                    {activeTab === "WITHDRAWALS"
-                      ? formatPointsAsCash(user.withdrawn)
-                      : formatPoints(user.earned)}
-                  </span>
-                  <span className="text-[10px] text-muted-foreground font-mono">
-                    {formatPoints(user.withdrawn)}
-                  </span>
-                </div>
-              </div>
-            ))}
-          </div>
-        </CardContent>
-      </Card>
+              ))}
+            </div>
+          </CardContent>
+        </Card>
+      ) : null}
     </div>
   );
 }

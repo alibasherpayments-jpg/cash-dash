@@ -270,7 +270,9 @@ export const ja: TranslationSchema = {
     totalWithdrawn: "累計出金額",
     totalEarned: "累計獲得ポイント",
     country: "国",
+    noData: "まだエントリーがありません — ランキング1位を目指しましょう！",
   },
+
   support: {
     title: "サポート＆ヘルプセンター",
     subtitle: "ご不明な点やお困りごとは24時間年中無休でお問い合わせいただけます。",

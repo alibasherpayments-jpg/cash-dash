@@ -270,7 +270,9 @@ export const en: TranslationSchema = {
     totalWithdrawn: "Total Withdrawn",
     totalEarned: "Total Earned",
     country: "Country",
+    noData: "No entries yet — be the first on the leaderboard!",
   },
+
   support: {
     title: "Support Desk & Help Center",
     subtitle: "Need help with an offer or payout? Our team is available 24/7.",

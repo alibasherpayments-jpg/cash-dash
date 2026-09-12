@@ -270,7 +270,9 @@ export const de: TranslationSchema = {
     totalWithdrawn: "Ausgezahlt gesamt",
     totalEarned: "Verdient gesamt",
     country: "Land",
+    noData: "Noch keine Einträge — sei der Erste auf der Bestenliste!",
   },
+
   support: {
     title: "Support & Hilfecenter",
     subtitle: "Benötigen Sie Hilfe bei einem Angebot oder einer Auszahlung? Unser Team ist für Sie da.",
