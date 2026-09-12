@@ -6,8 +6,10 @@ import { usePathname, useRouter } from "next/navigation";
 import { useAuthStore } from "@/store/auth-store";
 import { useWallet } from "@/hooks/use-wallet";
 import { useNotifications } from "@/hooks/use-notifications";
+import { useTranslation } from "@/providers/i18n-provider";
 import { AvatarWithFallback } from "@/components/common/avatar-with-fallback";
 import { OfferAlertsToggle } from "@/components/common/offer-alerts-toggle";
+import { LanguageSwitcher } from "@/components/common/language-switcher";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -39,25 +41,26 @@ import { formatPoints, formatCash } from "@/lib/formatters";
 import { cn } from "@/lib/utils";
 import { ThemeSwitcher } from "@/components/common/theme-switcher";
 
-const navigationItems = [
-  { name: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
-  { name: "Offerwalls", href: "/offerwalls", icon: Layers },
-  { name: "Offers", href: "/offers", icon: Gift },
-  { name: "Wallet", href: "/wallet", icon: Wallet },
-  { name: "Withdraw", href: "/withdraw", icon: ArrowUpRight },
-  { name: "Leaderboard", href: "/leaderboard", icon: Trophy },
-  { name: "Notifications", href: "/notifications", icon: Bell },
-  { name: "Support", href: "/support", icon: HelpCircle },
-  { name: "Profile", href: "/profile", icon: User },
-];
-
 export default function AuthLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const router = useRouter();
   const { user, logout } = useAuthStore();
   const { summary: wallet } = useWallet();
   const { unreadCount } = useNotifications();
+  const { t, locale } = useTranslation();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+
+  const navigationItems = [
+    { name: t.common.dashboard, href: "/dashboard", icon: LayoutDashboard },
+    { name: t.common.offerwalls, href: "/offerwalls", icon: Layers },
+    { name: t.common.offers, href: "/offers", icon: Gift },
+    { name: t.common.wallet, href: "/wallet", icon: Wallet },
+    { name: t.common.withdraw, href: "/withdraw", icon: ArrowUpRight },
+    { name: t.common.leaderboard, href: "/leaderboard", icon: Trophy },
+    { name: t.common.notifications, href: "/notifications", icon: Bell },
+    { name: t.common.support, href: "/support", icon: HelpCircle },
+    { name: t.common.profile, href: "/profile", icon: User },
+  ];
 
   const handleLogout = async () => {
     await logout();
@@ -84,21 +87,21 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
         {/* Balance Card in Sidebar */}
         <div className="p-4 mx-3 my-4 rounded-xl bg-gradient-to-br from-primary/10 via-primary/5 to-transparent border border-primary/20">
           <div className="flex items-center justify-between text-xs text-muted-foreground mb-1">
-            <span>Available Balance</span>
+            <span>{t.common.availableBalance}</span>
             <Coins className="h-3.5 w-3.5 text-accent" />
           </div>
           <div className="text-xl font-black text-foreground">
-            {formatPoints(wallet?.availablePoints || 0)} <span className="text-xs font-semibold text-accent">pts</span>
+            {formatPoints(wallet?.availablePoints || 0)} <span className="text-xs font-semibold text-accent">{t.common.pts}</span>
           </div>
           <div className="text-xs font-medium text-emerald-500 mt-0.5">
             ≈ {formatCash((wallet?.availablePoints || 0) / 1000)}
           </div>
           <div className="mt-3 grid grid-cols-2 gap-2">
             <Button size="sm" variant="default" className="h-7 text-xs font-semibold" asChild>
-              <Link href="/withdraw">Withdraw</Link>
+              <Link href="/withdraw">{t.common.withdraw}</Link>
             </Button>
             <Button size="sm" variant="outline" className="h-7 text-xs font-semibold" asChild>
-              <Link href="/offers">Earn More</Link>
+              <Link href="/offers">{t.common.offers}</Link>
             </Button>
           </div>
         </div>
@@ -108,6 +111,7 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
           {navigationItems.map((item) => {
             const isActive = pathname === item.href || (item.href !== "/dashboard" && pathname.startsWith(item.href));
             const Icon = item.icon;
+            const isNotifs = item.href === "/notifications";
             return (
               <Link
                 key={item.href}
@@ -121,7 +125,7 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
               >
                 <Icon className="h-4 w-4 shrink-0" />
                 <span>{item.name}</span>
-                {item.name === "Notifications" && unreadCount > 0 && (
+                {isNotifs && unreadCount > 0 && (
                   <Badge variant="destructive" className="ml-auto px-1.5 py-0.2 text-[10px] h-4 min-w-4 flex items-center justify-center">
                     {unreadCount}
                   </Badge>
@@ -137,7 +141,7 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
                 className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-semibold text-amber-500 hover:bg-amber-500/10 transition-colors"
               >
                 <Shield className="h-4 w-4" />
-                <span>Admin Panel</span>
+                <span>{t.nav.adminConsole}</span>
               </Link>
             </div>
           )}
@@ -152,7 +156,7 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
               <p className="text-[10px] text-muted-foreground truncate">{user?.email}</p>
             </div>
           </div>
-          <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:text-destructive" onClick={handleLogout} title="Sign Out">
+          <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:text-destructive" onClick={handleLogout} title={t.common.logout}>
             <LogOut className="h-4 w-4" />
           </Button>
         </div>
@@ -185,8 +189,8 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
             </span>
           </div>
 
-          {/* Right actions: Balance badge, notifications, user menu */}
-          <div className="flex items-center gap-2.5 md:gap-4">
+          {/* Right actions: Balance badge, language switcher, theme switcher, alerts toggle, notifications, user menu */}
+          <div className="flex items-center gap-2 md:gap-3">
 
             {/* Quick Points Pill */}
             <Link
@@ -196,13 +200,16 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
               <div className="h-5 w-5 rounded-full bg-accent/20 flex items-center justify-center text-accent">
                 <Coins className="h-3 w-3" />
               </div>
-              <div className="text-right">
+              <div className="text-start sm:text-right">
                 <span className="text-xs font-black text-foreground">{formatPoints(wallet?.availablePoints || 0)}</span>
                 <span className="text-[10px] text-muted-foreground block -mt-1 font-medium">
                   {formatCash((wallet?.availablePoints || 0) / 1000)}
                 </span>
               </div>
             </Link>
+
+            {/* Language Switcher */}
+            <LanguageSwitcher />
 
             {/* Theme Switcher */}
             <ThemeSwitcher />
@@ -239,44 +246,39 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
                 <DropdownMenuItem asChild>
                   <Link href="/profile" className="cursor-pointer">
                     <User className="h-4 w-4 mr-2" />
-                    Profile & Settings
+                    {t.common.profile}
                   </Link>
                 </DropdownMenuItem>
                 <DropdownMenuItem asChild>
                   <Link href="/wallet" className="cursor-pointer">
                     <Wallet className="h-4 w-4 mr-2" />
-                    Wallet & Ledger
+                    {t.common.wallet}
                   </Link>
                 </DropdownMenuItem>
                 <DropdownMenuItem asChild>
-                  <Link href="/withdraw/history" className="cursor-pointer">
-                    <ArrowUpRight className="h-4 w-4 mr-2" />
-                    Withdrawal History
+                  <Link href="/leaderboard" className="cursor-pointer">
+                    <Trophy className="h-4 w-4 mr-2" />
+                    {t.common.leaderboard}
                   </Link>
                 </DropdownMenuItem>
-                {user?.role === "ADMIN" && (
-                  <>
-                    <DropdownMenuSeparator />
-                    <DropdownMenuItem asChild>
-                      <Link href="/admin" className="cursor-pointer text-amber-500 font-semibold">
-                        <Shield className="h-4 w-4 mr-2" />
-                        Admin Dashboard
-                      </Link>
-                    </DropdownMenuItem>
-                  </>
-                )}
+                <DropdownMenuItem asChild>
+                  <Link href="/profile" className="cursor-pointer">
+                    <Layers className="h-4 w-4 mr-2" />
+                    {t.profile.tabs.language}
+                  </Link>
+                </DropdownMenuItem>
                 <DropdownMenuSeparator />
                 <DropdownMenuItem onClick={handleLogout} className="text-destructive cursor-pointer">
                   <LogOut className="h-4 w-4 mr-2" />
-                  Sign Out
+                  {t.common.logout}
                 </DropdownMenuItem>
               </DropdownMenuContent>
             </DropdownMenu>
           </div>
         </header>
 
-        {/* Page Container */}
-        <main className="flex-1 p-4 md:p-8 max-w-7xl mx-auto w-full">
+        {/* Page Content */}
+        <main className="flex-1 p-4 md:p-8 max-w-7xl w-full mx-auto animate-fade-in">
           {children}
         </main>
       </div>
@@ -296,6 +298,11 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
               <button onClick={() => setMobileMenuOpen(false)} className="p-1 text-muted-foreground hover:text-foreground">
                 <X className="h-5 w-5" />
               </button>
+            </div>
+
+            <div className="py-3 flex items-center justify-between border-b border-border/50">
+              <LanguageSwitcher />
+              <ThemeSwitcher />
             </div>
 
             <nav className="flex-1 py-4 space-y-1 overflow-y-auto">
@@ -325,7 +332,7 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
                   className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-bold text-amber-500"
                 >
                   <Shield className="h-4 w-4" />
-                  <span>Admin Panel</span>
+                  <span>{t.nav.adminConsole}</span>
                 </Link>
               )}
             </nav>
@@ -333,7 +340,7 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
             <div className="pt-4 border-t border-border">
               <Button variant="outline" className="w-full text-destructive" onClick={handleLogout}>
                 <LogOut className="h-4 w-4 mr-2" />
-                Sign Out
+                {t.common.logout}
               </Button>
             </div>
           </div>
@@ -343,11 +350,11 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
       {/* ─── Mobile Bottom Navigation ──────────────────────────── */}
       <nav className="fixed bottom-0 left-0 right-0 z-30 md:hidden bg-card/95 backdrop-blur-lg border-t border-border flex items-center justify-around h-16 px-2">
         {[
-          { name: "Home", href: "/dashboard", icon: LayoutDashboard },
-          { name: "Offers", href: "/offers", icon: Gift },
-          { name: "Wallet", href: "/wallet", icon: Wallet },
-          { name: "Withdraw", href: "/withdraw", icon: ArrowUpRight },
-          { name: "Leaderboard", href: "/leaderboard", icon: Trophy },
+          { name: t.common.dashboard, href: "/dashboard", icon: LayoutDashboard },
+          { name: t.common.offers, href: "/offers", icon: Gift },
+          { name: t.common.wallet, href: "/wallet", icon: Wallet },
+          { name: t.common.withdraw, href: "/withdraw", icon: ArrowUpRight },
+          { name: t.common.leaderboard, href: "/leaderboard", icon: Trophy },
         ].map((item) => {
           const isActive = pathname === item.href;
           const Icon = item.icon;
@@ -361,7 +368,7 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
               )}
             >
               <Icon className="h-4 w-4 mb-1" />
-              <span>{item.name}</span>
+              <span className="truncate max-w-[56px] text-center">{item.name}</span>
             </Link>
           );
         })}

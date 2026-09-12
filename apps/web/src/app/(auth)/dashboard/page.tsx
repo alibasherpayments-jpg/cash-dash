@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useAuthStore } from "@/store/auth-store";
 import { useWallet } from "@/hooks/use-wallet";
 import { useNotifications } from "@/hooks/use-notifications";
+import { useTranslation } from "@/providers/i18n-provider";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -43,6 +44,7 @@ export default function DashboardPage() {
   const { user } = useAuthStore();
   const { summary: wallet, transactions } = useWallet();
   const { notifications } = useNotifications();
+  const { t } = useTranslation();
 
   const recentTransactions = transactions?.slice(0, 5) || [];
   const recentNotifications = notifications?.slice(0, 3) || [];
@@ -54,7 +56,7 @@ export default function DashboardPage() {
         <div className="space-y-4">
           <div className="flex items-center gap-2">
             <span className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
-              Available Rewards Balance
+              {t.common.availableBalance}
             </span>
             <Badge variant="outline" className="text-[10px] text-emerald-500 border-emerald-500/30">
               Instant Cashout Ready
@@ -64,7 +66,7 @@ export default function DashboardPage() {
           <div>
             <div className="text-4xl sm:text-5xl font-black text-foreground flex items-baseline gap-2">
               <span>{formatPoints(wallet?.availablePoints || 0)}</span>
-              <span className="text-base font-bold text-accent">Points</span>
+              <span className="text-base font-bold text-accent">{t.common.points}</span>
             </div>
             <p className="text-lg font-bold text-emerald-500 mt-1">
               ≈ {formatPointsAsCash(wallet?.availablePoints || 0)} USD
@@ -90,12 +92,12 @@ export default function DashboardPage() {
         <div className="flex flex-wrap items-center gap-3 pt-6 border-t border-border/60">
           <Button asChild size="lg" className="font-bold shadow-lg shadow-primary/20">
             <Link href="/withdraw">
-              <ArrowUpRight className="mr-2 h-4 w-4" /> Withdraw Rewards
+              <ArrowUpRight className="mr-2 h-4 w-4" /> {t.common.withdraw}
             </Link>
           </Button>
           <Button asChild variant="outline" size="lg" className="font-semibold">
             <Link href="/offerwalls">
-              <Layers className="mr-2 h-4 w-4 text-primary" /> Browse Offerwalls
+              <Layers className="mr-2 h-4 w-4 text-primary" /> {t.common.offerwalls}
             </Link>
           </Button>
         </div>
@@ -181,10 +183,10 @@ export default function DashboardPage() {
             <CardHeader className="p-5 pb-3">
               <div className="flex items-center justify-between">
                 <CardTitle className="text-base font-bold flex items-center gap-2">
-                  <Coins className="h-4 w-4 text-accent" /> Recent Activity
+                  <Coins className="h-4 w-4 text-accent" /> {t.dashboard.recentActivity}
                 </CardTitle>
                 <Link href="/wallet" className="text-xs text-muted-foreground hover:text-foreground font-semibold">
-                  View Ledger
+                  {t.dashboard.viewLedger}
                 </Link>
               </div>
             </CardHeader>
@@ -195,7 +197,7 @@ export default function DashboardPage() {
                 ))
               ) : (
                 <div className="p-6 rounded-lg bg-accent/5 text-center text-xs text-muted-foreground">
-                  No recent activity recorded yet. Launch an offerwall to get started!
+                  {t.dashboard.noActivity}
                 </div>
               )}
             </CardContent>
@@ -208,10 +210,10 @@ export default function DashboardPage() {
             <CardHeader className="p-5 pb-3">
               <div className="flex items-center justify-between">
                 <CardTitle className="text-base font-bold flex items-center gap-2">
-                  <Bell className="h-4 w-4 text-primary" /> Notifications
+                  <Bell className="h-4 w-4 text-primary" /> {t.common.notifications}
                 </CardTitle>
                 <Link href="/notifications" className="text-xs text-muted-foreground hover:text-foreground font-semibold">
-                  View All
+                  {t.common.viewAll}
                 </Link>
               </div>
             </CardHeader>

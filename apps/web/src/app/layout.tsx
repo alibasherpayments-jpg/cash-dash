@@ -4,6 +4,7 @@ import "./globals.css";
 import { ThemeProvider } from "@/providers/theme-provider";
 import { QueryProvider } from "@/providers/query-provider";
 import { AuthProvider } from "@/providers/auth-provider";
+import { I18nProvider } from "@/providers/i18n-provider";
 import { Toaster } from "sonner";
 
 const inter = Inter({
@@ -106,12 +107,14 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           enableSystem={false}
           disableTransitionOnChange
         >
-          <QueryProvider>
-            <AuthProvider>
-              {children}
-              <Toaster richColors position="top-right" />
-            </AuthProvider>
-          </QueryProvider>
+          <I18nProvider>
+            <QueryProvider>
+              <AuthProvider>
+                {children}
+                <Toaster richColors position="top-right" />
+              </AuthProvider>
+            </QueryProvider>
+          </I18nProvider>
         </ThemeProvider>
       </body>
     </html>

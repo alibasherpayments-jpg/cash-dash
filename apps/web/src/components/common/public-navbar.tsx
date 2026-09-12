@@ -1,23 +1,26 @@
 "use client";
+
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { useAuthStore } from "@/store/auth-store";
+import { useTranslation } from "@/providers/i18n-provider";
 import { Coins, Menu, X } from "lucide-react";
 import { useState } from "react";
 import { cn } from "@/lib/utils";
-
 import { ThemeSwitcher } from "@/components/common/theme-switcher";
-
-const navLinks = [
-  { label: "Features", href: "/#features" },
-  { label: "How It Works", href: "/#how-it-works" },
-  { label: "Leaderboard", href: "/#leaderboard" },
-  { label: "FAQ", href: "/#faq" },
-];
+import { LanguageSwitcher } from "@/components/common/language-switcher";
 
 export function PublicNavbar() {
   const { isAuthenticated } = useAuthStore();
+  const { t } = useTranslation();
   const [mobileOpen, setMobileOpen] = useState(false);
+
+  const navLinks = [
+    { label: t.nav.features, href: "/#features" },
+    { label: t.nav.howItWorks, href: "/#how-it-works" },
+    { label: t.common.leaderboard, href: "/#leaderboard" },
+    { label: t.nav.faq, href: "/#faq" },
+  ];
 
   return (
     <header className="sticky top-0 z-50 border-b border-border/50 bg-background/80 backdrop-blur-xl">
@@ -40,27 +43,29 @@ export function PublicNavbar() {
           ))}
         </nav>
 
-        <div className="hidden items-center gap-3 md:flex">
+        <div className="hidden items-center gap-2.5 md:flex">
+          <LanguageSwitcher />
           <ThemeSwitcher />
           {isAuthenticated ? (
             <Button asChild>
-              <Link href="/dashboard">Dashboard</Link>
+              <Link href="/dashboard">{t.common.dashboard}</Link>
             </Button>
           ) : (
             <>
               <Button variant="ghost" asChild>
-                <Link href="/login">Sign In</Link>
+                <Link href="/login">{t.nav.signIn}</Link>
               </Button>
               <Button asChild>
-                <Link href="/register">Get Started Free</Link>
+                <Link href="/register">{t.nav.getStarted}</Link>
               </Button>
             </>
           )}
         </div>
 
         <div className="flex items-center gap-2 md:hidden">
+          <LanguageSwitcher showLabel={false} />
           <ThemeSwitcher />
-          <button onClick={() => setMobileOpen(!mobileOpen)}>
+          <button onClick={() => setMobileOpen(!mobileOpen)} className="p-1 rounded-md text-foreground">
             {mobileOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
           </button>
         </div>
@@ -75,12 +80,20 @@ export function PublicNavbar() {
               </Link>
             ))}
             <div className="mt-2 flex flex-col gap-2 border-t pt-3">
-              <Button variant="outline" asChild className="w-full">
-                <Link href="/login">Sign In</Link>
-              </Button>
-              <Button asChild className="w-full">
-                <Link href="/register">Get Started Free</Link>
-              </Button>
+              {isAuthenticated ? (
+                <Button asChild className="w-full">
+                  <Link href="/dashboard">{t.common.dashboard}</Link>
+                </Button>
+              ) : (
+                <>
+                  <Button variant="outline" asChild className="w-full">
+                    <Link href="/login">{t.nav.signIn}</Link>
+                  </Button>
+                  <Button asChild className="w-full">
+                    <Link href="/register">{t.nav.getStarted}</Link>
+                  </Button>
+                </>
+              )}
             </div>
           </nav>
         </div>
