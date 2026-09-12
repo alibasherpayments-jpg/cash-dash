@@ -130,6 +130,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             "rose",
             "arctic",
             "synthwave",
+            "glassmorphism",
           ]}
           defaultTheme="black"
           enableSystem={false}

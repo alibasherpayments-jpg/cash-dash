@@ -209,6 +209,20 @@ export const THEMES: ThemeOption[] = [
     previewClass: "bg-[#0e0b1c] border-pink-500/30",
     dotClass: "bg-pink-500",
   },
+  {
+    id: "glassmorphism",
+    nameEn: "Glassmorphism",
+    nameAr: "الزجاجي العصري",
+    type: "dark",
+    descriptionEn: "Frosted translucent glass & aurora glow",
+    descriptionAr: "زجاج مثلج فائق الشفافية وتوهج الأورورا",
+    bgHex: "#0c101d",
+    cardHex: "#141b2f",
+    primaryHex: "#3b82f6",
+    accentHex: "#a855f7",
+    previewClass: "bg-[#0c101d] border-blue-400/40 backdrop-blur-md",
+    dotClass: "bg-blue-400",
+  },
 ];
 
 export function ThemeSwitcher({ className = "" }: { className?: string }) {
@@ -462,7 +476,7 @@ export function ThemeSwitcher({ className = "" }: { className?: string }) {
         <div className="pt-1 border-t border-border/50 flex items-center justify-between text-[10px] text-muted-foreground px-1">
           <span>{isAr ? "التنقل بالسحب والتمرير السلس" : "Smooth scroll enabled"}</span>
           <span className="font-semibold text-foreground/80">
-            {isAr ? "13 ثيم فريد" : "13 Unique Themes"}
+            {isAr ? `${THEMES.length} ثيم فريد` : `${THEMES.length} Unique Themes`}
           </span>
         </div>
       </DropdownMenuContent>
