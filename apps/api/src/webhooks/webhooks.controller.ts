@@ -108,15 +108,18 @@ export class WebhooksController {
     ).trim();
 
     // Reward points calculation (1,000 pts = $1.00 USD)
-    // Taskwall sends: user_amount (virtual currency) AND payout (USD)
-    // We prefer user_amount if present (it's already in the app's virtual currency unit)
-    // If not, we fall back to payout * 1000 (USD to points)
     let rewardPoints = 0;
-    if (payload['points'] !== undefined && payload['points'] !== '') {
+    if (payload['pts'] !== undefined && payload['pts'] !== '') {
+      rewardPoints = parseInt(String(payload['pts']), 10);
+    } else if (payload['points'] !== undefined && payload['points'] !== '') {
       rewardPoints = parseInt(String(payload['points']), 10);
+    } else if (payload['payout'] !== undefined && payload['payout'] !== '') {
+      // payout is in USD (e.g. 1.00 USD = 1,000 points)
+      const payoutUsd = parseFloat(String(payload['payout']));
+      if (!isNaN(payoutUsd) && payoutUsd > 0) {
+        rewardPoints = Math.round(payoutUsd * 1000);
+      }
     } else if (payload['user_amount'] !== undefined && payload['user_amount'] !== '') {
-      // Taskwall's user_amount: e.g. 28.0 = 28 virtual currency units
-      // We interpret each unit as 1 point (set your Taskwall virtual currency rate to match)
       const ua = parseFloat(String(payload['user_amount']));
       if (!isNaN(ua) && ua > 0) rewardPoints = Math.round(ua);
     } else if (payload['virtual_currency'] !== undefined && payload['virtual_currency'] !== '') {
@@ -125,12 +128,6 @@ export class WebhooksController {
       rewardPoints = parseInt(String(payload['reward']), 10);
     } else if (payload['amount'] !== undefined && payload['amount'] !== '') {
       rewardPoints = parseInt(String(payload['amount']), 10);
-    } else if (payload['payout'] !== undefined && payload['payout'] !== '') {
-      // payout is in USD — convert at rate 1,000 pts = $1.00
-      const payoutUsd = parseFloat(String(payload['payout']));
-      if (!isNaN(payoutUsd) && payoutUsd > 0) {
-        rewardPoints = Math.round(payoutUsd * 1000);
-      }
     }
 
     const offerExternalId = String(
@@ -141,12 +138,15 @@ export class WebhooksController {
         'offerwall-task',
     ).trim();
 
-    const offerTitle = String(
+    let offerTitle = String(
       payload['offer_name'] ??
         payload['task_title'] ??
         payload['campaign_name'] ??
-        `${providerRecord.name} Task #${offerExternalId}`,
+        `${providerRecord.name} Reward`,
     ).trim();
+    if (!offerTitle || offerTitle === '{offer_name}') {
+      offerTitle = `${providerRecord.name} Offer Reward`;
+    }
 
     const signature = String(
       signatureHeader ||
@@ -183,7 +183,7 @@ export class WebhooksController {
 
     // 5. Verify User Exists
     if (!userId) {
-      throw new BadRequestException('Missing user identifier (sub_id / user_id)');
+      throw new BadRequestException('Missing user identifier (sub_id / user_id / userid)');
     }
 
     const user = await this.prisma.user.findFirst({
@@ -201,7 +201,7 @@ export class WebhooksController {
       throw new BadRequestException('Reward points must be greater than 0');
     }
 
-    // 6. Find or dynamically create Offer record
+    // 6. Find or dynamically create Offer record with INACTIVE status (NEVER show in public marketplace)
     let offer = await this.prisma.offer.findFirst({
       where: {
         providerId: providerRecord.id,
@@ -225,13 +225,13 @@ export class WebhooksController {
           description: `Completed on ${providerRecord.name} offerwall`,
           category: category as any,
           rewardPoints,
-          status: 'ACTIVE',
+          status: 'INACTIVE', // Strictly INACTIVE so it NEVER appears in the Offers section!
         },
       });
-
-      await this.prisma.offerProvider.update({
-        where: { id: providerRecord.id },
-        data: { offersCount: { increment: 1 } },
+    } else if (offer.status !== 'INACTIVE') {
+      await this.prisma.offer.update({
+        where: { id: offer.id },
+        data: { status: 'INACTIVE' },
       });
     }
 
