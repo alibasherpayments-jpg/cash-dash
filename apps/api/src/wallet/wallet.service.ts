@@ -59,6 +59,10 @@ export class WalletService {
    * Uses Prisma transaction to ensure consistency.
    */
   async credit(opts: CreditOptions): Promise<void> {
+    if (!opts.amount || opts.amount <= 0 || !Number.isInteger(opts.amount)) {
+      throw new BadRequestException('Credit amount must be a positive integer');
+    }
+
     await this.prisma.$transaction(async (tx) => {
       const wallet = await tx.wallet.findUnique({ where: { userId: opts.userId } });
       if (!wallet) throw new NotFoundException(`Wallet not found for user: ${opts.userId}`);
@@ -99,6 +103,10 @@ export class WalletService {
    * Validates sufficient available balance before debiting.
    */
   async debit(opts: DebitOptions): Promise<void> {
+    if (!opts.amount || opts.amount <= 0 || !Number.isInteger(opts.amount)) {
+      throw new BadRequestException('Debit amount must be a positive integer');
+    }
+
     await this.prisma.$transaction(async (tx) => {
       const wallet = await tx.wallet.findUnique({ where: { userId: opts.userId } });
       if (!wallet) throw new NotFoundException(`Wallet not found for user: ${opts.userId}`);

@@ -21,7 +21,11 @@ export class LeaderboardService {
 
     // Get latest snapshots for this metric
     const snapshots = await this.prisma.leaderboardSnapshot.findMany({
-      where: { metric, period },
+      where: {
+        metric,
+        period,
+        user: { profile: { isLeaderboardVisible: true } },
+      },
       include: {
         user: {
           select: {
@@ -80,7 +84,10 @@ export class LeaderboardService {
 
     if (metric === LeaderboardMetric.TOTAL_WITHDRAWN) {
       const wallets = await this.prisma.wallet.findMany({
-        where: { totalWithdrawn: { gt: 0 } },
+        where: {
+          totalWithdrawn: { gt: 0 },
+          user: { profile: { isLeaderboardVisible: true } },
+        },
         select: { userId: true, totalWithdrawn: true },
         orderBy: { totalWithdrawn: 'desc' },
         take: 100,
@@ -88,7 +95,10 @@ export class LeaderboardService {
       users = wallets.map((w) => ({ userId: w.userId, value: w.totalWithdrawn }));
     } else if (metric === LeaderboardMetric.TOTAL_EARNED) {
       const wallets = await this.prisma.wallet.findMany({
-        where: { totalEarned: { gt: 0 } },
+        where: {
+          totalEarned: { gt: 0 },
+          user: { profile: { isLeaderboardVisible: true } },
+        },
         select: { userId: true, totalEarned: true },
         orderBy: { totalEarned: 'desc' },
         take: 100,
@@ -98,6 +108,9 @@ export class LeaderboardService {
       const referrals = await this.prisma.referral.groupBy({
         by: ['referrerId'],
         _count: { referrerId: true },
+        where: {
+          referrer: { profile: { isLeaderboardVisible: true } },
+        },
         orderBy: { _count: { referrerId: 'desc' } },
         take: 100,
       });
@@ -106,19 +119,24 @@ export class LeaderboardService {
 
     const snapshotAt = new Date();
 
-    // Write snapshots
-    for (let i = 0; i < users.length; i++) {
-      const entry = users[i]!;
-      await this.prisma.leaderboardSnapshot.create({
-        data: {
-          userId: entry.userId,
-          metric,
-          value: entry.value,
-          rank: i + 1,
-          period,
-          snapshotAt,
-        },
+    // Atomically prune older snapshots and insert new calculated rankings
+    await this.prisma.$transaction(async (tx) => {
+      await tx.leaderboardSnapshot.deleteMany({
+        where: { metric, period },
       });
-    }
+
+      if (users.length > 0) {
+        await tx.leaderboardSnapshot.createMany({
+          data: users.map((entry, idx) => ({
+            userId: entry.userId,
+            metric,
+            value: entry.value,
+            rank: idx + 1,
+            period,
+            snapshotAt,
+          })),
+        });
+      }
+    });
   }
 }

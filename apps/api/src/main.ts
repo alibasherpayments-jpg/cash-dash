@@ -20,11 +20,14 @@ async function bootstrap() {
   app.use(helmet({ contentSecurityPolicy: nodeEnv === 'production' }));
 
   // CORS
+  const allowedOrigins = Array.from(
+    new Set([frontendUrl, ...(nodeEnv !== 'production' ? ['http://localhost:3000'] : [])]),
+  );
   app.enableCors({
-    origin: [frontendUrl, 'http://localhost:3000'],
+    origin: allowedOrigins,
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
-    allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With'],
+    allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'x-signature', 'x-event-id'],
   });
 
   // Cookie parser

@@ -97,4 +97,84 @@ describe('WalletService', () => {
       }),
     ).rejects.toThrow(BadRequestException);
   });
+
+  it('should throw BadRequestException when crediting non-positive or fractional points', async () => {
+    await expect(
+      service.credit({
+        userId: 'user-1',
+        amount: -500,
+        type: TransactionType.OFFER_REWARD,
+        source: 'offer',
+        description: 'Negative credit test',
+      }),
+    ).rejects.toThrow('Credit amount must be a positive integer');
+
+    await expect(
+      service.credit({
+        userId: 'user-1',
+        amount: 0,
+        type: TransactionType.OFFER_REWARD,
+        source: 'offer',
+        description: 'Zero credit test',
+      }),
+    ).rejects.toThrow('Credit amount must be a positive integer');
+
+    await expect(
+      service.credit({
+        userId: 'user-1',
+        amount: 15.75,
+        type: TransactionType.OFFER_REWARD,
+        source: 'offer',
+        description: 'Fractional credit test',
+      }),
+    ).rejects.toThrow('Credit amount must be a positive integer');
+  });
+
+  it('should throw BadRequestException when debiting non-positive or fractional points', async () => {
+    await expect(
+      service.debit({
+        userId: 'user-1',
+        amount: -100,
+        type: TransactionType.WITHDRAWAL,
+        source: 'withdrawal',
+        description: 'Negative debit test',
+      }),
+    ).rejects.toThrow('Debit amount must be a positive integer');
+
+    await expect(
+      service.debit({
+        userId: 'user-1',
+        amount: 0,
+        type: TransactionType.WITHDRAWAL,
+        source: 'withdrawal',
+        description: 'Zero debit test',
+      }),
+    ).rejects.toThrow('Debit amount must be a positive integer');
+  });
+
+  it('should cap reversal debit at current availablePoints so balance never drops below zero', async () => {
+    // User had earned 5000 points, but already cashed out 4000, leaving availablePoints = 1000.
+    // An offer reversal of 5000 occurs.
+    mockPrisma.wallet.findUnique.mockResolvedValue({
+      id: 'wallet-1',
+      userId: 'user-1',
+      availablePoints: 1000,
+    });
+
+    await service.reverseCredit('user-1', 5000, 'offer-comp-1', 'Chargeback reversal');
+
+    expect(mockPrisma.wallet.update).toHaveBeenCalledWith({
+      where: { userId: 'user-1' },
+      data: {
+        availablePoints: { decrement: 1000 }, // capped at 1000, not 5000!
+        totalEarned: { decrement: 1000 },
+      },
+    });
+    expect(mockPrisma.ledgerTransaction.create).toHaveBeenCalledWith({
+      data: expect.objectContaining({
+        amount: 1000,
+        status: TransactionStatus.REVERSED,
+      }),
+    });
+  });
 });

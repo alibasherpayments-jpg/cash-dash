@@ -335,9 +335,16 @@ export class WithdrawalsService {
     });
 
     // Audit log
+    let auditAction: AuditAction = AuditAction.WITHDRAWAL_APPROVED;
+    if (newStatus === WithdrawalStatus.REJECTED) {
+      auditAction = AuditAction.WITHDRAWAL_REJECTED;
+    } else if (newStatus === WithdrawalStatus.PAID || newStatus === WithdrawalStatus.COMPLETED) {
+      auditAction = AuditAction.WITHDRAWAL_PAID;
+    }
+
     await this.auditService.log({
       adminId,
-      action: AuditAction.WITHDRAWAL_APPROVED,
+      action: auditAction,
       entityType: 'WithdrawalRequest',
       entityId: withdrawalId,
       previousValue: { status: withdrawal.status },

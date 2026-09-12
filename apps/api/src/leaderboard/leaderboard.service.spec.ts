@@ -66,4 +66,43 @@ describe('LeaderboardService', () => {
     expect(result[0].rank).toBe(1);
     expect(result[0].value).toBe(500000);
   });
+
+  it('should return user rank when snapshot exists', async () => {
+    mockPrisma.leaderboardSnapshot.findFirst.mockResolvedValue({
+      rank: 5,
+      value: 120000,
+      metric: LeaderboardMetric.TOTAL_EARNED,
+      period: 'all-time',
+    });
+
+    const rank = await service.getUserRank('user-1', LeaderboardMetric.TOTAL_EARNED);
+    expect(rank).toEqual({
+      rank: 5,
+      value: 120000,
+      metric: LeaderboardMetric.TOTAL_EARNED,
+      period: 'all-time',
+    });
+  });
+
+  it('should recalculate leaderboard metrics and prune old snapshots atomically', async () => {
+    mockPrisma.wallet = {
+      findMany: vi.fn().mockResolvedValue([
+        { userId: 'user-top1', totalWithdrawn: 100000, totalEarned: 200000 },
+      ]),
+    };
+    mockPrisma.referral = {
+      groupBy: vi.fn().mockResolvedValue([
+        { referrerId: 'user-top1', _count: { referrerId: 10 } },
+      ]),
+    };
+    mockPrisma.leaderboardSnapshot.deleteMany = vi.fn().mockResolvedValue({ count: 1 });
+    mockPrisma.leaderboardSnapshot.createMany = vi.fn().mockResolvedValue({ count: 1 });
+    mockPrisma.$transaction = vi.fn(async (cb: any) => cb(mockPrisma));
+
+    await service.recalculate('all-time');
+
+    expect(mockPrisma.leaderboardSnapshot.deleteMany).toHaveBeenCalledTimes(3);
+    expect(mockPrisma.leaderboardSnapshot.createMany).toHaveBeenCalledTimes(3);
+  });
 });
+

@@ -5,7 +5,7 @@ import { WalletService } from '../../wallet/wallet.service';
 import { NotificationsService } from '../../notifications/notifications.service';
 import { PrismaService } from '../../prisma/prisma.service';
 import { TransactionType, NotificationType, OfferCompletionStatus } from '@prisma/client';
-import { QUEUES } from '../jobs.module';
+import { QUEUES } from '../queues.constants';
 
 export interface RewardJobData {
   completionId: string;
@@ -32,6 +32,21 @@ export class RewardProcessor extends WorkerHost {
     this.logger.log(`Processing reward job for completion ${completionId}`);
 
     try {
+      // Check if already completed to prevent double-crediting on job retry
+      const existing = await this.prisma.offerCompletion.findUnique({
+        where: { id: completionId },
+      });
+
+      if (!existing) {
+        this.logger.warn(`Completion ${completionId} not found; skipping`);
+        return;
+      }
+
+      if (existing.status === OfferCompletionStatus.COMPLETED) {
+        this.logger.warn(`Reward job for completion ${completionId} already completed; skipping credit`);
+        return;
+      }
+
       // Update completion status to COMPLETED
       await this.prisma.offerCompletion.update({
         where: { id: completionId },
