@@ -72,13 +72,14 @@ export class RewardProcessor extends WorkerHost {
         data: { completionCount: { increment: 1 } },
       });
 
-      // Send notification
+      // Send notification with offer details
       await this.notificationsService.trigger(userId, {
         type: NotificationType.REWARD_ADDED,
-        title: '🎉 Reward Earned!',
-        message: `You earned ${rewardPoints.toLocaleString()} points for completing "${offerTitle}"!`,
+        title: `🎉 تم احتساب العرض: ${offerTitle}`,
+        message: `تم احتساب عرض "${offerTitle}" بنجاح! حصلت على +${rewardPoints.toLocaleString()} نقطة ($${(rewardPoints / 1000).toFixed(2)} USD).`,
         relatedEntityId: completionId,
         relatedEntityType: 'offerCompletion',
+        link: '/wallet',
       });
 
       this.logger.log(`Reward processed successfully for completion ${completionId}`);

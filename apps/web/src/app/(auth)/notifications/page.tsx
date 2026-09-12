@@ -7,7 +7,8 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { EmptyNotifications } from "@/components/illustrations/empty-notifications";
-import { Bell, CheckCheck } from "lucide-react";
+import { Bell, CheckCheck, BellRing } from "lucide-react";
+import { OfferAlertsToggle } from "@/components/common/offer-alerts-toggle";
 
 export default function NotificationsPage() {
   const { notifications, unreadCount, markAllRead, markAsRead, isLoading } = useNotifications();
@@ -32,6 +33,7 @@ export default function NotificationsPage() {
         </div>
 
         <div className="flex items-center gap-3">
+          <OfferAlertsToggle />
           {unreadCount > 0 && (
             <Button
               variant="outline"
@@ -42,6 +44,29 @@ export default function NotificationsPage() {
               <CheckCheck className="mr-1.5 h-4 w-4" /> Mark All as Read
             </Button>
           )}
+        </div>
+      </div>
+
+      {/* ─── Live Offer Alerts Info Card ─────────────────────────── */}
+      <div className="p-4 rounded-2xl bg-gradient-to-r from-emerald-500/10 via-primary/10 to-transparent border border-emerald-500/20 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div className="flex items-center gap-3">
+          <div className="h-10 w-10 rounded-xl bg-emerald-500/20 text-emerald-400 flex items-center justify-center shrink-0">
+            <BellRing className="h-5 w-5" />
+          </div>
+          <div>
+            <div className="flex items-center gap-2">
+              <h3 className="font-bold text-sm text-foreground">إشعارات احتساب العروض الفورية (Live Offer Alerts)</h3>
+              <Badge variant="outline" className="bg-emerald-500/10 text-emerald-400 border-emerald-500/30 text-[10px]">
+                تنبيهات فورية
+              </Badge>
+            </div>
+            <p className="text-xs text-muted-foreground mt-0.5">
+              ستصلك رسالة وإشعار منبثق فوري عند تنفيذ أي مهمة من شركات العروض تتضمن <strong>اسم العرض، عدد النقاط، والشركة المانحة</strong>.
+            </p>
+          </div>
+        </div>
+        <div className="shrink-0">
+          <OfferAlertsToggle />
         </div>
       </div>
 

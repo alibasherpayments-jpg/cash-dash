@@ -17,6 +17,7 @@ export function useNotifications(page = 1, limit = 20) {
         return [];
       }
     },
+    refetchInterval: 8000, // Background poll every 8 seconds for live offer completions
   });
 
   const markAllReadMutation = useMutation({

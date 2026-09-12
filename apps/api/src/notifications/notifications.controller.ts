@@ -1,7 +1,8 @@
-import { Controller, Get, Patch, Param, Query } from '@nestjs/common';
+import { Controller, Get, Patch, Post, Param, Query } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiBearerAuth } from '@nestjs/swagger';
 import { NotificationsService } from './notifications.service';
 import { CurrentUser } from '../common/decorators/current-user.decorator';
+import { NotificationType } from '@prisma/client';
 
 @ApiTags('notifications')
 @ApiBearerAuth()
@@ -26,6 +27,18 @@ export class NotificationsController {
   async getUnreadCount(@CurrentUser('id') userId: string) {
     const count = await this.notificationsService.getUnreadCount(userId);
     return { success: true, data: { count } };
+  }
+
+  @Post('test-alert')
+  @ApiOperation({ summary: 'Send a test offer reward notification to current user' })
+  async sendTestAlert(@CurrentUser('id') userId: string) {
+    const testNotif = await this.notificationsService.trigger(userId, {
+      type: NotificationType.REWARD_ADDED,
+      title: '🎉 تم احتساب العرض: استطلاع الرأي السريع (Quick Survey)',
+      message: 'تم احتساب عرض "استطلاع الرأي السريع (Quick Survey)" بنجاح! حصلت على +1,500 نقطة ($1.50 USD) من شركة Taskwall.io.',
+      link: '/wallet',
+    });
+    return { success: true, message: 'Test alert notification sent', data: testNotif };
   }
 
   @Patch(':id/read')

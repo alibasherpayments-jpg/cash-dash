@@ -304,14 +304,15 @@ export class WebhooksController {
       referenceId: completion.id,
     });
 
-    // 9. Send Real-time Notification
+    // 9. Send Real-time Notification with offer name, points, and provider
     await this.notificationsService
       .trigger(user.id, {
         type: NotificationType.REWARD_ADDED,
-        title: '🎉 Offer Reward Credited!',
-        message: `You earned +${rewardPoints.toLocaleString()} points ($${(rewardPoints / 1000).toFixed(2)} USD) from ${providerRecord.name}!`,
+        title: `🎉 تم احتساب العرض: ${offerTitle}`,
+        message: `تم احتساب عرض "${offerTitle}" بنجاح! حصلت على +${rewardPoints.toLocaleString()} نقطة ($${(rewardPoints / 1000).toFixed(2)} USD) من شركة ${providerRecord.name}.`,
         relatedEntityId: completion.id,
         relatedEntityType: 'offerCompletion',
+        link: '/wallet',
       })
       .catch((err) => {
         this.logger.warn(`Failed to trigger notification: ${err.message}`);

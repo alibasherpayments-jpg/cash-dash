@@ -7,6 +7,7 @@ import { useAuthStore } from "@/store/auth-store";
 import { useWallet } from "@/hooks/use-wallet";
 import { useNotifications } from "@/hooks/use-notifications";
 import { AvatarWithFallback } from "@/components/common/avatar-with-fallback";
+import { OfferAlertsToggle } from "@/components/common/offer-alerts-toggle";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -205,6 +206,9 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
 
             {/* Theme Switcher */}
             <ThemeSwitcher />
+
+            {/* Live Offer Alerts Button (Beside Notification) */}
+            <OfferAlertsToggle />
 
             {/* Notification Bell */}
             <Button variant="ghost" size="icon" className="relative h-9 w-9 rounded-lg" asChild>
