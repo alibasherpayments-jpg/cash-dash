@@ -13,6 +13,7 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
+  metadataBase: new URL(process.env.NEXT_PUBLIC_APP_URL || "https://web-production-79a62.up.railway.app"),
   title: {
     default: "Cash Dash - Complete Offers. Earn Points. Get Rewarded.",
     template: "%s | Cash Dash",
@@ -21,6 +22,20 @@ export const metadata: Metadata = {
     "Join thousands of users earning real rewards by completing surveys, trying apps, and more. Convert points to cash instantly.",
   keywords: ["earn rewards", "cashback", "surveys", "offers", "points", "rewards program"],
   authors: [{ name: "Cash Dash" }],
+  icons: {
+    icon: [
+      { url: "/favicon.ico", sizes: "any" },
+      { url: "/icon.svg", type: "image/svg+xml" },
+      { url: "/icon-32.png", sizes: "32x32", type: "image/png" },
+      { url: "/icon-192.png", sizes: "192x192", type: "image/png" },
+      { url: "/icon-512.png", sizes: "512x512", type: "image/png" },
+    ],
+    apple: [
+      { url: "/apple-icon.png", sizes: "180x180", type: "image/png" },
+    ],
+    shortcut: "/favicon.ico",
+  },
+  manifest: "/manifest.json",
   openGraph: {
     type: "website",
     locale: "en_US",
@@ -28,11 +43,20 @@ export const metadata: Metadata = {
     siteName: "Cash Dash",
     title: "Cash Dash - Complete Offers. Earn Points. Get Rewarded.",
     description: "Join thousands of users earning real rewards by completing surveys, trying apps, and more.",
+    images: [
+      {
+        url: "/images/og-image.png",
+        width: 1200,
+        height: 630,
+        alt: "Cash Dash Rewards",
+      },
+    ],
   },
   twitter: {
     card: "summary_large_image",
     title: "Cash Dash",
     description: "Earn rewards by completing offers and surveys.",
+    images: ["/images/og-image.png"],
   },
   robots: { index: true, follow: true },
 };

@@ -22,11 +22,14 @@ export function PublicNavbar() {
   return (
     <header className="sticky top-0 z-50 border-b border-border/50 bg-background/80 backdrop-blur-xl">
       <div className="container flex h-16 items-center justify-between">
-        <Link href="/" className="flex items-center gap-2">
-          <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary">
+        <Link href="/" className="flex items-center gap-2.5">
+          <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-primary shadow-lg shadow-primary/25">
             <Coins className="h-5 w-5 text-white" />
           </div>
-          <span className="text-xl font-black tracking-tight">Cash Dash</span>
+          <div>
+            <span className="text-xl font-black tracking-tight text-foreground leading-none block">Cash Dash</span>
+            <span className="block text-[10px] font-bold uppercase tracking-wider text-amber-500 font-sans leading-none mt-1">Rewards</span>
+          </div>
         </Link>
 
         <nav className="hidden items-center gap-6 md:flex">

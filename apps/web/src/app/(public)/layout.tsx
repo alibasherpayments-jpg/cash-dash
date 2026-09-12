@@ -1,5 +1,6 @@
 import type { ReactNode } from "react";
 import { PublicNavbar } from "@/components/common/public-navbar";
+import { Coins } from "lucide-react";
 
 export default function PublicLayout({ children }: { children: ReactNode }) {
   return (
@@ -10,11 +11,14 @@ export default function PublicLayout({ children }: { children: ReactNode }) {
         <div className="container">
           <div className="grid grid-cols-2 gap-8 md:grid-cols-5">
             <div className="col-span-2 md:col-span-1">
-              <div className="flex items-center gap-2">
-                <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-primary">
-                  <span className="text-xs font-bold text-white">CD</span>
+              <div className="flex items-center gap-2.5">
+                <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-primary shadow-md shadow-primary/20">
+                  <Coins className="h-4 w-4 text-white" />
                 </div>
-                <span className="font-black">Cash Dash</span>
+                <div>
+                  <span className="font-black text-foreground leading-none block">Cash Dash</span>
+                  <span className="block text-[9px] font-bold uppercase tracking-wider text-amber-500 font-sans leading-none mt-1">Rewards</span>
+                </div>
               </div>
               <p className="mt-2 text-xs text-muted-foreground">Earn real rewards by completing tasks and surveys.</p>
             </div>
