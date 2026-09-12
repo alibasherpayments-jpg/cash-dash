@@ -3,6 +3,7 @@
 import React, { useState } from "react";
 import Link from "next/link";
 import { useOffers } from "@/hooks/use-offers";
+import { useTranslation } from "@/providers/i18n-provider";
 import { OfferCard } from "@/components/common/offer-card";
 import { SearchInput } from "@/components/common/search-input";
 import { Button } from "@/components/ui/button";
@@ -18,20 +19,21 @@ import { EmptyOffers } from "@/components/illustrations/empty-offers";
 import { Gift, Sparkles, Filter, SlidersHorizontal, Layers, ArrowRight } from "lucide-react";
 import { OfferCategory } from "@cashdash/shared";
 
-const CATEGORIES = [
-  { label: "All Categories", value: "ALL" },
-  { label: "Games", value: "GAMES" },
-  { label: "Surveys", value: "SURVEYS" },
-  { label: "Apps", value: "APPS" },
-  { label: "Finance", value: "FINANCE" },
-  { label: "Shopping", value: "SHOPPING" },
-  { label: "Trials", value: "TRIALS" },
-];
-
 export default function OffersPage() {
+  const { t } = useTranslation();
   const [selectedCategory, setSelectedCategory] = useState<string>("ALL");
   const [searchTerm, setSearchTerm] = useState<string>("");
   const [sortBy, setSortBy] = useState<string>("recommended");
+
+  const categories = [
+    { label: t.offers.categories.ALL, value: "ALL" },
+    { label: t.offers.categories.GAMES, value: "GAMES" },
+    { label: t.offers.categories.SURVEYS, value: "SURVEYS" },
+    { label: t.offers.categories.APPS, value: "APPS" },
+    { label: t.offers.categories.FINANCE, value: "FINANCE" },
+    { label: t.offers.categories.SHOPPING, value: "SHOPPING" },
+    { label: t.offers.categories.TRIALS, value: "TRIALS" },
+  ];
 
   const { offers, isLoading } = useOffers({
     category: selectedCategory === "ALL" ? undefined : (selectedCategory as OfferCategory),
@@ -45,16 +47,16 @@ export default function OffersPage() {
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <h1 className="text-2xl sm:text-3xl font-black tracking-tight flex items-center gap-2.5">
-            <Gift className="h-7 w-7 text-primary" /> Offer Marketplace
+            <Gift className="h-7 w-7 text-primary" /> {t.offers.title}
           </h1>
           <p className="text-xs sm:text-sm text-muted-foreground mt-0.5">
-            Discover verified tasks, surveys, and high-reward campaigns
+            {t.offers.subtitle}
           </p>
         </div>
 
         <div className="flex items-center gap-2">
           <Badge variant="outline" className="bg-emerald-500/10 text-emerald-500 border-emerald-500/20 text-xs font-semibold">
-            {offers.length > 0 ? `● ${offers.length} Offers Available` : "● Offerwalls Active"}
+            {offers.length > 0 ? `● ${offers.length} ${t.common.offers}` : `● ${t.common.offerwalls}`}
           </Badge>
         </div>
       </div>
@@ -67,7 +69,7 @@ export default function OffersPage() {
             <SearchInput
               value={searchTerm}
               onChange={setSearchTerm}
-              placeholder="Search offers by game, app, or survey keywords..."
+              placeholder={t.offers.searchPlaceholder}
               className="w-full"
             />
           </div>
@@ -76,13 +78,13 @@ export default function OffersPage() {
           <div className="sm:col-span-4">
             <Select value={sortBy} onValueChange={setSortBy}>
               <SelectTrigger className="w-full">
-                <SelectValue placeholder="Sort offers" />
+                <SelectValue placeholder={t.offers.sort.label} />
               </SelectTrigger>
               <SelectContent>
-                <SelectItem value="recommended">Recommended First</SelectItem>
-                <SelectItem value="highest_reward">Highest Reward (Points)</SelectItem>
-                <SelectItem value="lowest_reward">Lowest Reward</SelectItem>
-                <SelectItem value="fastest">Fastest Completion</SelectItem>
+                <SelectItem value="recommended">{t.offers.sort.recommended}</SelectItem>
+                <SelectItem value="highest_reward">{t.offers.sort.highestReward}</SelectItem>
+                <SelectItem value="lowest_reward">{t.offers.sort.lowestReward}</SelectItem>
+                <SelectItem value="fastest">{t.offers.sort.fastest}</SelectItem>
               </SelectContent>
             </Select>
           </div>
@@ -90,7 +92,7 @@ export default function OffersPage() {
 
         {/* Horizontal Category Badges / Tabs */}
         <div className="flex items-center gap-2 overflow-x-auto pb-1 pt-1 no-scrollbar">
-          {CATEGORIES.map((cat) => {
+          {categories.map((cat) => {
             const isSelected = selectedCategory === cat.value;
             return (
               <button
@@ -128,15 +130,15 @@ export default function OffersPage() {
             <Layers className="h-8 w-8" />
           </div>
           <div className="space-y-2 max-w-md mx-auto">
-            <h3 className="text-xl font-bold text-foreground">No Direct Offers Listed Right Now</h3>
+            <h3 className="text-xl font-bold text-foreground">{t.offers.noOffers}</h3>
             <p className="text-xs sm:text-sm text-muted-foreground leading-relaxed">
-              Direct marketplace offers are added periodically by administrators. In the meantime, head over to our <strong>Offerwalls Hub</strong> to earn unlimited points through 7 verified networks with instant postback clearance!
+              {t.offers.noOffersDesc}
             </p>
           </div>
           <div className="flex flex-wrap items-center justify-center gap-3 pt-2">
             <Button asChild size="lg" className="font-bold shadow-lg shadow-primary/20">
               <Link href="/offerwalls">
-                <Layers className="mr-2 h-4 w-4" /> Explore Offerwalls Hub <ArrowRight className="ml-1.5 h-4 w-4" />
+                <Layers className="mr-2 h-4 w-4" /> {t.common.offerwalls} <ArrowRight className="ml-1.5 h-4 w-4" />
               </Link>
             </Button>
             {(selectedCategory !== "ALL" || searchTerm) && (
@@ -149,7 +151,7 @@ export default function OffersPage() {
                   setSortBy("recommended");
                 }}
               >
-                Reset Filters
+                {t.common.all}
               </Button>
             )}
           </div>

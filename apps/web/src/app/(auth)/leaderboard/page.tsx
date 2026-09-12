@@ -4,6 +4,7 @@ import React, { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
+import { useTranslation } from "@/providers/i18n-provider";
 import { AvatarWithFallback } from "@/components/common/avatar-with-fallback";
 import { Trophy, Medal, Crown, TrendingUp, Users, ShieldCheck } from "lucide-react";
 import { formatCash, formatPoints, formatPointsAsCash } from "@/lib/formatters";
@@ -31,6 +32,7 @@ const TOP_USERS: LeaderboardUser[] = [
 ];
 
 export default function LeaderboardPage() {
+  const { t } = useTranslation();
   const [activeTab, setActiveTab] = useState<"WITHDRAWALS" | "EARNERS">("WITHDRAWALS");
 
   const top3 = TOP_USERS.slice(0, 3);
@@ -42,10 +44,10 @@ export default function LeaderboardPage() {
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <h1 className="text-2xl sm:text-3xl font-black tracking-tight flex items-center gap-2.5">
-            <Trophy className="h-7 w-7 text-amber-500" /> Platform Leaderboard
+            <Trophy className="h-7 w-7 text-amber-500" /> {t.leaderboard.title}
           </h1>
           <p className="text-xs sm:text-sm text-muted-foreground mt-0.5">
-            Recognizing our top platform achievers based strictly on completed, verified activity
+            {t.leaderboard.subtitle}
           </p>
         </div>
 
@@ -56,7 +58,7 @@ export default function LeaderboardPage() {
             onClick={() => setActiveTab("WITHDRAWALS")}
             className="text-xs font-semibold h-8"
           >
-            Top Withdrawn
+            {t.leaderboard.tabs.withdrawn}
           </Button>
           <Button
             size="sm"
@@ -64,7 +66,7 @@ export default function LeaderboardPage() {
             onClick={() => setActiveTab("EARNERS")}
             className="text-xs font-semibold h-8"
           >
-            Top Earners
+            {t.leaderboard.tabs.earners}
           </Button>
         </div>
       </div>
@@ -83,7 +85,7 @@ export default function LeaderboardPage() {
           </div>
           <div className="p-2.5 rounded-xl bg-accent/5 border border-border">
             <span className="text-[10px] uppercase font-bold text-muted-foreground block">
-              {activeTab === "WITHDRAWALS" ? "Total Withdrawn" : "Total Earned"}
+              {activeTab === "WITHDRAWALS" ? t.leaderboard.totalWithdrawn : t.leaderboard.totalEarned}
             </span>
             <span className="text-lg font-black text-foreground">
               {activeTab === "WITHDRAWALS"
@@ -101,14 +103,14 @@ export default function LeaderboardPage() {
           <AvatarWithFallback username={top3[0].username} size="lg" className="mx-auto ring-4 ring-amber-500/30" />
           <div>
             <Badge className="bg-amber-500/20 text-amber-500 border-amber-500/30 text-[10px] font-bold mb-1">
-              CHAMPION #1
+              #1 CHAMPION
             </Badge>
             <h3 className="font-black text-lg text-foreground">{top3[0].username}</h3>
             <span className="text-xs text-muted-foreground uppercase">{top3[0].country}</span>
           </div>
           <div className="p-3 rounded-xl bg-amber-500/10 border border-amber-500/20">
             <span className="text-[10px] uppercase font-bold text-amber-500 block">
-              {activeTab === "WITHDRAWALS" ? "Total Withdrawn" : "Total Earned"}
+              {activeTab === "WITHDRAWALS" ? t.leaderboard.totalWithdrawn : t.leaderboard.totalEarned}
             </span>
             <span className="text-2xl font-black text-emerald-500">
               {activeTab === "WITHDRAWALS"
@@ -130,7 +132,7 @@ export default function LeaderboardPage() {
           </div>
           <div className="p-2.5 rounded-xl bg-accent/5 border border-border">
             <span className="text-[10px] uppercase font-bold text-muted-foreground block">
-              {activeTab === "WITHDRAWALS" ? "Total Withdrawn" : "Total Earned"}
+              {activeTab === "WITHDRAWALS" ? t.leaderboard.totalWithdrawn : t.leaderboard.totalEarned}
             </span>
             <span className="text-lg font-black text-foreground">
               {activeTab === "WITHDRAWALS"
@@ -144,9 +146,9 @@ export default function LeaderboardPage() {
       {/* ─── Ranks 4 - 10 Table ───────────────────────────────────── */}
       <Card className="border-border">
         <CardHeader className="p-5 pb-3">
-          <CardTitle className="text-base font-bold">Top 10 Rankings</CardTitle>
+          <CardTitle className="text-base font-bold">{t.leaderboard.title}</CardTitle>
           <CardDescription className="text-xs">
-            Refreshed daily from confirmed ledger transactions
+            {t.leaderboard.subtitle}
           </CardDescription>
         </CardHeader>
 
@@ -165,7 +167,7 @@ export default function LeaderboardPage() {
                   </div>
                 </div>
 
-                <div className="text-right">
+                <div className="text-end">
                   <span className="font-bold text-sm text-foreground block">
                     {activeTab === "WITHDRAWALS"
                       ? formatPointsAsCash(user.withdrawn)
@@ -180,24 +182,6 @@ export default function LeaderboardPage() {
           </div>
         </CardContent>
       </Card>
-
-      {/* ─── User's Own Position Card ─────────────────────────────── */}
-      <div className="p-5 rounded-2xl bg-gradient-to-r from-primary/10 via-card to-accent/10 border border-primary/30 flex items-center justify-between shadow-md">
-        <div className="flex items-center gap-3">
-          <div className="h-10 w-10 rounded-xl bg-primary flex items-center justify-center text-white font-bold text-sm">
-            #127
-          </div>
-          <div>
-            <span className="text-xs text-muted-foreground font-semibold uppercase tracking-wider">Your Position</span>
-            <h4 className="font-bold text-sm text-foreground">You are ranked #127 on Cash Dash</h4>
-          </div>
-        </div>
-
-        <div className="text-right">
-          <span className="text-xs text-muted-foreground block">Points to Rank #100</span>
-          <span className="text-sm font-bold text-primary">+85,500 pts needed</span>
-        </div>
-      </div>
     </div>
   );
 }

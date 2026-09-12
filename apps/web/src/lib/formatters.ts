@@ -1,5 +1,14 @@
-﻿import { formatDistanceToNow, format, parseISO } from 'date-fns';
+import { formatDistanceToNow, format, parseISO, Locale as DateFnsLocale } from 'date-fns';
+import { arEG, enUS, de, ja, es } from 'date-fns/locale';
 import { POINTS_PER_DOLLAR, pointsToCash as sharedPointsToCash } from '@cashdash/shared';
+
+const dateLocales: Record<string, DateFnsLocale> = {
+  ar: arEG,
+  en: enUS,
+  de: de,
+  ja: ja,
+  es: es,
+};
 
 /**
  * Format points with comma separators and "pts" suffix
@@ -48,11 +57,17 @@ export function formatPointsAsCash(points: number): string {
 
 /**
  * Get relative time string
- * e.g. Date 2 hours ago -> "2 hours ago"
+ * e.g. Date 2 hours ago -> "2 hours ago" or "منذ ساعتين"
  */
-export function formatRelativeTime(date: string | Date): string {
-  const parsed = typeof date === 'string' ? parseISO(date) : date;
-  return formatDistanceToNow(parsed, { addSuffix: true });
+export function formatRelativeTime(date: string | Date, locale?: string): string {
+  try {
+    const parsed = typeof date === 'string' ? parseISO(date) : date;
+    const activeLocale = locale || (typeof document !== 'undefined' ? document.documentElement.lang : 'en');
+    const dateFnsLoc = dateLocales[activeLocale] || enUS;
+    return formatDistanceToNow(parsed, { addSuffix: true, locale: dateFnsLoc });
+  } catch {
+    return '';
+  }
 }
 
 /**

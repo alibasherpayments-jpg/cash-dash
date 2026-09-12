@@ -1,4 +1,8 @@
+"use client";
+
+import React from "react";
 import { formatPoints, formatRelativeTime } from "@/lib/formatters";
+import { useTranslation } from "@/providers/i18n-provider";
 import { cn } from "@/lib/utils";
 import { TransactionDirection, TransactionType } from "@cashdash/shared";
 import { ArrowDownLeft, ArrowUpRight, Gift, Star, Users, Banknote } from "lucide-react";
@@ -24,42 +28,49 @@ interface TransactionItemProps {
   };
 }
 
-const typeConfig: Record<TransactionType, { icon: React.ReactNode; label: string }> = {
-  OFFER_REWARD: { icon: <Star className="h-4 w-4" />, label: "Offer Reward" },
-  SURVEY_REWARD: { icon: <Star className="h-4 w-4" />, label: "Survey Reward" },
-  REFERRAL_REWARD: { icon: <Users className="h-4 w-4" />, label: "Referral Reward" },
-  DAILY_BONUS: { icon: <Gift className="h-4 w-4" />, label: "Daily Bonus" },
-  PROMOTIONAL_BONUS: { icon: <Gift className="h-4 w-4" />, label: "Bonus" },
-  WITHDRAWAL: { icon: <Banknote className="h-4 w-4" />, label: "Withdrawal" },
-  WITHDRAWAL_REVERSAL: { icon: <Banknote className="h-4 w-4" />, label: "Withdrawal Reversed" },
-  ADMIN_ADJUSTMENT: { icon: <Banknote className="h-4 w-4" />, label: "Adjustment" },
+const typeIcons: Record<TransactionType, React.ReactNode> = {
+  OFFER_REWARD: <Star className="h-4 w-4" />,
+  SURVEY_REWARD: <Star className="h-4 w-4" />,
+  REFERRAL_REWARD: <Users className="h-4 w-4" />,
+  DAILY_BONUS: <Gift className="h-4 w-4" />,
+  PROMOTIONAL_BONUS: <Gift className="h-4 w-4" />,
+  WITHDRAWAL: <Banknote className="h-4 w-4" />,
+  WITHDRAWAL_REVERSAL: <Banknote className="h-4 w-4" />,
+  ADMIN_ADJUSTMENT: <Banknote className="h-4 w-4" />,
 };
 
 export function TransactionItem(props: TransactionItemProps) {
+  const { t, locale } = useTranslation();
   const tx = props.transaction;
   const type = tx?.type ?? props.type ?? TransactionType.OFFER_REWARD;
   const direction = tx?.direction ?? props.direction ?? TransactionDirection.CREDIT;
   const rawPoints = (tx as any)?.amount ?? tx?.points ?? (props as any)?.amount ?? props.points ?? 0;
-  const points = typeof rawPoints === 'number' ? rawPoints : parseInt(String(rawPoints), 10) || 0;
+  const points = typeof rawPoints === "number" ? rawPoints : parseInt(String(rawPoints), 10) || 0;
   const description = tx?.description ?? props.description ?? "";
   const createdAt = tx?.createdAt ?? props.createdAt ?? new Date().toISOString();
   const className = props.className;
   const isCredit = direction === TransactionDirection.CREDIT;
-  const config = typeConfig[type] ?? { icon: <Star className="h-4 w-4" />, label: type };
+  const icon = typeIcons[type] ?? <Star className="h-4 w-4" />;
+  const localizedType = t.transactions.types[type] || type;
 
   return (
     <div className={cn("flex items-center gap-4 py-3", className)}>
-      <div className={cn("flex h-9 w-9 shrink-0 items-center justify-center rounded-full",
-        isCredit ? "bg-emerald-500/10 text-emerald-500" : "bg-red-500/10 text-red-500"
-      )}>
+      <div
+        className={cn(
+          "flex h-9 w-9 shrink-0 items-center justify-center rounded-full",
+          isCredit ? "bg-emerald-500/10 text-emerald-500" : "bg-red-500/10 text-red-500"
+        )}
+      >
         {isCredit ? <ArrowDownLeft className="h-4 w-4" /> : <ArrowUpRight className="h-4 w-4" />}
       </div>
       <div className="min-w-0 flex-1">
-        <p className="text-sm font-medium">{description || config.label}</p>
-        <p className="text-xs text-muted-foreground">{formatRelativeTime(createdAt)}</p>
+        <p className="text-sm font-medium text-foreground">
+          {description || localizedType}
+        </p>
+        <p className="text-xs text-muted-foreground">{formatRelativeTime(createdAt, locale)}</p>
       </div>
-      <div className="text-right">
-        <p className={cn("text-sm font-semibold", isCredit ? "text-emerald-500" : "text-red-500")}>
+      <div className="text-end">
+        <p className={cn("text-sm font-bold", isCredit ? "text-emerald-500" : "text-red-500")}>
           {isCredit ? "+" : "-"}{formatPoints(points)}
         </p>
       </div>

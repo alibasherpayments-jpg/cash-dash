@@ -1,10 +1,12 @@
 "use client";
 
 import React, { useState } from "react";
+import Link from "next/link";
 import { useNotifications } from "@/hooks/use-notifications";
+import { useTranslation } from "@/providers/i18n-provider";
 import { NotificationItem } from "@/components/common/notification-item";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { EmptyNotifications } from "@/components/illustrations/empty-notifications";
 import { Bell, CheckCheck, BellRing } from "lucide-react";
@@ -12,6 +14,7 @@ import { OfferAlertsToggle } from "@/components/common/offer-alerts-toggle";
 
 export default function NotificationsPage() {
   const { notifications, unreadCount, markAllRead, markAsRead, isLoading } = useNotifications();
+  const { t } = useTranslation();
   const [filter, setFilter] = useState<"ALL" | "UNREAD">("ALL");
 
   const filtered = notifications.filter((n: any) => {
@@ -25,10 +28,10 @@ export default function NotificationsPage() {
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <h1 className="text-2xl sm:text-3xl font-black tracking-tight flex items-center gap-2.5">
-            <Bell className="h-7 w-7 text-primary" /> Notifications Center
+            <Bell className="h-7 w-7 text-primary" /> {t.notifications.title}
           </h1>
           <p className="text-xs sm:text-sm text-muted-foreground mt-0.5">
-            Real-time updates regarding your offer completions, payouts, and referral rewards
+            {t.notifications.subtitle}
           </p>
         </div>
 
@@ -41,7 +44,7 @@ export default function NotificationsPage() {
               onClick={() => markAllRead()}
               className="text-xs font-semibold"
             >
-              <CheckCheck className="mr-1.5 h-4 w-4" /> Mark All as Read
+              <CheckCheck className="mr-1.5 h-4 w-4" /> {t.notifications.markAllRead}
             </Button>
           )}
         </div>
@@ -55,13 +58,13 @@ export default function NotificationsPage() {
           </div>
           <div>
             <div className="flex items-center gap-2">
-              <h3 className="font-bold text-sm text-foreground">إشعارات احتساب العروض الفورية (Live Offer Alerts)</h3>
+              <h3 className="font-bold text-sm text-foreground">{t.notifications.liveAlertsBanner.title}</h3>
               <Badge variant="outline" className="bg-emerald-500/10 text-emerald-400 border-emerald-500/30 text-[10px]">
-                تنبيهات فورية
+                {t.notifications.liveAlertsBanner.badge}
               </Badge>
             </div>
             <p className="text-xs text-muted-foreground mt-0.5">
-              ستصلك رسالة وإشعار منبثق فوري عند تنفيذ أي مهمة من شركات العروض تتضمن <strong>اسم العرض، عدد النقاط، والشركة المانحة</strong>.
+              {t.notifications.liveAlertsBanner.desc}
             </p>
           </div>
         </div>
@@ -78,7 +81,7 @@ export default function NotificationsPage() {
           onClick={() => setFilter("ALL")}
           className="text-xs font-semibold h-8"
         >
-          All Updates ({notifications.length})
+          {t.notifications.allUpdates} ({notifications.length})
         </Button>
         <Button
           size="sm"
@@ -86,7 +89,7 @@ export default function NotificationsPage() {
           onClick={() => setFilter("UNREAD")}
           className="text-xs font-semibold h-8"
         >
-          Unread Only ({unreadCount})
+          {t.notifications.unreadOnly} ({unreadCount})
         </Button>
       </div>
 
@@ -110,10 +113,13 @@ export default function NotificationsPage() {
           ) : (
             <div className="py-12 text-center space-y-4">
               <EmptyNotifications className="mx-auto h-28 w-28 opacity-75" />
-              <h4 className="font-bold text-base">You're All Caught Up!</h4>
+              <h4 className="font-bold text-base text-foreground">{t.notifications.noNotifications}</h4>
               <p className="text-xs text-muted-foreground max-w-sm mx-auto">
-                No unread notifications at the moment. As soon as partner networks confirm your offer credits, they will appear here.
+                {t.notifications.noNotificationsDesc}
               </p>
+              <Button asChild size="sm" variant="outline">
+                <Link href="/offers">{t.notifications.browseOffers}</Link>
+              </Button>
             </div>
           )}
         </CardContent>

@@ -41,10 +41,13 @@ export interface TranslationSchema {
     pending: string;
     completed: string;
     rejected: string;
+    processing: string;
+    paid: string;
     viewAll: string;
     filter: string;
     all: string;
     unread: string;
+    pointsSymbol: string;
   };
   nav: {
     features: string;
@@ -123,6 +126,109 @@ export interface TranslationSchema {
     noActivity: string;
     viewLedger: string;
   };
+  wallet: {
+    title: string;
+    subtitle: string;
+    requestCashout: string;
+    availableBalance: string;
+    pendingPoints: string;
+    pendingNote: string;
+    lifetimeEarned: string;
+    totalWithdrawn: string;
+    ledgerTitle: string;
+    filterTabs: {
+      all: string;
+      offers: string;
+      withdrawals: string;
+      referrals: string;
+      surveys: string;
+    };
+    noTransactions: string;
+    noTransactionsDesc: string;
+    exploreOffers: string;
+  };
+  transactions: {
+    types: {
+      OFFER_REWARD: string;
+      SURVEY_REWARD: string;
+      REFERRAL_REWARD: string;
+      DAILY_BONUS: string;
+      PROMOTIONAL_BONUS: string;
+      WITHDRAWAL: string;
+      WITHDRAWAL_REVERSAL: string;
+      ADMIN_ADJUSTMENT: string;
+    };
+    credit: string;
+    debit: string;
+  };
+  notifications: {
+    title: string;
+    subtitle: string;
+    markAllRead: string;
+    allUpdates: string;
+    unreadOnly: string;
+    noNotifications: string;
+    noNotificationsDesc: string;
+    browseOffers: string;
+    liveAlertsBanner: {
+      title: string;
+      badge: string;
+      desc: string;
+    };
+  };
+  offerAlerts: {
+    buttonTitle: string;
+    popoverTitle: string;
+    popoverDesc: string;
+    toggleLabel: string;
+    soundLabel: string;
+    soundDesc: string;
+    testButton: string;
+    testing: string;
+    testNotice: string;
+    browserPermAlert: string;
+    browserPermDesc: string;
+    enableBrowserBtn: string;
+    testRewardTitle: string;
+    testRewardMessage: string;
+    enabledToast: string;
+    disabledToast: string;
+  };
+  withdraw: {
+    title: string;
+    subtitle: string;
+    balanceCard: string;
+    historyButton: string;
+    selectMethod: string;
+    minWithdrawal: string;
+    fee: string;
+    processingTime: string;
+    enterAmount: string;
+    pointsToWithdraw: string;
+    willReceive: string;
+    submitRequest: string;
+    confirmTitle: string;
+    confirmDesc: string;
+    confirmButton: string;
+    insufficientBalance: string;
+    belowMinimum: string;
+    successToast: string;
+  };
+  withdrawHistory: {
+    title: string;
+    subtitle: string;
+    backToWithdraw: string;
+    table: {
+      method: string;
+      amount: string;
+      fee: string;
+      status: string;
+      date: string;
+      id: string;
+    };
+    noHistory: string;
+    noHistoryDesc: string;
+  };
   offers: {
     title: string;
     subtitle: string;
@@ -131,22 +237,58 @@ export interface TranslationSchema {
     startOffer: string;
     requirements: string;
     reward: string;
+    searchPlaceholder: string;
+    sort: {
+      label: string;
+      recommended: string;
+      highestReward: string;
+      lowestReward: string;
+      fastest: string;
+    };
+    categories: {
+      ALL: string;
+      GAMES: string;
+      SURVEYS: string;
+      APPS: string;
+      FINANCE: string;
+      SHOPPING: string;
+      TRIALS: string;
+    };
+    noOffers: string;
+    noOffersDesc: string;
   };
-  withdraw: {
+  offerwalls: {
     title: string;
     subtitle: string;
-    selectMethod: string;
-    enterAmount: string;
-    minWithdrawal: string;
-    submitRequest: string;
-    processingTime: string;
-    fee: string;
+    openWall: string;
+    openNewWindow: string;
+    modalTitle: string;
+    modalSubtitle: string;
+    instructions: string;
+    close: string;
   };
-  alerts: {
-    liveTitle: string;
-    liveSubtitle: string;
-    enabledNotice: string;
-    disabledNotice: string;
-    testAlert: string;
+  leaderboard: {
+    title: string;
+    subtitle: string;
+    tabs: {
+      withdrawn: string;
+      earners: string;
+    };
+    rank: string;
+    user: string;
+    totalWithdrawn: string;
+    totalEarned: string;
+    country: string;
+  };
+  support: {
+    title: string;
+    subtitle: string;
+    newTicket: string;
+    subject: string;
+    message: string;
+    status: string;
+    open: string;
+    resolved: string;
+    closed: string;
   };
 }

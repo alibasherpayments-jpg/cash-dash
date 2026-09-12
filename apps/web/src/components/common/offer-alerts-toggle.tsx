@@ -18,6 +18,7 @@ import {
 import { BellRing, BellOff, Volume2, VolumeX, Sparkles, ShieldCheck } from "lucide-react";
 import { toast } from "sonner";
 import { useNotifications } from "@/hooks/use-notifications";
+import { useTranslation } from "@/providers/i18n-provider";
 import apiClient from "@/lib/api-client";
 
 // Synthesizer Web Audio API pleasant two-tone chime (zero external assets needed)
@@ -57,6 +58,7 @@ export function playNotificationChime() {
 }
 
 export function OfferAlertsToggle() {
+  const { t } = useTranslation();
   const [alertsEnabled, setAlertsEnabled] = useState<boolean>(true);
   const [soundEnabled, setSoundEnabled] = useState<boolean>(true);
   const [browserPerm, setBrowserPerm] = useState<NotificationPermission>("default");
@@ -97,16 +99,16 @@ export function OfferAlertsToggle() {
   // Request browser desktop/mobile notifications permission
   const requestBrowserPermission = async () => {
     if (typeof window === "undefined" || !("Notification" in window)) {
-      toast.info("المتصفح الحالي لا يدعم إشعارات النظام");
+      toast.info(t.offerAlerts.browserPermDesc);
       return;
     }
     try {
       const perm = await Notification.requestPermission();
       setBrowserPerm(perm);
       if (perm === "granted") {
-        toast.success("تم تفعيل إشعارات المتصفح بنجاح! ستصلك تنبيهات حتى خارج التبويب.");
+        toast.success(t.offerAlerts.enabledToast);
       } else {
-        toast.error("تم رفض الإذن. يمكنك تفعيله من إعدادات المتصفح بجانب رابط الموقع.");
+        toast.error(t.offerAlerts.disabledToast);
       }
     } catch (err) {
       console.error(err);
@@ -117,12 +119,12 @@ export function OfferAlertsToggle() {
     setAlertsEnabled(checked);
     localStorage.setItem("cashdash_offer_alerts_enabled", checked ? "true" : "false");
     if (checked) {
-      toast.success("تم تفعيل إشعارات العروض الفورية! ستصلك تنبيهات باسم العرض وعدد النقاط والشركة فور احتسابه.");
+      toast.success(t.offerAlerts.enabledToast);
       if (typeof window !== "undefined" && "Notification" in window && Notification.permission === "default") {
         requestBrowserPermission();
       }
     } else {
-      toast.info("تم تعطيل إشعارات العروض الفورية مؤقتاً.");
+      toast.info(t.offerAlerts.disabledToast);
     }
   };
 
@@ -131,7 +133,7 @@ export function OfferAlertsToggle() {
     localStorage.setItem("cashdash_offer_alerts_sound", checked ? "true" : "false");
     if (checked) {
       playNotificationChime();
-      toast.success("تم تفعيل صوت التنبيه");
+      toast.success(t.offerAlerts.soundLabel);
     }
   };
 
@@ -139,42 +141,35 @@ export function OfferAlertsToggle() {
   useEffect(() => {
     if (!mounted || !alertsEnabled || notifications.length === 0) return;
 
-    // The newest notification is first in the array
     const newest = notifications[0];
     if (!newest) return;
 
-    // If this is the initial load, record the newest ID so we don't spam old notifications
     if (!lastKnownIdRef.current) {
       lastKnownIdRef.current = newest.id;
       localStorage.setItem("cashdash_offer_alerts_last_id", newest.id);
       return;
     }
 
-    // Check if there is a new unseen notification
     if (newest.id !== lastKnownIdRef.current) {
       lastKnownIdRef.current = newest.id;
       localStorage.setItem("cashdash_offer_alerts_last_id", newest.id);
 
-      // Check if it's an offer reward notification
-      if (newest.type === "REWARD_ADDED" || newest.title?.includes("احتساب") || newest.title?.includes("Offer")) {
-        // 1. Play chime sound if enabled
+      if (newest.type === "REWARD_ADDED" || newest.title?.includes("احتساب") || newest.title?.includes("Offer") || newest.title?.includes("Reward")) {
         if (soundEnabled) {
           playNotificationChime();
         }
 
-        // 2. Trigger rich on-screen toast
         toast.success(newest.title, {
           description: newest.message,
           duration: 9000,
           action: {
-            label: "المحفظة",
+            label: t.common.wallet,
             onClick: () => {
               window.location.href = "/wallet";
             },
           },
         });
 
-        // 3. Trigger native browser push notification if permission granted
         if (typeof window !== "undefined" && "Notification" in window && Notification.permission === "granted") {
           try {
             new Notification(newest.title, {
@@ -188,41 +183,37 @@ export function OfferAlertsToggle() {
         }
       }
     }
-  }, [notifications, alertsEnabled, soundEnabled, mounted]);
+  }, [notifications, alertsEnabled, soundEnabled, mounted, t.common.wallet]);
 
   // Test notification button
   const handleTestAlert = async () => {
     setIsTesting(true);
     try {
-      // 1. Play chime
       if (soundEnabled) {
         playNotificationChime();
       }
 
-      // 2. Try triggering on backend if user is authenticated
       try {
         await apiClient.post("/notifications/test-alert");
         refetch();
       } catch {
-        // Fallback test if offline/guest
+        // Fallback test
       }
 
-      const sampleTitle = "🎉 تم احتساب العرض: استطلاع الرأي السريع (Survey Task)";
-      const sampleMessage = 'تم احتساب عرض "استطلاع الرأي السريع" بنجاح! حصلت على +1,500 نقطة ($1.50 USD) من شركة Taskwall.io.';
+      const sampleTitle = t.offerAlerts.testRewardTitle;
+      const sampleMessage = t.offerAlerts.testRewardMessage;
 
-      // 3. Show Sonner toast
       toast.success(sampleTitle, {
         description: sampleMessage,
         duration: 9000,
         action: {
-          label: "المحفظة",
+          label: t.common.wallet,
           onClick: () => {
             window.location.href = "/wallet";
           },
         },
       });
 
-      // 4. Fire native browser notification
       if (typeof window !== "undefined" && "Notification" in window && Notification.permission === "granted") {
         try {
           new Notification(sampleTitle, {
@@ -250,7 +241,7 @@ export function OfferAlertsToggle() {
                 variant="ghost"
                 size="icon"
                 className="relative h-9 w-9 rounded-lg hover:bg-accent/15 transition-all"
-                aria-label="إعدادات إشعارات العروض الفورية"
+                aria-label={t.offerAlerts.buttonTitle}
               >
                 {alertsEnabled ? (
                   <>
@@ -266,8 +257,8 @@ export function OfferAlertsToggle() {
           <TooltipContent side="bottom">
             <p className="text-xs">
               {alertsEnabled
-                ? "تنبيهات العروض الفورية: مفعّلة (تصلك إشعارات فور احتساب أي عرض)"
-                : "تنبيهات العروض الفورية: معطلة (اضغط للتفعيل)"}
+                ? `${t.offerAlerts.buttonTitle}: ${t.common.active}`
+                : `${t.offerAlerts.buttonTitle}: ${t.common.rejected}`}
             </p>
           </TooltipContent>
         </Tooltip>
@@ -280,7 +271,7 @@ export function OfferAlertsToggle() {
               <Sparkles className="h-4 w-4" />
             </div>
             <div>
-              <h4 className="font-bold text-sm text-foreground leading-tight">تنبيهات العروض الفورية</h4>
+              <h4 className="font-bold text-sm text-foreground leading-tight">{t.offerAlerts.popoverTitle}</h4>
               <p className="text-[10px] text-muted-foreground">Live Offer Credited Alerts</p>
             </div>
           </div>
@@ -288,12 +279,12 @@ export function OfferAlertsToggle() {
             variant="outline"
             className={alertsEnabled ? "bg-emerald-500/10 text-emerald-500 border-emerald-500/30 text-[10px]" : "text-[10px] text-muted-foreground"}
           >
-            {alertsEnabled ? "مفعّل" : "معطّل"}
+            {alertsEnabled ? t.common.active : t.common.rejected}
           </Badge>
         </div>
 
         <p className="text-xs text-muted-foreground leading-relaxed">
-          عند تفعيل هذا الخيار، سيصلك إشعار فوري لحظة احتساب أي مهمة أو عرض من شركات العروض (Taskwall, CPALead, ClickWall) متضمناً <strong className="text-foreground">اسم العرض، عدد النقاط، واسم الشركة</strong>.
+          {t.offerAlerts.popoverDesc}
         </p>
 
         {/* Toggles */}
@@ -301,9 +292,9 @@ export function OfferAlertsToggle() {
           <div className="flex items-center justify-between">
             <div className="space-y-0.5">
               <label className="text-xs font-semibold text-foreground cursor-pointer block">
-                تفعيل الإشعارات الفورية
+                {t.offerAlerts.toggleLabel}
               </label>
-              <span className="text-[10px] text-muted-foreground block">رسائل منبثقة فورية عند كسب النقاط</span>
+              <span className="text-[10px] text-muted-foreground block">{t.offerAlerts.testNotice}</span>
             </div>
             <Switch checked={alertsEnabled} onCheckedChange={handleToggleAlerts} />
           </div>
@@ -312,9 +303,9 @@ export function OfferAlertsToggle() {
             <div className="space-y-0.5">
               <label className="text-xs font-semibold text-foreground cursor-pointer block flex items-center gap-1.5">
                 {soundEnabled ? <Volume2 className="h-3.5 w-3.5 text-emerald-500" /> : <VolumeX className="h-3.5 w-3.5 text-muted-foreground" />}
-                صوت التنبيه (Chime Sound)
+                {t.offerAlerts.soundLabel}
               </label>
-              <span className="text-[10px] text-muted-foreground block">نغمة هادئة عند وصول نقاط العرض</span>
+              <span className="text-[10px] text-muted-foreground block">{t.offerAlerts.soundDesc}</span>
             </div>
             <Switch checked={soundEnabled} onCheckedChange={handleToggleSound} disabled={!alertsEnabled} />
           </div>
@@ -322,9 +313,9 @@ export function OfferAlertsToggle() {
           {/* Browser Notification Permission status */}
           <div className="pt-2 border-t border-border/40">
             <div className="flex items-center justify-between text-xs mb-1.5">
-              <span className="text-muted-foreground">إشعارات المتصفح/الجهاز:</span>
+              <span className="text-muted-foreground">{t.offerAlerts.browserPermAlert}:</span>
               <span className={browserPerm === "granted" ? "text-emerald-500 font-semibold" : "text-amber-500 font-medium"}>
-                {browserPerm === "granted" ? "مسموح بها ✓" : "غير مفعلة"}
+                {browserPerm === "granted" ? "✓ Granted" : "Off"}
               </span>
             </div>
             {browserPerm !== "granted" && (
@@ -335,7 +326,7 @@ export function OfferAlertsToggle() {
                 className="w-full text-xs h-8 bg-secondary/40 hover:bg-secondary border-dashed"
               >
                 <ShieldCheck className="h-3.5 w-3.5 mr-1.5 text-primary" />
-                السماح بإشعارات المتصفح
+                {t.offerAlerts.enableBrowserBtn}
               </Button>
             )}
           </div>
@@ -351,7 +342,7 @@ export function OfferAlertsToggle() {
             className="w-full text-xs font-semibold h-9 rounded-xl border border-border/60 hover:border-primary/50 transition-all"
           >
             <Sparkles className="h-3.5 w-3.5 mr-1.5 text-amber-500" />
-            {isTesting ? "جاري إرسال الإشعار..." : "اختبار الإشعار الآن (Test Alert)"}
+            {isTesting ? t.offerAlerts.testing : t.offerAlerts.testButton}
           </Button>
         </div>
       </PopoverContent>

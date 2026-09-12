@@ -2,6 +2,7 @@
 
 import React, { useState } from "react";
 import { useAuthStore } from "@/store/auth-store";
+import { useTranslation } from "@/providers/i18n-provider";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import {
@@ -47,12 +48,12 @@ const OFFERWALLS: OfferwallItem[] = [
 
 export default function OfferwallsPage() {
   const { user } = useAuthStore();
+  const { t } = useTranslation();
   const [selectedWall, setSelectedWall] = useState<OfferwallItem | null>(null);
 
   const getWallUrl = (wall: OfferwallItem) => {
     const subId = user?.id || "guest";
     const separator = wall.url.includes("?") ? "&" : "?";
-    // Taskwall uses "userid"; CPALead & ClickWall use "user_id"/"sub_id"/"subid"
     if (wall.id === "taskwall") {
       return `${wall.url}${separator}userid=${encodeURIComponent(subId)}`;
     }
@@ -72,10 +73,10 @@ export default function OfferwallsPage() {
       {/* ─── Header ─────────────────────────────────────────────── */}
       <div className="text-center space-y-2 max-w-2xl mx-auto">
         <h1 className="text-3xl sm:text-4xl font-black tracking-tight flex items-center justify-center gap-3">
-          <Layers className="h-8 w-8 text-primary" /> Offerwalls
+          <Layers className="h-8 w-8 text-primary" /> {t.offerwalls.title}
         </h1>
         <p className="text-xs sm:text-sm text-muted-foreground">
-          Select an offerwall network below to start completing offers and earning Cash Dash points
+          {t.offerwalls.subtitle}
         </p>
       </div>
 
@@ -109,7 +110,7 @@ export default function OfferwallsPage() {
                 variant="default"
                 className="w-full font-bold text-xs h-10 rounded-xl shadow-md shadow-primary/20 flex items-center justify-center gap-2 group-hover:bg-primary group-hover:text-primary-foreground"
               >
-                <span>Open {wall.name}</span>
+                <span>{t.offerwalls.openWall} ({wall.name})</span>
                 <ExternalLink className="h-3.5 w-3.5" />
               </Button>
             </div>
@@ -138,7 +139,7 @@ export default function OfferwallsPage() {
                     </DialogTitle>
                     <p className="text-[11px] text-muted-foreground flex items-center gap-1.5">
                       <ShieldCheck className="h-3.5 w-3.5 text-emerald-500" />
-                      Synchronized with user account @{user?.username || "member"}
+                      {user?.username ? `@${user.username}` : "Member"}
                     </p>
                   </div>
                 </div>
@@ -151,7 +152,7 @@ export default function OfferwallsPage() {
                     className="text-xs font-semibold gap-1.5"
                   >
                     <ExternalLink className="h-3.5 w-3.5" />
-                    <span>Open in New Window</span>
+                    <span>{t.offerwalls.openNewWindow}</span>
                   </Button>
                 </div>
               </DialogHeader>
@@ -171,7 +172,7 @@ export default function OfferwallsPage() {
               <div className="px-6 py-2.5 border-t border-border bg-card/60 flex items-center justify-between text-[11px] text-muted-foreground">
                 <div className="flex items-center gap-1.5">
                   <Coins className="h-3.5 w-3.5 text-accent" />
-                  <span>Points credited automatically upon offer completion (1,000 pts = $1.00 USD)</span>
+                  <span>{t.offerwalls.instructions}</span>
                 </div>
                 <Button
                   size="sm"
@@ -179,7 +180,7 @@ export default function OfferwallsPage() {
                   onClick={() => setSelectedWall(null)}
                   className="h-7 text-xs text-muted-foreground hover:text-foreground"
                 >
-                  Close
+                  {t.offerwalls.close}
                 </Button>
               </div>
             </>

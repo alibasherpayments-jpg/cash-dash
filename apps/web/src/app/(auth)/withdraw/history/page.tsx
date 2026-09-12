@@ -2,6 +2,7 @@
 
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
+import { useTranslation } from "@/providers/i18n-provider";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -42,35 +43,37 @@ interface WithdrawalRecord {
 }
 
 function StatusBadge({ status }: { status: WithdrawalRecord["status"] }) {
+  const { t } = useTranslation();
   switch (status) {
     case "PAID":
       return (
         <Badge className="bg-emerald-500/10 text-emerald-500 border-emerald-500/20 text-xs font-semibold">
-          <CheckCircle2 className="h-3 w-3 mr-1" /> Paid Out
+          <CheckCircle2 className="h-3 w-3 mr-1" /> {t.common.paid}
         </Badge>
       );
     case "PROCESSING":
       return (
         <Badge className="bg-amber-500/10 text-amber-500 border-amber-500/20 text-xs font-semibold">
-          <Clock className="h-3 w-3 mr-1" /> Processing
+          <Clock className="h-3 w-3 mr-1" /> {t.common.processing}
         </Badge>
       );
     case "PENDING":
       return (
         <Badge className="bg-indigo-500/10 text-indigo-400 border-indigo-500/20 text-xs font-semibold">
-          <Clock className="h-3 w-3 mr-1" /> Pending Review
+          <Clock className="h-3 w-3 mr-1" /> {t.common.pending}
         </Badge>
       );
     case "REJECTED":
       return (
         <Badge className="bg-destructive/10 text-destructive border-destructive/20 text-xs font-semibold">
-          <XCircle className="h-3 w-3 mr-1" /> Rejected & Refunded
+          <XCircle className="h-3 w-3 mr-1" /> {t.common.rejected}
         </Badge>
       );
   }
 }
 
 export default function WithdrawalHistoryPage() {
+  const { t } = useTranslation();
   const [withdrawals, setWithdrawals] = useState<WithdrawalRecord[]>([]);
   const [loading, setLoading] = useState(true);
   const [selectedRecord, setSelectedRecord] = useState<WithdrawalRecord | null>(null);
@@ -125,12 +128,12 @@ export default function WithdrawalHistoryPage() {
         <div>
           <Button variant="ghost" size="sm" asChild className="mb-2">
             <Link href="/withdraw">
-              <ArrowLeft className="mr-2 h-4 w-4" /> Back to Payout Methods
+              <ArrowLeft className="mr-2 h-4 w-4" /> {t.withdrawHistory.backToWithdraw}
             </Link>
           </Button>
-          <h1 className="text-2xl sm:text-3xl font-black tracking-tight">Withdrawal History</h1>
+          <h1 className="text-2xl sm:text-3xl font-black tracking-tight">{t.withdrawHistory.title}</h1>
           <p className="text-xs text-muted-foreground">
-            Track real-time status and audit timeline of all your requested payouts
+            {t.withdrawHistory.subtitle}
           </p>
         </div>
 
@@ -142,12 +145,13 @@ export default function WithdrawalHistoryPage() {
             disabled={loading}
             className="text-xs"
           >
-            <RefreshCw className={`h-3.5 w-3.5 mr-1.5 ${loading ? "animate-spin" : ""}`} /> Refresh
+            <RefreshCw className={`h-3.5 w-3.5 mr-1.5 ${loading ? "animate-spin" : ""}`} />
+            <span>Refresh</span>
           </Button>
 
           <Button asChild size="sm" className="font-bold">
             <Link href="/withdraw">
-              <ArrowUpRight className="mr-2 h-4 w-4" /> New Cashout
+              <ArrowUpRight className="mr-2 h-4 w-4" /> {t.common.withdraw}
             </Link>
           </Button>
         </div>
@@ -156,9 +160,9 @@ export default function WithdrawalHistoryPage() {
       {/* Desktop Table & Mobile Cards */}
       <Card className="border-border">
         <CardHeader className="p-6 pb-3">
-          <CardTitle className="text-base font-bold">All Withdrawal Requests</CardTitle>
+          <CardTitle className="text-base font-bold">{t.withdrawHistory.title}</CardTitle>
           <CardDescription className="text-xs">
-            Directly connected to the immutable double-entry ledger
+            {t.withdrawHistory.subtitle}
           </CardDescription>
         </CardHeader>
 
@@ -166,7 +170,7 @@ export default function WithdrawalHistoryPage() {
           {loading ? (
             <div className="py-12 flex flex-col items-center justify-center space-y-3">
               <Loader2 className="h-8 w-8 animate-spin text-primary" />
-              <p className="text-xs text-muted-foreground">Loading your withdrawal records...</p>
+              <p className="text-xs text-muted-foreground">{t.common.loading}</p>
             </div>
           ) : withdrawals.length > 0 ? (
             <>
@@ -175,13 +179,13 @@ export default function WithdrawalHistoryPage() {
                 <table className="w-full text-left text-xs">
                   <thead className="border-b border-border text-muted-foreground uppercase text-[10px] tracking-wider">
                     <tr>
-                      <th className="pb-3 font-semibold">Reference ID</th>
-                      <th className="pb-3 font-semibold">Method</th>
-                      <th className="pb-3 font-semibold">Amount</th>
+                      <th className="pb-3 font-semibold">{t.withdrawHistory.table.id}</th>
+                      <th className="pb-3 font-semibold">{t.withdrawHistory.table.method}</th>
+                      <th className="pb-3 font-semibold">{t.withdrawHistory.table.amount}</th>
                       <th className="pb-3 font-semibold">Destination</th>
-                      <th className="pb-3 font-semibold">Date</th>
-                      <th className="pb-3 font-semibold">Status</th>
-                      <th className="pb-3 font-semibold text-right">Action</th>
+                      <th className="pb-3 font-semibold">{t.withdrawHistory.table.date}</th>
+                      <th className="pb-3 font-semibold">{t.withdrawHistory.table.status}</th>
+                      <th className="pb-3 font-semibold text-right">{t.common.viewAll}</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-border/50">
@@ -259,14 +263,14 @@ export default function WithdrawalHistoryPage() {
                 <Coins className="h-6 w-6" />
               </div>
               <div className="space-y-1">
-                <p className="text-base font-bold text-foreground">No Withdrawals Yet</p>
+                <p className="text-base font-bold text-foreground">{t.withdrawHistory.noHistory}</p>
                 <p className="text-xs text-muted-foreground max-w-sm">
-                  You haven't requested any payouts yet. Once you reach 100 points ($0.10 USD), you can cash out via Vodafone Cash or Binance!
+                  {t.withdrawHistory.noHistoryDesc}
                 </p>
               </div>
               <Button asChild size="sm" className="font-bold text-xs mt-2">
                 <Link href="/withdraw">
-                  <ArrowUpRight className="mr-1.5 h-3.5 w-3.5" /> Request First Payout
+                  <ArrowUpRight className="mr-1.5 h-3.5 w-3.5" /> {t.common.withdraw}
                 </Link>
               </Button>
             </div>
@@ -289,17 +293,17 @@ export default function WithdrawalHistoryPage() {
           <div className="space-y-4 py-2 text-xs">
             <div className="p-4 rounded-xl bg-card border border-border space-y-2">
               <div className="flex justify-between items-center">
-                <span className="text-muted-foreground">Payout Gateway</span>
+                <span className="text-muted-foreground">{t.withdrawHistory.table.method}</span>
                 <span className="font-bold text-foreground">{selectedRecord?.methodName}</span>
               </div>
               <div className="flex justify-between items-center">
-                <span className="text-muted-foreground">Points Deducted</span>
+                <span className="text-muted-foreground">{t.withdraw.pointsToWithdraw}</span>
                 <span className="font-mono font-bold text-foreground">
                   {formatPoints(selectedRecord?.points || 0)}
                 </span>
               </div>
               <div className="flex justify-between items-center">
-                <span className="text-muted-foreground">Disbursement Value</span>
+                <span className="text-muted-foreground">{t.withdraw.willReceive}</span>
                 <span className="font-bold text-emerald-500">
                   {formatCash(selectedRecord?.cashValue || 0)} USD
                 </span>

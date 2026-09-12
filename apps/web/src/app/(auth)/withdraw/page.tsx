@@ -4,6 +4,7 @@ import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useWallet } from "@/hooks/use-wallet";
+import { useTranslation } from "@/providers/i18n-provider";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -27,9 +28,6 @@ import {
   Clock,
   History,
   CreditCard,
-  Building,
-  DollarSign,
-  Smartphone,
 } from "lucide-react";
 import { formatPoints, formatCash } from "@/lib/formatters";
 import apiClient from "@/lib/api-client";
@@ -37,6 +35,7 @@ import { VodafoneCashLogo } from "@/components/illustrations/vodafone-cash-logo"
 import { BinanceLogo } from "@/components/illustrations/binance-logo";
 import { FieldError } from "@/components/ui/field-error";
 import { isValidEmail } from "@/lib/validation";
+import { toast } from "sonner";
 
 interface WithdrawalMethodItem {
   id: string;
@@ -98,22 +97,15 @@ const DEFAULT_METHODS: WithdrawalMethodItem[] = [
     minimumPoints: 1000, // $1.00
     feePercent: 1.5,
     processingTime: "1 - 2 Hours",
-    description: "Zero network fee payouts directly to your Binance account UID or BEP20 USDT address",
-    badge: "Crypto Global",
+    description: "Receive USDT directly into your Binance Pay account with zero network fee",
+    badge: "Crypto (USDT)",
     requirements: [
       {
-        fieldName: "network",
-        label: "Crypto Network (الشبكة)",
-        type: "SELECT",
-        options: ["Binance Pay (Instant, Zero Fee)", "USDT (BNB Smart Chain BEP20)", "USDT (TRC20)"],
-        isRequired: true,
-      },
-      {
-        fieldName: "recipientIdentifier",
-        label: "Binance Pay ID / UID or USDT Address (معرف الحساب أو العنوان)",
+        fieldName: "binanceId",
+        label: "Binance ID / Pay ID / Registered Email",
         type: "TEXT",
-        placeholder: "Enter Pay ID, UID or USDT address",
-        helpText: "تأكد من اختيار الشبكة الصحيحة لتجنب فقدان الأموال",
+        placeholder: "e.g. 184920481 or your@email.com",
+        helpText: "Your 8-9 digit Binance User ID or Pay ID",
         isRequired: true,
       },
     ],
@@ -123,6 +115,7 @@ const DEFAULT_METHODS: WithdrawalMethodItem[] = [
 export default function WithdrawPage() {
   const router = useRouter();
   const { summary: wallet, refetch } = useWallet();
+  const { t } = useTranslation();
 
   const [methods, setMethods] = useState<WithdrawalMethodItem[]>(DEFAULT_METHODS);
   const [selectedMethod, setSelectedMethod] = useState<WithdrawalMethodItem | null>(null);
@@ -152,7 +145,7 @@ export default function WithdrawPage() {
   const feePercent = selectedMethod?.feePercent || 0;
   const feePoints = Math.round((points * feePercent) / 100);
   const netPoints = Math.max(0, points - feePoints);
-  const cashValue = netPoints / 1000; // 1,000 points = $1.00 USD
+  const cashValue = netPoints / 1000;
 
   const handleSelectMethod = (m: WithdrawalMethodItem) => {
     setSelectedMethod(m);
@@ -184,11 +177,11 @@ export default function WithdrawPage() {
     const errors: Record<string, string> = {};
 
     if (!pointsInput || isNaN(points) || points <= 0) {
-      errors.points = "Please specify a valid point amount";
+      errors.points = t.withdraw.enterAmount;
     } else if (points > availablePoints) {
-      errors.points = `Insufficient points. You have ${formatPoints(availablePoints)} available.`;
+      errors.points = `${t.withdraw.insufficientBalance} (${formatPoints(availablePoints)})`;
     } else if (points < selectedMethod.minimumPoints) {
-      errors.points = `Minimum withdrawal for ${selectedMethod.name} is ${formatPoints(selectedMethod.minimumPoints)} pts.`;
+      errors.points = `${t.withdraw.belowMinimum} (${formatPoints(selectedMethod.minimumPoints)})`;
     }
 
     // Validate required fields
@@ -196,7 +189,7 @@ export default function WithdrawPage() {
       for (const req of selectedMethod.requirements) {
         const val = formData[req.fieldName]?.trim();
         if (req.isRequired && !val) {
-          errors[req.fieldName] = `Please provide '${req.label}'`;
+          errors[req.fieldName] = `Please fill out ${req.label}`;
         } else if (req.type === "EMAIL" && val && !isValidEmail(val)) {
           errors[req.fieldName] = "Please enter a valid email address";
         }
@@ -223,35 +216,37 @@ export default function WithdrawPage() {
         destination: formData,
       });
 
-      refetch();
+      toast.success(t.withdraw.successToast);
       setConfirmModalOpen(false);
+      refetch();
       router.push("/withdraw/history");
     } catch (err: any) {
-      refetch();
+      const msg = err.response?.data?.message || err.message || "Failed to submit withdrawal request";
+      setError(msg);
+      toast.error(msg);
       setConfirmModalOpen(false);
-      router.push("/withdraw/history");
     } finally {
       setIsSubmitting(false);
     }
   };
 
   return (
-    <div className="max-w-4xl mx-auto space-y-8">
+    <div className="space-y-8 max-w-4xl mx-auto py-2">
       {/* ─── Header & History Link ───────────────────────────────── */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <h1 className="text-2xl sm:text-3xl font-black tracking-tight flex items-center gap-2.5">
-            <ArrowUpRight className="h-7 w-7 text-primary" /> Redeem Rewards
+            <ArrowUpRight className="h-7 w-7 text-primary" /> {t.withdraw.title}
           </h1>
           <p className="text-xs sm:text-sm text-muted-foreground mt-0.5">
-            Convert your earned points to real currency and digital disbursements (1,000 pts = $1.00 USD)
+            {t.withdraw.subtitle}
           </p>
         </div>
 
         <div className="flex items-center gap-3">
           <Button variant="outline" asChild size="sm">
             <Link href="/withdraw/history">
-              <History className="mr-2 h-4 w-4" /> Withdrawal History
+              <History className="mr-2 h-4 w-4" /> {t.withdraw.historyButton}
             </Link>
           </Button>
         </div>
@@ -264,15 +259,15 @@ export default function WithdrawPage() {
             <Coins className="h-5 w-5" />
           </div>
           <div>
-            <span className="text-xs text-muted-foreground uppercase font-bold tracking-wider">Your Balance</span>
+            <span className="text-xs text-muted-foreground uppercase font-bold tracking-wider">{t.withdraw.balanceCard}</span>
             <div className="text-xl font-black text-foreground">
-              {formatPoints(availablePoints)} <span className="text-xs font-semibold text-accent">pts</span>
+              {formatPoints(availablePoints)} <span className="text-xs font-semibold text-accent">{t.common.pts}</span>
             </div>
           </div>
         </div>
 
         <div className="text-sm font-bold text-emerald-500">
-          ≈ {formatCash(availablePoints / 1000)} USD Ready to Cash Out
+          ≈ {formatCash(availablePoints / 1000)} USD
         </div>
       </div>
 
@@ -282,7 +277,7 @@ export default function WithdrawPage() {
           <span className="flex h-6 w-6 items-center justify-center rounded-full bg-primary text-xs font-bold text-white">
             1
           </span>
-          Choose Your Payout Method
+          {t.withdraw.selectMethod}
         </h2>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
@@ -326,7 +321,7 @@ export default function WithdrawPage() {
                         {isSelected && <CheckCircle2 className="h-5 w-5 text-emerald-500 shrink-0" />}
                       </div>
                       <Badge variant="outline" className={`text-[10px] mt-0.5 ${isVodafone ? "border-red-500/30 text-red-400 bg-red-500/10" : isBinance ? "border-amber-500/30 text-amber-400 bg-amber-500/10" : "border-emerald-500/30 text-emerald-400 bg-emerald-500/10"}`}>
-                        {isVodafone ? "🇪🇬 Egypt EGP Instant" : isBinance ? "⚡ Global Crypto Zero-Fee" : "⚡ Direct Payout"}
+                        {isVodafone ? "🇪🇬 Egypt EGP" : isBinance ? "⚡ Crypto USDT" : "⚡ Direct Payout"}
                       </Badge>
                     </div>
                   </div>
@@ -335,15 +330,15 @@ export default function WithdrawPage() {
 
                 <div className="pt-3 border-t border-border/60 text-[11px] space-y-1 text-muted-foreground">
                   <div className="flex justify-between">
-                    <span>Minimum Cashout:</span>
-                    <strong className="text-emerald-500 font-bold">{formatPoints(method.minimumPoints)} pts (${minUsd})</strong>
+                    <span>{t.withdraw.minWithdrawal}:</span>
+                    <strong className="text-emerald-500 font-bold">{formatPoints(method.minimumPoints)} ({minUsd} USD)</strong>
                   </div>
                   <div className="flex justify-between">
-                    <span>Transfer Fee:</span>
-                    <strong className="text-foreground">{method.feePercent === 0 ? "FREE (0%)" : `${method.feePercent}%`}</strong>
+                    <span>{t.withdraw.fee}:</span>
+                    <strong className="text-foreground">{method.feePercent === 0 ? "0%" : `${method.feePercent}%`}</strong>
                   </div>
                   <div className="flex justify-between">
-                    <span>Processing Speed:</span>
+                    <span>{t.withdraw.processingTime}:</span>
                     <span className="text-emerald-500 font-semibold">{method.processingTime}</span>
                   </div>
                 </div>
@@ -362,11 +357,11 @@ export default function WithdrawPage() {
                 2
               </span>
               <CardTitle className="text-lg font-bold">
-                {selectedMethod.name} Payout Details
+                {selectedMethod.name}
               </CardTitle>
             </div>
             <CardDescription className="text-xs">
-              Fill in the destination details required by our {selectedMethod.name} gateway
+              {t.withdraw.confirmDesc}
             </CardDescription>
           </CardHeader>
 
@@ -382,7 +377,7 @@ export default function WithdrawPage() {
               {/* Amount input & Net Value with consistent alignment */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 items-start">
                 <div className="space-y-1.5">
-                  <Label htmlFor="points" className="text-xs font-semibold">Points to Withdraw</Label>
+                  <Label htmlFor="points" className="text-xs font-semibold">{t.withdraw.pointsToWithdraw}</Label>
                   <div className="relative">
                     <Input
                       id="points"
@@ -402,20 +397,20 @@ export default function WithdrawPage() {
                   </div>
                   <FieldError message={fieldErrors.points} />
                   <p className="text-[11px] text-muted-foreground">
-                    Min: {formatPoints(selectedMethod.minimumPoints)} • Max: {formatPoints(availablePoints)}
+                    {t.withdraw.minWithdrawal}: {formatPoints(selectedMethod.minimumPoints)} • Max: {formatPoints(availablePoints)}
                   </p>
                 </div>
 
                 <div className="space-y-1.5">
-                  <Label className="text-xs font-semibold">Estimated Net Value</Label>
+                  <Label className="text-xs font-semibold">{t.withdraw.willReceive}</Label>
                   <div className="h-10 px-3.5 rounded-md bg-accent/5 border border-border flex items-center justify-between text-sm">
                     <span className="text-emerald-500 font-bold">{formatCash(cashValue)} USD</span>
                     <span className="text-xs text-muted-foreground">
-                      Fee ({selectedMethod.feePercent}%): {formatPoints(feePoints)}
+                      {t.withdraw.fee} ({selectedMethod.feePercent}%): {formatPoints(feePoints)}
                     </span>
                   </div>
                   <p className="text-[11px] text-muted-foreground">
-                    Net credited: {formatPoints(netPoints)} pts
+                    Net: {formatPoints(netPoints)}
                   </p>
                 </div>
               </div>
@@ -482,7 +477,7 @@ export default function WithdrawPage() {
                   disabled={points <= 0 || points > availablePoints || points < selectedMethod.minimumPoints}
                   className="font-bold text-sm px-8"
                 >
-                  Proceed to Verification
+                  {t.withdraw.submitRequest}
                 </Button>
               </div>
             </CardContent>
@@ -494,16 +489,16 @@ export default function WithdrawPage() {
       <Dialog open={confirmModalOpen} onOpenChange={setConfirmModalOpen}>
         <DialogContent className="max-w-md">
           <DialogHeader>
-            <DialogTitle className="text-lg font-bold">Confirm Your Withdrawal</DialogTitle>
+            <DialogTitle className="text-lg font-bold">{t.withdraw.confirmTitle}</DialogTitle>
             <DialogDescription className="text-xs">
-              Please double-check your recipient information before confirming this transaction.
+              {t.withdraw.confirmDesc}
             </DialogDescription>
           </DialogHeader>
 
           <div className="space-y-4 py-2 text-xs">
             <div className="p-4 rounded-xl bg-card border border-border space-y-2.5">
               <div className="flex justify-between items-center">
-                <span className="text-muted-foreground">Payment Method:</span>
+                <span className="text-muted-foreground">{t.withdraw.selectMethod}:</span>
                 <div className="flex items-center gap-2">
                   <div className="h-6 w-6 rounded-lg bg-white/5 border border-border/60 p-0.5 flex items-center justify-center shrink-0 overflow-hidden">
                     <img
@@ -516,15 +511,15 @@ export default function WithdrawPage() {
                 </div>
               </div>
               <div className="flex justify-between items-center">
-                <span className="text-muted-foreground">Points Debited:</span>
+                <span className="text-muted-foreground">{t.withdraw.pointsToWithdraw}:</span>
                 <span className="font-mono font-bold text-foreground">{formatPoints(points)}</span>
               </div>
               <div className="flex justify-between items-center">
-                <span className="text-muted-foreground">Cash Out Value:</span>
+                <span className="text-muted-foreground">{t.withdraw.willReceive}:</span>
                 <span className="font-bold text-emerald-500 text-sm">{formatCash(cashValue)} USD</span>
               </div>
               <div className="flex justify-between items-center pt-2 border-t border-border">
-                <span className="text-muted-foreground">Estimated Delivery:</span>
+                <span className="text-muted-foreground">{t.withdraw.processingTime}:</span>
                 <span className="text-foreground font-medium">{selectedMethod?.processingTime}</span>
               </div>
             </div>
@@ -551,7 +546,7 @@ export default function WithdrawPage() {
               onClick={() => setConfirmModalOpen(false)}
               disabled={isSubmitting}
             >
-              Back
+              {t.common.cancel}
             </Button>
             <Button
               onClick={handleFinalSubmit}
@@ -560,10 +555,10 @@ export default function WithdrawPage() {
             >
               {isSubmitting ? (
                 <>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" /> Submitting...
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" /> {t.common.loading}
                 </>
               ) : (
-                "Confirm & Submit"
+                t.withdraw.confirmButton
               )}
             </Button>
           </DialogFooter>
