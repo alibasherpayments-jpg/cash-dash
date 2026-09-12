@@ -271,52 +271,52 @@ export default function AdminOfferwallsPage() {
 
       {/* ─── Metrics Summary ──────────────────────────────────────── */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-        <Card className="bg-[#12141d] border-slate-800 p-5 rounded-2xl">
-          <span className="text-xs text-slate-400 font-semibold uppercase">Total Networks</span>
-          <div className="text-2xl font-black text-white mt-1">{offerwalls.length}</div>
-          <span className="text-[11px] text-emerald-400 font-medium block mt-0.5">
+        <Card className="bg-card border-border p-5 rounded-2xl shadow-sm">
+          <span className="text-xs text-muted-foreground font-semibold uppercase">Total Networks</span>
+          <div className="text-2xl font-black text-foreground mt-1">{offerwalls.length}</div>
+          <span className="text-[11px] text-emerald-500 font-medium block mt-0.5">
             {offerwalls.filter((w) => w.isActive).length} active in production
           </span>
         </Card>
 
-        <Card className="bg-[#12141d] border-slate-800 p-5 rounded-2xl">
-          <span className="text-xs text-slate-400 font-semibold uppercase">Total Completions</span>
-          <div className="text-2xl font-black text-amber-400 mt-1">
+        <Card className="bg-card border-border p-5 rounded-2xl shadow-sm">
+          <span className="text-xs text-muted-foreground font-semibold uppercase">Total Completions</span>
+          <div className="text-2xl font-black text-amber-500 mt-1">
             {formatPoints(offerwalls.reduce((acc, w) => acc + w.completionsCount, 0))}
           </div>
-          <span className="text-[11px] text-slate-400 font-medium block mt-0.5">
+          <span className="text-[11px] text-muted-foreground font-medium block mt-0.5">
             All postback events verified
           </span>
         </Card>
 
-        <Card className="bg-[#12141d] border-slate-800 p-5 rounded-2xl">
-          <span className="text-xs text-slate-400 font-semibold uppercase">Conversion Ratio</span>
-          <div className="text-2xl font-black text-emerald-400 mt-1">1,000 : $1.00</div>
-          <span className="text-[11px] text-slate-400 font-medium block mt-0.5">
+        <Card className="bg-card border-border p-5 rounded-2xl shadow-sm">
+          <span className="text-xs text-muted-foreground font-semibold uppercase">Conversion Ratio</span>
+          <div className="text-2xl font-black text-emerald-500 mt-1">1,000 : $1.00</div>
+          <span className="text-[11px] text-muted-foreground font-medium block mt-0.5">
             Min. Cashout: 100 pts ($0.10)
           </span>
         </Card>
 
-        <Card className="bg-[#12141d] border-slate-800 p-5 rounded-2xl">
-          <span className="text-xs text-slate-400 font-semibold uppercase">Postback Security</span>
-          <div className="text-2xl font-black text-white mt-1 flex items-center gap-1.5">
-            <ShieldCheck className="h-6 w-6 text-emerald-400" />
+        <Card className="bg-card border-border p-5 rounded-2xl shadow-sm">
+          <span className="text-xs text-muted-foreground font-semibold uppercase">Postback Security</span>
+          <div className="text-2xl font-black text-foreground mt-1 flex items-center gap-1.5">
+            <ShieldCheck className="h-6 w-6 text-emerald-500" />
             <span>Encrypted</span>
           </div>
-          <span className="text-[11px] text-emerald-400 font-medium block mt-0.5">
+          <span className="text-[11px] text-emerald-500 font-medium block mt-0.5">
             HMAC-SHA256 signature check
           </span>
         </Card>
       </div>
 
       {/* ─── Offerwalls Networks Table ───────────────────────────── */}
-      <Card className="bg-[#12141d] border-slate-800">
-        <CardHeader className="p-5 pb-3 border-b border-slate-800/80">
+      <Card className="bg-card border-border shadow-sm">
+        <CardHeader className="p-5 pb-3 border-b border-border">
           <div className="flex items-center justify-between">
-            <CardTitle className="text-base font-bold text-white flex items-center gap-2">
-              <Zap className="h-4 w-4 text-amber-400" /> Integrated Offerwall Networks
+            <CardTitle className="text-base font-bold text-foreground flex items-center gap-2">
+              <Zap className="h-4 w-4 text-primary" /> Integrated Offerwall Networks
             </CardTitle>
-            <Badge variant="outline" className="text-xs text-slate-400 border-slate-700">
+            <Badge variant="outline" className="text-xs text-muted-foreground border-border">
               {offerwalls.length} Configured
             </Badge>
           </div>
@@ -446,12 +446,12 @@ export default function AdminOfferwallsPage() {
 
       {/* ─── Add Offerwall Network Modal ──────────────────────────── */}
       <Dialog open={isAddModalOpen} onOpenChange={setIsAddModalOpen}>
-        <DialogContent className="bg-[#12141d] border-slate-800 text-slate-100 max-w-lg">
+        <DialogContent className="bg-card border-border text-card-foreground max-w-lg">
           <DialogHeader>
-            <DialogTitle className="text-xl font-black text-white flex items-center gap-2">
-              <Plus className="h-5 w-5 text-amber-500" /> Add New Offerwall Company
+            <DialogTitle className="text-xl font-black text-foreground flex items-center gap-2">
+              <Plus className="h-5 w-5 text-primary" /> Add New Offerwall Company
             </DialogTitle>
-            <DialogDescription className="text-slate-400 text-xs">
+            <DialogDescription className="text-muted-foreground text-xs">
               Integrate a new provider network. Cash Dash will assign an encrypted postback URL and signature key.
             </DialogDescription>
           </DialogHeader>
@@ -607,43 +607,43 @@ export default function AdminOfferwallsPage() {
 
       {/* ─── Test Postback Simulator Modal ────────────────────────── */}
       <Dialog open={!!testModalWall} onOpenChange={(open) => !open && setTestModalWall(null)}>
-        <DialogContent className="bg-[#12141d] border-slate-800 text-slate-100 max-w-md">
+        <DialogContent className="bg-card border-border text-card-foreground max-w-md">
           <DialogHeader>
-            <DialogTitle className="text-lg font-bold text-white flex items-center gap-2">
-              <Play className="h-5 w-5 text-amber-500" /> Test Postback: {testModalWall?.name}
+            <DialogTitle className="text-lg font-bold text-foreground flex items-center gap-2">
+              <Play className="h-5 w-5 text-primary" /> Test Postback: {testModalWall?.name}
             </DialogTitle>
-            <DialogDescription className="text-slate-400 text-xs">
+            <DialogDescription className="text-muted-foreground text-xs">
               Simulate an incoming callback webhook from this partner network to test instant ledger balance crediting.
             </DialogDescription>
           </DialogHeader>
 
           <div className="space-y-4 py-2 text-xs">
             <div className="space-y-1.5">
-              <Label className="text-slate-300">Target Username / ID</Label>
+              <Label className="text-foreground">Target Username / ID</Label>
               <Input
                 value={testUserId}
                 onChange={(e) => setTestUserId(e.target.value)}
                 placeholder="admin"
-                className="bg-slate-900 border-slate-800 text-white"
+                className="bg-background border-border text-foreground"
               />
             </div>
 
             <div className="space-y-1.5">
-              <Label className="text-slate-300">Points to Award</Label>
+              <Label className="text-foreground">Points to Award</Label>
               <Input
                 type="number"
                 value={testPoints}
                 onChange={(e) => setTestPoints(e.target.value)}
                 placeholder="500"
-                className="bg-slate-900 border-slate-800 text-white font-mono"
+                className="bg-background border-border text-foreground font-mono"
               />
-              <span className="text-[11px] text-emerald-400 block mt-0.5 font-medium">
+              <span className="text-[11px] text-emerald-500 block mt-0.5 font-medium">
                 ≈ ${(Number(testPoints) / 1000).toFixed(2)} USD Value (1,000 pts = $1.00)
               </span>
             </div>
 
             {testResult && (
-              <div className="p-3 rounded-xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-400 text-xs leading-relaxed animate-in fade-in">
+              <div className="p-3 rounded-xl bg-emerald-500/10 border border-emerald-500/30 text-emerald-500 text-xs leading-relaxed animate-in fade-in">
                 {testResult}
               </div>
             )}
@@ -652,14 +652,14 @@ export default function AdminOfferwallsPage() {
               <Button
                 variant="outline"
                 onClick={() => setTestModalWall(null)}
-                className="border-slate-800 text-slate-400"
+                className="border-border text-foreground hover:bg-accent"
               >
                 Close
               </Button>
               <Button
                 disabled={isTesting}
                 onClick={handleRunTestPostback}
-                className="bg-amber-500 hover:bg-amber-600 text-slate-950 font-bold"
+                className="bg-primary hover:bg-primary/90 text-primary-foreground font-bold"
               >
                 {isTesting ? (
                   <>
@@ -667,7 +667,7 @@ export default function AdminOfferwallsPage() {
                   </>
                 ) : (
                   <>
-                    <Play className="mr-1.5 h-3.5 w-3.5" /> Execute Webhook Ping
+                    <Play className="mr-1.5 h-3.5 w-3.5" /> Fire Test Postback
                   </>
                 )}
               </Button>

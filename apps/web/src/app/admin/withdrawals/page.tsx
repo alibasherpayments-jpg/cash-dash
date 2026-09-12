@@ -354,10 +354,10 @@ export default function AdminWithdrawalsPage() {
       const successCount = res.data?.data?.succeeded ?? selectedIds.length;
       const msg =
         batchAction === "APPROVE"
-          ? `تم قبول ${successCount} طلب سحب بنجاح ونقلها إلى قيد التنفيذ (Processing).`
+          ? `Successfully approved ${successCount} withdrawals and moved to Processing.`
           : batchAction === "MARK_PAID"
-          ? `تم تأكيد دفع ${successCount} طلب سحب كمدفوع (Paid) بنجاح.`
-          : `تم رفض ${successCount} طلب واسترجاع النقاط للمستخدمين.`;
+          ? `Successfully marked ${successCount} withdrawals as Paid.`
+          : `Successfully rejected ${successCount} withdrawals and refunded points.`;
 
       setSuccessMsg(msg);
       setSelectedIds([]);
@@ -376,12 +376,12 @@ export default function AdminWithdrawalsPage() {
           });
         }
         await fetchWithdrawals();
-        setSuccessMsg(`تم تحديث ${selectedIds.length} طلب بنجاح.`);
+        setSuccessMsg(`Successfully updated ${selectedIds.length} withdrawals.`);
         setSelectedIds([]);
         setBatchAction(null);
         setTimeout(() => setSuccessMsg(null), 5000);
       } catch (fallbackErr: any) {
-        alert(fallbackErr.response?.data?.message || err.response?.data?.message || "فشل تنفيذ التحديث الجماعي");
+        alert(fallbackErr.response?.data?.message || err.response?.data?.message || "Failed to execute batch update");
       }
     } finally {
       setIsBatchProcessing(false);
@@ -441,20 +441,20 @@ export default function AdminWithdrawalsPage() {
         <div className="p-4 rounded-2xl bg-gradient-to-r from-amber-500/15 via-slate-900 to-indigo-950/40 border border-amber-500/40 shadow-xl shadow-amber-500/5 flex flex-col md:flex-row items-start md:items-center justify-between gap-4 animate-in fade-in slide-in-from-top-2 duration-200">
           <div className="flex flex-wrap items-center gap-3">
             <Badge className="bg-amber-500 text-slate-950 font-black text-xs px-2.5 py-1">
-              تم تحديد {selectedIds.length} طلب سحب
+              Selected {selectedIds.length} withdrawals
             </Badge>
 
             {selectedUniqueWallets.length === 1 && (
               <span className="text-xs text-slate-300 font-mono bg-slate-900/80 px-2.5 py-1 rounded-lg border border-slate-700 flex items-center gap-1.5">
                 <Wallet className="h-3.5 w-3.5 text-amber-400" />
-                المحفظة المشتركة: <strong className="text-white">{selectedUniqueWallets[0]}</strong>
+                Shared Destination: <strong className="text-white">{selectedUniqueWallets[0]}</strong>
               </span>
             )}
 
             <div className="text-xs text-slate-300">
-              الإجمالي:{" "}
+              Total:{" "}
               <strong className="text-emerald-400 font-bold">
-                {formatPoints(selectedTotalPoints)} نقطة
+                {formatPoints(selectedTotalPoints)} pts
               </strong>{" "}
               <span className="text-slate-400">
                 (≈ ${selectedTotalCash.toFixed(2)} USD)
@@ -469,7 +469,7 @@ export default function AdminWithdrawalsPage() {
               className="bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold h-8 px-3.5 shadow-md shadow-emerald-600/20 flex items-center gap-1.5"
             >
               <CheckCircle2 className="h-3.5 w-3.5" />
-              قبول الكل دفعة واحدة ({selectedIds.length})
+              Approve All ({selectedIds.length})
             </Button>
             <Button
               size="sm"
@@ -477,7 +477,7 @@ export default function AdminWithdrawalsPage() {
               className="bg-amber-500 hover:bg-amber-600 text-slate-950 text-xs font-bold h-8 px-3 flex items-center gap-1.5"
             >
               <Sparkles className="h-3.5 w-3.5" />
-              تحديد كمدفوع ({selectedIds.length})
+              Mark Paid ({selectedIds.length})
             </Button>
             <Button
               size="sm"
@@ -486,7 +486,7 @@ export default function AdminWithdrawalsPage() {
               className="border-rose-500/40 text-rose-400 hover:bg-rose-500/10 text-xs h-8 px-3 flex items-center gap-1.5"
             >
               <XCircle className="h-3.5 w-3.5" />
-              رفض واسترجاع
+              Reject & Refund
             </Button>
             <Button
               size="sm"
@@ -494,7 +494,7 @@ export default function AdminWithdrawalsPage() {
               onClick={() => setSelectedIds([])}
               className="text-slate-400 hover:text-white text-xs h-8"
             >
-              إلغاء التحديد
+              Deselect All
             </Button>
           </div>
         </div>
@@ -503,32 +503,32 @@ export default function AdminWithdrawalsPage() {
       {/* ─── Search & Summary Bar ───────────────────────────────── */}
       <div className="flex items-center gap-3">
         <div className="relative flex-1">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-slate-500" />
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
           <Input
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
             placeholder="Search by Ref ID, username, Vodafone number, Binance UID..."
-            className="pl-9 bg-[#12141d] border-slate-800 text-xs h-9 text-slate-200 placeholder:text-slate-600"
+            className="pl-9 bg-card border-border text-xs h-9 text-foreground placeholder:text-muted-foreground"
           />
         </div>
-        <div className="text-xs text-slate-400 px-3 py-2 bg-[#12141d] border border-slate-800 rounded-lg whitespace-nowrap">
-          Showing <strong className="text-white">{filtered.length}</strong> of {withdrawals.length} payouts
+        <div className="text-xs text-muted-foreground px-3 py-2 bg-card border border-border rounded-lg whitespace-nowrap">
+          Showing <strong className="text-foreground">{filtered.length}</strong> of {withdrawals.length} payouts
         </div>
       </div>
 
       {/* ─── Table ───────────────────────────────────────────────── */}
-      <Card className="bg-[#12141d] border-slate-800">
+      <Card className="bg-card border-border shadow-sm">
         <CardContent className="p-0">
           <div className="overflow-x-auto">
-            <table className="w-full text-left text-xs text-slate-300">
-              <thead className="border-b border-slate-800 text-slate-400 text-[10px] uppercase tracking-wider bg-slate-900/40">
+            <table className="w-full text-left text-xs text-foreground">
+              <thead className="border-b border-border text-muted-foreground text-[10px] uppercase tracking-wider bg-muted/30">
                 <tr>
                   <th className="py-3.5 px-4 w-10 text-center">
                     <button
                       type="button"
                       onClick={handleToggleSelectAll}
                       className="text-slate-400 hover:text-white focus:outline-none"
-                      title={isAllSelected ? "إلغاء تحديد الكل" : "تحديد الكل"}
+                      title={isAllSelected ? "Deselect All" : "Select All"}
                     >
                       {isAllSelected ? (
                         <CheckSquare className="h-4 w-4 text-amber-500" />
@@ -624,7 +624,7 @@ export default function AdminWithdrawalsPage() {
                               </span>
                             )}
 
-                            {/* زر التحديد لكل طرق السحب على نفس المحفظة */}
+                            {/* Button to select all withdrawals for the same wallet */}
                             <div className="flex items-center gap-1.5 pt-0.5">
                               <Button
                                 size="sm"
@@ -639,10 +639,10 @@ export default function AdminWithdrawalsPage() {
                                     ? "bg-amber-500 text-slate-950 border-amber-400 font-black hover:bg-amber-400"
                                     : "bg-slate-900/90 border-slate-700 hover:border-amber-500/60 hover:bg-amber-500/10 text-slate-300 hover:text-amber-300"
                                 }`}
-                                title={`تحديد كل طلبات السحب على المحفظة: ${w.walletKey}`}
+                                title={`Select all payouts for wallet: ${w.walletKey}`}
                               >
                                 <Wallet className="h-3 w-3 text-amber-400 shrink-0" />
-                                <span>تحديد نفس المحفظة</span>
+                                <span>Select Same Wallet</span>
                                 {walletCount > 1 && (
                                   <span className="px-1.5 py-0.2 rounded-full bg-amber-500/30 text-amber-200 text-[9px] font-black">
                                     {walletCount}
@@ -650,7 +650,7 @@ export default function AdminWithdrawalsPage() {
                                 )}
                               </Button>
 
-                              {/* زر قبول سريع لنفس المحفظة إذا كان هناك أكثر من طلب معلق */}
+                              {/* Quick approve button for same wallet when multiple pending */}
                               {walletCount > 1 && w.status === "PENDING" && (
                                 <Button
                                   size="sm"
@@ -661,9 +661,9 @@ export default function AdminWithdrawalsPage() {
                                     handleQuickApproveWallet(w.walletKey);
                                   }}
                                   className="h-6 px-1.5 text-[10px] font-bold text-emerald-400 hover:text-emerald-300 hover:bg-emerald-500/10"
-                                  title={`قبول كل سحوبات هذه المحفظة (${walletCount}) فوراً`}
+                                  title={`Approve all ${walletCount} payouts for this wallet immediately`}
                                 >
-                                  ⚡ قبول الكل ({walletCount})
+                                  ⚡ Approve All ({walletCount})
                                 </Button>
                               )}
                             </div>
@@ -767,9 +767,9 @@ export default function AdminWithdrawalsPage() {
 
       {/* ─── Batch Status Confirmation Modal ─────────────────────── */}
       <Dialog open={!!batchAction} onOpenChange={(open) => !open && setBatchAction(null)}>
-        <DialogContent className="max-w-lg bg-[#12141d] border-slate-800 text-slate-100">
+        <DialogContent className="max-w-lg bg-card border-border text-card-foreground">
           <DialogHeader>
-            <DialogTitle className="text-base font-bold text-white flex items-center gap-2">
+            <DialogTitle className="text-base font-bold text-foreground flex items-center gap-2">
               {batchAction === "REJECT" ? (
                 <XCircle className="h-5 w-5 text-rose-500" />
               ) : batchAction === "MARK_PAID" ? (
@@ -777,57 +777,57 @@ export default function AdminWithdrawalsPage() {
               ) : (
                 <ShieldAlert className="h-5 w-5 text-amber-500" />
               )}
-              {batchAction === "APPROVE" && `قبول ${selectedIds.length} طلبات سحب دفعة واحدة`}
-              {batchAction === "MARK_PAID" && `تأكيد دفع ${selectedIds.length} طلبات سحب`}
-              {batchAction === "REJECT" && `رفض واسترجاع ${selectedIds.length} طلبات سحب`}
+              {batchAction === "APPROVE" && `Approve ${selectedIds.length} Withdrawals in Batch`}
+              {batchAction === "MARK_PAID" && `Confirm Payment for ${selectedIds.length} Withdrawals`}
+              {batchAction === "REJECT" && `Reject & Refund ${selectedIds.length} Withdrawals`}
             </DialogTitle>
-            <DialogDescription className="text-xs text-slate-400">
+            <DialogDescription className="text-xs text-muted-foreground">
               {batchAction === "REJECT"
-                ? "سيتم رفض كافة الطلبات المحددة واسترجاع النقاط بالكامل إلى أرصدة المستخدمين فورًا."
-                : `تأكيد تحديث الحالة لعدد ${selectedIds.length} طلبات سحب دفعة واحدة.`}
+                ? "All selected withdrawals will be rejected immediately, and deducted points will be refunded in full to the users' balances."
+                : `Confirm status update for ${selectedIds.length} selected withdrawals simultaneously.`}
             </DialogDescription>
           </DialogHeader>
 
           <div className="space-y-3 py-2 text-xs">
             {/* Summary statistics */}
-            <div className="p-3.5 rounded-xl bg-slate-900 border border-slate-800 space-y-2">
+            <div className="p-3.5 rounded-xl bg-background/60 border border-border space-y-2">
               <div className="flex justify-between">
-                <span className="text-slate-400">عدد الطلبات المحددة</span>
-                <strong className="text-white">{selectedIds.length} طلب</strong>
+                <span className="text-muted-foreground">Selected Requests</span>
+                <strong className="text-foreground">{selectedIds.length} items</strong>
               </div>
               {selectedUniqueWallets.length === 1 && (
                 <div className="flex justify-between">
-                  <span className="text-slate-400">المحفظة المستهدفة</span>
-                  <span className="font-mono text-amber-400 font-bold">{selectedUniqueWallets[0]}</span>
+                  <span className="text-muted-foreground">Target Wallet</span>
+                  <span className="font-mono text-primary font-bold">{selectedUniqueWallets[0]}</span>
                 </div>
               )}
               <div className="flex justify-between">
-                <span className="text-slate-400">إجمالي النقاط</span>
-                <strong className="text-emerald-400 font-bold">
-                  {formatPoints(selectedTotalPoints)} نقطة
+                <span className="text-muted-foreground">Total Points</span>
+                <strong className="text-emerald-500 font-bold">
+                  {formatPoints(selectedTotalPoints)} pts
                 </strong>
               </div>
               <div className="flex justify-between">
-                <span className="text-slate-400">القيمة بالدولار</span>
-                <strong className="text-white font-bold">
+                <span className="text-muted-foreground">Cash Value</span>
+                <strong className="text-foreground font-bold">
                   ${selectedTotalCash.toFixed(2)} USD
                 </strong>
               </div>
             </div>
 
             {/* List of selected requests */}
-            <div className="max-h-40 overflow-y-auto rounded-xl border border-slate-800/80 divide-y divide-slate-800/60 bg-slate-950/40">
+            <div className="max-h-40 overflow-y-auto rounded-xl border border-border/80 divide-y divide-border/60 bg-background/40">
               {selectedRows.map((r) => (
                 <div key={r.id} className="p-2.5 flex items-center justify-between text-[11px]">
                   <div>
-                    <span className="font-mono font-bold text-white block">{r.id}</span>
-                    <span className="text-slate-400">
+                    <span className="font-mono font-bold text-foreground block">{r.id}</span>
+                    <span className="text-muted-foreground">
                       {r.user} • {r.method}
                     </span>
                   </div>
                   <div className="text-right">
-                    <span className="font-bold text-emerald-400">{formatPoints(r.points)} pts</span>
-                    <span className="text-[10px] text-slate-500 block">${r.cashValue.toFixed(2)}</span>
+                    <span className="font-bold text-emerald-500">{formatPoints(r.points)} pts</span>
+                    <span className="text-[10px] text-muted-foreground block">${r.cashValue.toFixed(2)}</span>
                   </div>
                 </div>
               ))}
@@ -836,33 +836,33 @@ export default function AdminWithdrawalsPage() {
             {/* External TxID input for Mark Paid */}
             {batchAction === "MARK_PAID" && (
               <div className="space-y-1.5">
-                <Label className="text-xs font-semibold text-slate-200">
-                  معرف المعاملة الخارجي (Gateway TxID / Reference - اختياري)
+                <Label className="text-xs font-semibold text-foreground">
+                  External Gateway TxID / Reference (Optional)
                 </Label>
                 <Input
                   placeholder="e.g. Binance TxID or Vodafone Batch Ref"
                   value={batchExternalTxId}
                   onChange={(e) => setBatchExternalTxId(e.target.value)}
-                  className="bg-slate-900 border-slate-800 text-xs font-mono text-slate-200"
+                  className="bg-background border-border text-xs font-mono text-foreground"
                 />
               </div>
             )}
 
             {/* Audit / Reason Note */}
             <div className="space-y-1.5">
-              <Label className="text-xs font-semibold text-slate-200">
-                {batchAction === "REJECT" ? "سبب الرفض (يصل للمستخدمين)" : "ملاحظة المسؤول (Admin Audit Note)"}
+              <Label className="text-xs font-semibold text-foreground">
+                {batchAction === "REJECT" ? "Rejection Reason (Visible to Users)" : "Admin Audit Note (Internal)"}
               </Label>
               <Textarea
                 rows={2}
                 placeholder={
                   batchAction === "REJECT"
-                    ? "مثال: عدم تطابق بيانات المحفظة أو تم الرفض بواسطة الإدارة..."
-                    : "ملاحظات الفحص والقبول الجماعي..."
+                    ? "e.g. Mismatched wallet account or rejected by compliance team..."
+                    : "Batch verification and processing notes..."
                 }
                 value={batchNote}
                 onChange={(e) => setBatchNote(e.target.value)}
-                className="bg-slate-900 border-slate-800 text-xs text-slate-200"
+                className="bg-background border-border text-xs text-foreground"
               />
             </div>
           </div>
@@ -873,9 +873,9 @@ export default function AdminWithdrawalsPage() {
               size="sm"
               disabled={isBatchProcessing}
               onClick={() => setBatchAction(null)}
-              className="border-slate-800 text-slate-300"
+              className="border-border text-foreground hover:bg-accent"
             >
-              إلغاء
+              Cancel
             </Button>
             <Button
               size="sm"
@@ -890,9 +890,9 @@ export default function AdminWithdrawalsPage() {
               }`}
             >
               {isBatchProcessing && <Loader2 className="h-3.5 w-3.5 mr-1.5 animate-spin" />}
-              {batchAction === "APPROVE" && `تأكيد قبول الكل (${selectedIds.length})`}
-              {batchAction === "MARK_PAID" && `تأكيد الدفع للكل (${selectedIds.length})`}
-              {batchAction === "REJECT" && `تأكيد الرفض والاسترجاع (${selectedIds.length})`}
+              {batchAction === "APPROVE" && `Confirm Approve All (${selectedIds.length})`}
+              {batchAction === "MARK_PAID" && `Confirm Mark Paid All (${selectedIds.length})`}
+              {batchAction === "REJECT" && `Confirm Reject & Refund All (${selectedIds.length})`}
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -900,9 +900,9 @@ export default function AdminWithdrawalsPage() {
 
       {/* ─── Single Item Status Confirmation Action Modal ─────────── */}
       <Dialog open={!!actionItem} onOpenChange={(open) => !open && setActionItem(null)}>
-        <DialogContent className="max-w-md bg-[#12141d] border-slate-800 text-slate-100">
+        <DialogContent className="max-w-md bg-card border-border text-card-foreground">
           <DialogHeader>
-            <DialogTitle className="text-base font-bold text-white flex items-center gap-2">
+            <DialogTitle className="text-base font-bold text-foreground flex items-center gap-2">
               {actionItem?.action === "REJECT" ? (
                 <XCircle className="h-5 w-5 text-rose-500" />
               ) : actionItem?.action === "MARK_PAID" ? (
@@ -914,7 +914,7 @@ export default function AdminWithdrawalsPage() {
               {actionItem?.action === "MARK_PAID" && "Confirm Disbursement (Mark Paid)"}
               {actionItem?.action === "REJECT" && "Reject & Refund Withdrawal"}
             </DialogTitle>
-            <DialogDescription className="text-xs text-slate-400">
+            <DialogDescription className="text-xs text-muted-foreground">
               {actionItem?.action === "REJECT"
                 ? "Rejecting will immediately refund all deducted points back to the user's balance."
                 : `Updating payout #${actionItem?.row.id} for user ${actionItem?.row.user}.`}
@@ -922,24 +922,24 @@ export default function AdminWithdrawalsPage() {
           </DialogHeader>
 
           <div className="space-y-3 py-2 text-xs">
-            <div className="p-3.5 rounded-xl bg-slate-900 border border-slate-800 space-y-2">
+            <div className="p-3.5 rounded-xl bg-background/60 border border-border space-y-2">
               <div className="flex justify-between">
-                <span className="text-slate-400">User</span>
-                <strong className="text-white">{actionItem?.row.user}</strong>
+                <span className="text-muted-foreground">User</span>
+                <strong className="text-foreground">{actionItem?.row.user}</strong>
               </div>
               <div className="flex justify-between">
-                <span className="text-slate-400">Method</span>
-                <strong className="text-white">{actionItem?.row.method}</strong>
+                <span className="text-muted-foreground">Method</span>
+                <strong className="text-foreground">{actionItem?.row.method}</strong>
               </div>
               <div className="flex justify-between">
-                <span className="text-slate-400">Amount</span>
-                <strong className="text-emerald-400">
+                <span className="text-muted-foreground">Amount</span>
+                <strong className="text-emerald-500">
                   {formatPoints(actionItem?.row.points || 0)} pts ({formatCash(actionItem?.row.cashValue || 0)} USD)
                 </strong>
               </div>
               <div className="flex justify-between">
-                <span className="text-slate-400">Destination</span>
-                <span className="font-mono text-slate-300 text-[11px] truncate max-w-[200px]">
+                <span className="text-muted-foreground">Destination</span>
+                <span className="font-mono text-foreground text-[11px] truncate max-w-[200px]">
                   {actionItem?.row.destination}
                 </span>
               </div>
@@ -948,16 +948,16 @@ export default function AdminWithdrawalsPage() {
             {/* External TxID input for Mark Paid */}
             {actionItem?.action === "MARK_PAID" && (
               <div className="space-y-1.5">
-                <Label className="text-xs font-semibold text-slate-200">
+                <Label className="text-xs font-semibold text-foreground">
                   Gateway Transaction ID / Reference (Optional)
                 </Label>
                 <Input
                   placeholder="e.g. Binance TxID: 0x8a1... or Vodafone Ref: 981249"
                   value={externalTxId}
                   onChange={(e) => setExternalTxId(e.target.value)}
-                  className="bg-slate-900 border-slate-800 text-xs font-mono text-slate-200"
+                  className="bg-background border-border text-xs font-mono text-foreground"
                 />
-                <p className="text-[10px] text-slate-400">
+                <p className="text-[10px] text-muted-foreground">
                   This transaction ID will be displayed to the user as proof of payment.
                 </p>
               </div>
@@ -965,7 +965,7 @@ export default function AdminWithdrawalsPage() {
 
             {/* Audit / Reason Note */}
             <div className="space-y-1.5">
-              <Label className="text-xs font-semibold text-slate-200">
+              <Label className="text-xs font-semibold text-foreground">
                 {actionItem?.action === "REJECT" ? "Rejection Reason (Sent to User)" : "Admin Audit Note (Optional)"}
               </Label>
               <Textarea
@@ -977,7 +977,7 @@ export default function AdminWithdrawalsPage() {
                 }
                 value={adminNote}
                 onChange={(e) => setAdminNote(e.target.value)}
-                className="bg-slate-900 border-slate-800 text-xs text-slate-200"
+                className="bg-background border-border text-xs text-foreground"
               />
             </div>
           </div>
@@ -988,7 +988,7 @@ export default function AdminWithdrawalsPage() {
               size="sm"
               disabled={isProcessing}
               onClick={() => setActionItem(null)}
-              className="border-slate-800 text-slate-300"
+              className="border-border text-foreground hover:bg-accent"
             >
               Cancel
             </Button>
@@ -999,7 +999,7 @@ export default function AdminWithdrawalsPage() {
               className={`font-bold ${
                 actionItem?.action === "REJECT"
                   ? "bg-rose-600 hover:bg-rose-500 text-white"
-                  : "bg-amber-500 hover:bg-amber-600 text-slate-950"
+                  : "bg-primary hover:bg-primary/90 text-primary-foreground"
               }`}
             >
               {isProcessing && <Loader2 className="h-3.5 w-3.5 mr-1.5 animate-spin" />}

@@ -69,10 +69,10 @@ export default function AdminBroadcastNotificationsPage() {
         </p>
       </div>
 
-      <Card className="bg-[#12141d] border-slate-800 text-slate-100">
+      <Card className="bg-card border-border text-card-foreground shadow-sm">
         <CardHeader>
-          <CardTitle className="text-base font-bold text-white">Create Announcement</CardTitle>
-          <CardDescription className="text-xs text-slate-400">
+          <CardTitle className="text-base font-bold text-foreground">Create Announcement</CardTitle>
+          <CardDescription className="text-xs text-muted-foreground">
             Dispatched instantly to users matching the audience filter
           </CardDescription>
         </CardHeader>
@@ -81,12 +81,12 @@ export default function AdminBroadcastNotificationsPage() {
           <form onSubmit={handleSend} noValidate className="space-y-4 text-xs">
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div className="space-y-1.5">
-                <Label className="text-xs font-semibold text-slate-200">Target Audience</Label>
+                <Label className="text-xs font-semibold text-foreground">Target Audience</Label>
                 <Select value={audience} onValueChange={setAudience}>
-                  <SelectTrigger className="bg-slate-900 border-slate-800 text-slate-200 text-xs h-9">
+                  <SelectTrigger className="bg-background border-border text-foreground text-xs h-9">
                     <SelectValue />
                   </SelectTrigger>
-                  <SelectContent className="bg-slate-900 border-slate-800 text-slate-200 text-xs">
+                  <SelectContent className="bg-card border-border text-card-foreground text-xs">
                     <SelectItem value="ALL">All Registered Users</SelectItem>
                     <SelectItem value="ACTIVE">Active Users</SelectItem>
                     <SelectItem value="NEW">Newly Registered Members</SelectItem>
@@ -96,12 +96,12 @@ export default function AdminBroadcastNotificationsPage() {
               </div>
 
               <div className="space-y-1.5">
-                <Label className="text-xs font-semibold text-slate-200">Notification Type</Label>
+                <Label className="text-xs font-semibold text-foreground">Notification Type</Label>
                 <Select value={type} onValueChange={setType}>
-                  <SelectTrigger className="bg-slate-900 border-slate-800 text-slate-200 text-xs h-9">
+                  <SelectTrigger className="bg-background border-border text-foreground text-xs h-9">
                     <SelectValue />
                   </SelectTrigger>
-                  <SelectContent className="bg-slate-900 border-slate-800 text-slate-200 text-xs">
+                  <SelectContent className="bg-card border-border text-card-foreground text-xs">
                     <SelectItem value="PROMOTIONAL">Promotional / Bonus Points</SelectItem>
                     <SelectItem value="SYSTEM_ANNOUNCEMENT">System Maintenance / Update</SelectItem>
                     <SelectItem value="ACHIEVEMENT">Special Platform Milestone</SelectItem>
@@ -111,7 +111,7 @@ export default function AdminBroadcastNotificationsPage() {
             </div>
 
             <div className="space-y-1.5">
-              <Label className="text-xs font-semibold text-slate-200">Headline Title</Label>
+              <Label className="text-xs font-semibold text-foreground">Headline Title</Label>
               <Input
                 placeholder="e.g. 2x Points Weekend Active!"
                 hasError={!!fieldErrors.title}
@@ -120,13 +120,13 @@ export default function AdminBroadcastNotificationsPage() {
                   setTitle(e.target.value);
                   if (fieldErrors.title) setFieldErrors((p) => ({ ...p, title: "" }));
                 }}
-                className="bg-slate-900 border-slate-800 text-xs h-9 text-slate-200"
+                className="bg-background border-border text-xs h-9 text-foreground"
               />
               <FieldError message={fieldErrors.title} />
             </div>
 
             <div className="space-y-1.5">
-              <Label className="text-xs font-semibold text-slate-200">Message Body</Label>
+              <Label className="text-xs font-semibold text-foreground">Message Body</Label>
               <Textarea
                 rows={4}
                 placeholder="Enter the full notification message shown to members..."
@@ -136,18 +136,18 @@ export default function AdminBroadcastNotificationsPage() {
                   setMessage(e.target.value);
                   if (fieldErrors.message) setFieldErrors((p) => ({ ...p, message: "" }));
                 }}
-                className="bg-slate-900 border-slate-800 text-xs text-slate-200"
+                className="bg-background border-border text-xs text-foreground"
               />
               <FieldError message={fieldErrors.message} />
             </div>
 
-            <div className="pt-4 flex justify-between items-center border-t border-slate-800">
+            <div className="pt-4 flex justify-between items-center border-t border-border">
               {sent && (
-                <span className="text-emerald-400 font-bold flex items-center gap-1.5 text-xs">
+                <span className="text-emerald-500 font-bold flex items-center gap-1.5 text-xs">
                   <CheckCircle2 className="h-4 w-4" /> Broadcast dispatched to audience!
                 </span>
               )}
-              <Button type="submit" disabled={isSending} className="ml-auto bg-amber-500 hover:bg-amber-600 text-slate-950 font-bold">
+              <Button type="submit" disabled={isSending} className="ml-auto bg-primary hover:bg-primary/90 text-primary-foreground font-bold">
                 {isSending ? <Loader2 className="h-4 w-4 animate-spin mr-1" /> : <Send className="h-4 w-4 mr-1.5" />}
                 Send Broadcast
               </Button>

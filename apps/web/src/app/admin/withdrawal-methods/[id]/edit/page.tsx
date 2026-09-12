@@ -85,12 +85,12 @@ export default function AdminEditWithdrawalMethodPage() {
         </Link>
       </Button>
 
-      <Card className="bg-[#12141d] border-slate-800 text-slate-100">
+      <Card className="bg-card border-border text-card-foreground shadow-sm">
         <CardHeader>
-          <CardTitle className="text-xl font-bold text-white flex items-center gap-2">
-            <Sliders className="h-5 w-5 text-amber-500" /> Edit Payout Method: {name}
+          <CardTitle className="text-xl font-bold text-foreground flex items-center gap-2">
+            <Sliders className="h-5 w-5 text-primary" /> Edit Payout Method: {name}
           </CardTitle>
-          <CardDescription className="text-xs text-slate-400">
+          <CardDescription className="text-xs text-muted-foreground">
             Modify minimum cashout constraints and gateway processing fee (1,000 points = $1.00 USD)
           </CardDescription>
         </CardHeader>
@@ -98,7 +98,7 @@ export default function AdminEditWithdrawalMethodPage() {
         <CardContent>
           <form onSubmit={handleSubmit} noValidate className="space-y-4 text-xs">
             <div className="space-y-1.5">
-              <Label className="text-xs font-semibold text-slate-200">Display Name</Label>
+              <Label className="text-xs font-semibold text-foreground">Display Name</Label>
               <Input
                 hasError={!!fieldErrors.name}
                 value={name}
@@ -106,50 +106,49 @@ export default function AdminEditWithdrawalMethodPage() {
                   setName(e.target.value);
                   if (fieldErrors.name) setFieldErrors((p) => ({ ...p, name: "" }));
                 }}
-                className="bg-slate-900 border-slate-800 text-xs h-9 text-slate-200"
+                className="bg-background border-border text-xs h-9 text-foreground"
               />
               <FieldError message={fieldErrors.name} />
             </div>
 
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-1.5">
-                <div className="flex justify-between">
-                  <Label className="text-xs font-semibold text-slate-200">Minimum Points</Label>
-                  <span className="text-[11px] text-emerald-400 font-semibold">≈ ${minUsd} USD</span>
-                </div>
+                <Label className="text-xs font-semibold text-foreground">Minimum Points</Label>
                 <Input
                   type="number"
-                  min={100}
                   hasError={!!fieldErrors.minPoints}
                   value={minPoints}
                   onChange={(e) => {
                     setMinPoints(e.target.value);
                     if (fieldErrors.minPoints) setFieldErrors((p) => ({ ...p, minPoints: "" }));
                   }}
-                  className="bg-slate-900 border-slate-800 text-xs h-9 font-mono text-slate-200"
+                  className="bg-background border-border text-xs h-9 font-mono text-foreground"
                 />
                 <FieldError message={fieldErrors.minPoints} />
+                <span className="text-[10px] text-emerald-500 font-medium block">
+                  ≈ ${(Number(minPoints) / 1000).toFixed(2)} USD
+                </span>
               </div>
 
               <div className="space-y-1.5">
-                <Label className="text-xs font-semibold text-slate-200">Fee Percent (%)</Label>
+                <Label className="text-xs font-semibold text-foreground">Gateway Fee (%)</Label>
                 <Input
                   type="number"
-                  step="0.1"
                   hasError={!!fieldErrors.feePercent}
                   value={feePercent}
                   onChange={(e) => {
                     setFeePercent(e.target.value);
                     if (fieldErrors.feePercent) setFieldErrors((p) => ({ ...p, feePercent: "" }));
                   }}
-                  className="bg-slate-900 border-slate-800 text-xs h-9 text-slate-200"
+                  className="bg-background border-border text-xs h-9 font-mono text-foreground"
                 />
                 <FieldError message={fieldErrors.feePercent} />
+                <span className="text-[10px] text-muted-foreground block">Deducted on payout confirmation</span>
               </div>
             </div>
 
             <div className="space-y-1.5">
-              <Label className="text-xs font-semibold text-slate-200">Processing Time Display</Label>
+              <Label className="text-xs font-semibold text-foreground">Processing Time Display</Label>
               <Input
                 hasError={!!fieldErrors.processingTime}
                 value={processingTime}
@@ -157,18 +156,18 @@ export default function AdminEditWithdrawalMethodPage() {
                   setProcessingTime(e.target.value);
                   if (fieldErrors.processingTime) setFieldErrors((p) => ({ ...p, processingTime: "" }));
                 }}
-                className="bg-slate-900 border-slate-800 text-xs h-9 text-slate-200"
+                className="bg-background border-border text-xs h-9 text-foreground"
               />
               <FieldError message={fieldErrors.processingTime} />
             </div>
 
-            <div className="pt-4 flex justify-between items-center border-t border-slate-800">
+            <div className="pt-4 flex justify-between items-center border-t border-border">
               {saved && (
-                <span className="text-emerald-400 font-bold flex items-center gap-1.5 text-xs">
+                <span className="text-emerald-500 font-bold flex items-center gap-1.5 text-xs">
                   <CheckCircle2 className="h-4 w-4" /> Changes saved successfully!
                 </span>
               )}
-              <Button type="submit" disabled={isSaving} className="ml-auto bg-amber-500 hover:bg-amber-600 text-slate-950 font-bold">
+              <Button type="submit" disabled={isSaving} className="ml-auto bg-primary hover:bg-primary/90 text-primary-foreground font-bold">
                 {isSaving ? <Loader2 className="h-4 w-4 animate-spin mr-1" /> : <Save className="h-4 w-4 mr-1.5" />}
                 Save Changes
               </Button>

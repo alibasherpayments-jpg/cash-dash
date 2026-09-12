@@ -121,10 +121,10 @@ export default function AdminEditOfferPage() {
         </Link>
       </Button>
 
-      <Card className="bg-[#12141d] border-slate-800 text-slate-100">
+      <Card className="bg-card border-border text-card-foreground shadow-sm">
         <CardHeader>
-          <CardTitle className="text-xl font-bold text-white">Edit Offer: {title || offerId}</CardTitle>
-          <CardDescription className="text-xs text-slate-400">
+          <CardTitle className="text-xl font-bold text-foreground">Edit Offer: {title || offerId}</CardTitle>
+          <CardDescription className="text-xs text-muted-foreground">
             Update rewards or promotional flags for this offer
           </CardDescription>
         </CardHeader>
@@ -132,7 +132,7 @@ export default function AdminEditOfferPage() {
         <CardContent>
           <form onSubmit={handleSubmit} noValidate className="space-y-4 text-xs">
             <div className="space-y-1.5">
-              <Label className="text-xs font-semibold text-slate-200">Title</Label>
+              <Label className="text-xs font-semibold text-foreground">Title</Label>
               <Input
                 hasError={!!fieldErrors.title}
                 value={title}
@@ -140,23 +140,23 @@ export default function AdminEditOfferPage() {
                   setTitle(e.target.value);
                   if (fieldErrors.title) setFieldErrors((p) => ({ ...p, title: "" }));
                 }}
-                className="bg-slate-900 border-slate-800 text-xs h-9 text-slate-200"
+                className="bg-background border-border text-xs h-9 text-foreground"
               />
               <FieldError message={fieldErrors.title} />
             </div>
 
             <div className="space-y-1.5">
-              <Label className="text-xs font-semibold text-slate-200">Description</Label>
+              <Label className="text-xs font-semibold text-foreground">Description</Label>
               <Textarea
                 rows={3}
                 value={description}
                 onChange={(e) => setDescription(e.target.value)}
-                className="bg-slate-900 border-slate-800 text-xs text-slate-200"
+                className="bg-background border-border text-xs text-foreground"
               />
             </div>
 
             <div className="space-y-1.5">
-              <Label className="text-xs font-semibold text-slate-200">Reward Points</Label>
+              <Label className="text-xs font-semibold text-foreground">Reward Points</Label>
               <Input
                 type="number"
                 hasError={!!fieldErrors.rewardPoints}
@@ -165,26 +165,26 @@ export default function AdminEditOfferPage() {
                   setRewardPoints(e.target.value);
                   if (fieldErrors.rewardPoints) setFieldErrors((p) => ({ ...p, rewardPoints: "" }));
                 }}
-                className="bg-slate-900 border-slate-800 text-xs h-9 font-mono text-slate-200"
+                className="bg-background border-border text-xs h-9 font-mono text-foreground"
               />
               <FieldError message={fieldErrors.rewardPoints} />
             </div>
 
-            <div className="flex items-center justify-between p-3 rounded-xl bg-slate-900/60 border border-slate-800">
+            <div className="flex items-center justify-between p-3 rounded-xl bg-background/60 border border-border">
               <div>
-                <span className="font-bold text-white block">Featured in Hero Showcase</span>
-                <span className="text-slate-400 text-[11px]">Show in highlighted carousels</span>
+                <span className="font-bold text-foreground block">Featured in Hero Showcase</span>
+                <span className="text-muted-foreground text-[11px]">Show in highlighted carousels</span>
               </div>
               <Switch checked={isFeatured} onCheckedChange={setIsFeatured} />
             </div>
 
-            <div className="pt-4 flex justify-between items-center border-t border-slate-800">
+            <div className="pt-4 flex justify-between items-center border-t border-border">
               {saved && (
-                <span className="text-emerald-400 font-bold flex items-center gap-1.5 text-xs">
+                <span className="text-emerald-500 font-bold flex items-center gap-1.5 text-xs">
                   <CheckCircle2 className="h-4 w-4" /> Changes saved!
                 </span>
               )}
-              <Button type="submit" disabled={isSaving} className="ml-auto bg-amber-500 hover:bg-amber-600 text-slate-950 font-bold">
+              <Button type="submit" disabled={isSaving} className="ml-auto bg-primary hover:bg-primary/90 text-primary-foreground font-bold">
                 {isSaving ? <Loader2 className="h-4 w-4 animate-spin mr-1" /> : <Save className="h-4 w-4 mr-1.5" />}
                 Save Changes
               </Button>

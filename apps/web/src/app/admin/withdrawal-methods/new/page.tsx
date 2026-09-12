@@ -45,9 +45,9 @@ interface RequirementDraft {
 
 const PRESETS = [
   {
-    name: "InstaPay (إنستاباي - مصر)",
+    name: "InstaPay (Egypt Network)",
     slug: "instapay",
-    description: "تحويل بنكي ولحظي فوري عبر شبكة إنستاباي القومية المصرية (IPA / Card / Bank).",
+    description: "Instant direct bank transfer via Egypt's national InstaPay network (IPA / Card / Bank).",
     minPoints: "100",
     feePercent: "0",
     speed: "Instant to 15 mins",
@@ -55,29 +55,29 @@ const PRESETS = [
       {
         id: "req-1",
         fieldName: "instaPayAddress",
-        label: "InstaPay IPA / Mobile / Card (عنوان الدفع أو رقم الهاتف)",
+        label: "InstaPay IPA / Mobile / Card",
         type: "TEXT" as const,
         placeholder: "username@instapay or 01xxxxxxxxx",
-        helpText: "معرف إنستاباي IPA أو رقم الهاتف المسجل بالحساب البنكي",
+        helpText: "InstaPay address (IPA) or bank registered mobile number",
         isRequired: true,
         options: "",
       },
       {
         id: "req-2",
         fieldName: "accountHolderName",
-        label: "Account Holder Name (اسم المستفيد ثلاثي)",
+        label: "Account Holder Legal Name",
         type: "TEXT" as const,
         placeholder: "Full legal bank account name",
-        helpText: "الاسم المطابق لبيانات الحساب البنكي",
+        helpText: "Exact name matching the destination bank records",
         isRequired: true,
         options: "",
       },
     ],
   },
   {
-    name: "Orange Cash (أورنج كاش)",
+    name: "Orange Cash (Egypt)",
     slug: "orange-cash",
-    description: "سحب مباشر لمحفظة أورنج كاش مصر بالجنيه المصري (EGP).",
+    description: "Direct mobile wallet withdrawal via Orange Cash Egypt (EGP).",
     minPoints: "100",
     feePercent: "0",
     speed: "Instant to 30 mins",
@@ -85,17 +85,17 @@ const PRESETS = [
       {
         id: "req-1",
         fieldName: "walletNumber",
-        label: "Orange Cash Number (رقم محفظة أورنج كاش)",
+        label: "Orange Cash Mobile Wallet Number",
         type: "TEXT" as const,
         placeholder: "012xxxxxxxx",
-        helpText: "رقم هاتف أورنج كاش المفعل",
+        helpText: "Active Orange Cash registered phone number",
         isRequired: true,
         options: "",
       },
       {
         id: "req-2",
         fieldName: "accountHolderName",
-        label: "Full Name (الاسم بالكامل)",
+        label: "Account Holder Full Name",
         type: "TEXT" as const,
         placeholder: "Full registered name",
         helpText: "",
@@ -105,9 +105,9 @@ const PRESETS = [
     ],
   },
   {
-    name: "Etisalat Cash (اتصالات كاش)",
+    name: "Etisalat Cash (Egypt)",
     slug: "etisalat-cash",
-    description: "سحب مباشر لمحفظة اتصالات كاش مصر بالجنيه المصري.",
+    description: "Direct mobile wallet withdrawal via Etisalat Cash Egypt (EGP).",
     minPoints: "100",
     feePercent: "0",
     speed: "Instant to 30 mins",
@@ -115,10 +115,10 @@ const PRESETS = [
       {
         id: "req-1",
         fieldName: "walletNumber",
-        label: "Etisalat Cash Number (رقم محفظة اتصالات كاش)",
+        label: "Etisalat Cash Mobile Wallet Number",
         type: "TEXT" as const,
         placeholder: "011xxxxxxxx",
-        helpText: "رقم محفظة اتصالات كاش المفعلة",
+        helpText: "Active Etisalat Cash registered phone number",
         isRequired: true,
         options: "",
       },
@@ -319,9 +319,9 @@ export default function NewWithdrawalMethodPage() {
       </div>
 
       {/* Quick Presets */}
-      <div className="p-4 rounded-xl bg-[#12141d] border border-slate-800 space-y-2.5">
-        <span className="text-xs font-bold text-slate-300 flex items-center gap-1.5">
-          <Sparkles className="h-4 w-4 text-amber-400" /> One-Click Gateway Templates
+      <div className="p-4 rounded-xl bg-card border border-border space-y-2.5 shadow-sm">
+        <span className="text-xs font-bold text-foreground flex items-center gap-1.5">
+          <Sparkles className="h-4 w-4 text-primary" /> One-Click Gateway Templates
         </span>
         <div className="flex flex-wrap gap-2">
           {PRESETS.map((p) => (
@@ -331,7 +331,7 @@ export default function NewWithdrawalMethodPage() {
               variant="outline"
               size="sm"
               onClick={() => applyPreset(p)}
-              className="text-xs border-slate-800 bg-slate-900/60 hover:bg-slate-800 text-slate-300 hover:text-white"
+              className="text-xs border-border bg-muted/40 hover:bg-muted text-foreground transition-colors"
             >
               + {p.name}
             </Button>
@@ -341,10 +341,10 @@ export default function NewWithdrawalMethodPage() {
 
       <form onSubmit={handleSubmit} noValidate className="space-y-6">
         {/* Gateway Configuration */}
-        <Card className="bg-[#12141d] border-slate-800 text-slate-100">
+        <Card className="bg-card border-border text-card-foreground shadow-sm">
           <CardHeader>
-            <CardTitle className="text-base font-bold text-white">1. Gateway Configuration</CardTitle>
-            <CardDescription className="text-xs text-slate-400">
+            <CardTitle className="text-base font-bold text-foreground">1. Gateway Configuration</CardTitle>
+            <CardDescription className="text-xs text-muted-foreground">
               General display parameters, minimum points (100 pts = $0.10), and gateway fee
             </CardDescription>
           </CardHeader>
@@ -454,13 +454,13 @@ export default function NewWithdrawalMethodPage() {
         </Card>
 
         {/* Dynamic Requirements Builder */}
-        <Card className="bg-[#12141d] border-slate-800 text-slate-100">
+        <Card className="bg-card border-border text-card-foreground shadow-sm">
           <CardHeader className="flex flex-row items-center justify-between pb-3">
             <div>
-              <CardTitle className="text-base font-bold text-white">
+              <CardTitle className="text-base font-bold text-foreground">
                 2. Member Input Requirement Fields
               </CardTitle>
-              <CardDescription className="text-xs text-slate-400">
+              <CardDescription className="text-xs text-muted-foreground">
                 Data requested from the user during payout submission (e.g. Vodafone Cash number, Binance UID)
               </CardDescription>
             </div>
@@ -469,7 +469,7 @@ export default function NewWithdrawalMethodPage() {
               type="button"
               onClick={handleAddRequirement}
               size="sm"
-              className="bg-amber-500 hover:bg-amber-600 text-slate-950 font-bold text-xs"
+              className="bg-primary hover:bg-primary/90 text-primary-foreground font-bold text-xs"
             >
               <Plus className="h-4 w-4 mr-1.5" /> Add Requirement Field
             </Button>
@@ -479,14 +479,14 @@ export default function NewWithdrawalMethodPage() {
             {requirements.map((req, idx) => (
               <div
                 key={req.id}
-                className="p-4 rounded-xl bg-slate-900 border border-slate-800 space-y-3 relative group"
+                className="p-4 rounded-xl bg-background/60 border border-border space-y-3 relative group"
               >
-                <div className="flex items-center justify-between border-b border-slate-800/80 pb-2">
+                <div className="flex items-center justify-between border-b border-border pb-2">
                   <div className="flex items-center gap-2">
-                    <Badge variant="outline" className="text-[10px] text-amber-400 border-amber-500/30">
+                    <Badge variant="outline" className="text-[10px] text-primary border-primary/30">
                       Field #{idx + 1}
                     </Badge>
-                    <span className="font-semibold text-white">{req.label || "Untitled Field"}</span>
+                    <span className="font-semibold text-foreground">{req.label || "Untitled Field"}</span>
                   </div>
 
                   {requirements.length > 1 && (
@@ -557,7 +557,7 @@ export default function NewWithdrawalMethodPage() {
                   <div className="space-y-1">
                     <Label className="text-[11px] text-slate-300">Help / Instruction Text</Label>
                     <Input
-                      placeholder="e.g. تأكد من أن الرقم مسجل به محفظة كاش"
+                      placeholder="e.g. Ensure this phone number is registered with an active cash wallet"
                       value={req.helpText}
                       onChange={(e) => handleUpdateReq(req.id, "helpText", e.target.value)}
                       className="bg-slate-950 border-slate-800 text-xs h-8 text-slate-200"

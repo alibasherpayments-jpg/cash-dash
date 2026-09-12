@@ -113,10 +113,10 @@ export default function NewOfferPage() {
         </Link>
       </Button>
 
-      <Card className="bg-[#12141d] border-slate-800 text-slate-100">
+      <Card className="bg-card border-border text-card-foreground shadow-sm">
         <CardHeader>
-          <CardTitle className="text-xl font-bold text-white">Create New Earning Offer</CardTitle>
-          <CardDescription className="text-xs text-slate-400">
+          <CardTitle className="text-xl font-bold text-foreground">Create New Earning Offer</CardTitle>
+          <CardDescription className="text-xs text-muted-foreground">
             Publish a mock or partner offer with custom reward points and completion requirements
           </CardDescription>
         </CardHeader>
@@ -124,7 +124,7 @@ export default function NewOfferPage() {
         <CardContent>
           <form onSubmit={handleSubmit} noValidate className="space-y-4 text-xs">
             <div className="space-y-1.5">
-              <Label className="text-xs font-semibold text-slate-200">Offer Title</Label>
+              <Label className="text-xs font-semibold text-foreground">Offer Title</Label>
               <Input
                 placeholder="e.g. Star Trek Fleet Command - Level 15"
                 hasError={!!fieldErrors.title}
@@ -133,7 +133,7 @@ export default function NewOfferPage() {
                   setTitle(e.target.value);
                   if (fieldErrors.title) setFieldErrors((p) => ({ ...p, title: "" }));
                 }}
-                className="bg-slate-900 border-slate-800 text-xs h-9 text-slate-200"
+                className="bg-background border-border text-xs h-9 text-foreground"
               />
               <FieldError message={fieldErrors.title} />
             </div>
@@ -240,30 +240,30 @@ export default function NewOfferPage() {
             </div>
 
             <div className="space-y-1.5">
-              <Label className="text-xs font-semibold text-slate-200">Requirements (one per line)</Label>
+              <Label className="text-xs font-semibold text-foreground">Requirements (one per line)</Label>
               <Textarea
                 rows={3}
                 value={requirements}
                 onChange={(e) => setRequirements(e.target.value)}
-                className="bg-slate-900 border-slate-800 text-xs text-slate-200"
+                className="bg-background border-border text-xs text-foreground"
               />
             </div>
 
-            <div className="flex items-center justify-between p-3 rounded-xl bg-slate-900/60 border border-slate-800">
+            <div className="flex items-center justify-between p-3 rounded-xl bg-background/60 border border-border">
               <div>
-                <span className="font-bold text-white block">Featured in Hero Showcase</span>
-                <span className="text-slate-400 text-[11px]">Pin this offer to homepage carousel</span>
+                <span className="font-bold text-foreground block">Featured in Hero Showcase</span>
+                <span className="text-muted-foreground text-[11px]">Pin this offer to homepage carousel</span>
               </div>
               <Switch checked={isFeatured} onCheckedChange={setIsFeatured} />
             </div>
 
-            <div className="pt-4 flex justify-between items-center border-t border-slate-800">
+            <div className="pt-4 flex justify-between items-center border-t border-border">
               {saved && (
-                <span className="text-emerald-400 font-bold flex items-center gap-1.5 text-xs">
+                <span className="text-emerald-500 font-bold flex items-center gap-1.5 text-xs">
                   <CheckCircle2 className="h-4 w-4" /> Offer created successfully!
                 </span>
               )}
-              <Button type="submit" disabled={isSaving} className="ml-auto bg-amber-500 hover:bg-amber-600 text-slate-950 font-bold">
+              <Button type="submit" disabled={isSaving} className="ml-auto bg-primary hover:bg-primary/90 text-primary-foreground font-bold">
                 {isSaving ? <Loader2 className="h-4 w-4 animate-spin mr-1" /> : <Save className="h-4 w-4 mr-1.5" />}
                 Publish Offer
               </Button>

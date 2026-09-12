@@ -161,35 +161,35 @@ export default function AdminUsersPage() {
       </div>
 
       {/* ─── Search Bar ──────────────────────────────────────────── */}
-      <div className="p-4 rounded-2xl bg-[#12141d] border border-slate-800 flex items-center gap-3">
+      <div className="p-4 rounded-2xl bg-card border border-border flex items-center gap-3 shadow-sm">
         <div className="relative flex-1">
-          <Search className="h-4 w-4 text-slate-400 absolute left-3 top-3" />
+          <Search className="h-4 w-4 text-muted-foreground absolute left-3 top-3" />
           <Input
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             placeholder="Search by username, email, or country..."
-            className="pl-9 bg-slate-900/60 border-slate-800 text-xs h-10 text-slate-200"
+            className="pl-9 bg-background border-border text-xs h-10 text-foreground"
           />
         </div>
       </div>
 
       {/* ─── Users Table ─────────────────────────────────────────── */}
-      <Card className="bg-[#12141d] border-slate-800">
+      <Card className="bg-card border-border shadow-sm">
         <CardContent className="p-0">
           <div className="overflow-x-auto">
             {loading ? (
-              <div className="p-12 text-center text-slate-400 flex items-center justify-center gap-2">
-                <Loader2 className="h-5 w-5 animate-spin text-amber-500" /> Loading users directory...
+              <div className="p-12 text-center text-muted-foreground flex items-center justify-center gap-2">
+                <Loader2 className="h-5 w-5 animate-spin text-primary" /> Loading users directory...
               </div>
             ) : users.length === 0 ? (
-              <div className="p-12 text-center text-slate-400 space-y-2">
-                <Users className="h-8 w-8 mx-auto text-slate-600 mb-2" />
-                <p className="font-semibold text-white">No Users Found</p>
-                <p className="text-xs text-slate-500">No user accounts matching the search query exist in the database.</p>
+              <div className="p-12 text-center text-muted-foreground space-y-2">
+                <Users className="h-8 w-8 mx-auto text-muted-foreground/60 mb-2" />
+                <p className="font-semibold text-foreground">No Users Found</p>
+                <p className="text-xs text-muted-foreground">No user accounts matching the search query exist in the database.</p>
               </div>
             ) : (
-              <table className="w-full text-left text-xs text-slate-300">
-                <thead className="border-b border-slate-800 text-slate-400 text-[10px] uppercase tracking-wider bg-slate-900/40">
+              <table className="w-full text-left text-xs text-foreground">
+                <thead className="border-b border-border text-muted-foreground text-[10px] uppercase tracking-wider bg-muted/30">
                   <tr>
                     <th className="py-3.5 px-5 font-semibold">User</th>
                     <th className="py-3.5 px-5 font-semibold">Available Points</th>
@@ -286,26 +286,26 @@ export default function AdminUsersPage() {
 
       {/* ─── Adjust Balance Dialog ───────────────────────────────── */}
       <Dialog open={!!adjustModalUser} onOpenChange={(open) => !open && setAdjustModalUser(null)}>
-        <DialogContent className="max-w-md bg-[#12141d] border-slate-800 text-slate-100">
+        <DialogContent className="max-w-md bg-card border-border text-card-foreground">
           <DialogHeader>
-            <DialogTitle className="text-base font-bold text-white flex items-center gap-2">
-              <Coins className="h-5 w-5 text-amber-500" /> Administrative Balance Adjustment
+            <DialogTitle className="text-base font-bold text-foreground flex items-center gap-2">
+              <Coins className="h-5 w-5 text-primary" /> Administrative Balance Adjustment
             </DialogTitle>
-            <DialogDescription className="text-xs text-slate-400">
-              Adjusting points for <strong className="text-white">{adjustModalUser?.username}</strong> will create an auditable ledger entry.
+            <DialogDescription className="text-xs text-muted-foreground">
+              Adjusting points for <strong className="text-foreground">{adjustModalUser?.username}</strong> will create an auditable ledger entry.
             </DialogDescription>
           </DialogHeader>
 
           <div className="space-y-4 py-2 text-xs">
             <div className="space-y-1.5">
-              <Label className="text-xs font-semibold text-slate-200">Direction</Label>
+              <Label className="text-xs font-semibold text-foreground">Direction</Label>
               <div className="grid grid-cols-2 gap-2">
                 <Button
                   type="button"
                   size="sm"
                   variant={adjustDirection === "ADD" ? "default" : "outline"}
                   onClick={() => setAdjustDirection("ADD")}
-                  className={adjustDirection === "ADD" ? "bg-emerald-600 hover:bg-emerald-500 font-bold" : "border-slate-800 text-slate-300"}
+                  className={adjustDirection === "ADD" ? "bg-emerald-600 hover:bg-emerald-500 font-bold text-white" : "border-border text-foreground"}
                 >
                   + Add Points (Credit)
                 </Button>
@@ -314,7 +314,7 @@ export default function AdminUsersPage() {
                   size="sm"
                   variant={adjustDirection === "DEDUCT" ? "default" : "outline"}
                   onClick={() => setAdjustDirection("DEDUCT")}
-                  className={adjustDirection === "DEDUCT" ? "bg-rose-600 hover:bg-rose-500 font-bold" : "border-slate-800 text-slate-300"}
+                  className={adjustDirection === "DEDUCT" ? "bg-rose-600 hover:bg-rose-500 font-bold text-white" : "border-border text-foreground"}
                 >
                   - Deduct Points (Debit)
                 </Button>
@@ -322,7 +322,7 @@ export default function AdminUsersPage() {
             </div>
 
             <div className="space-y-1.5">
-              <Label className="text-xs font-semibold text-slate-200">Amount (Points)</Label>
+              <Label className="text-xs font-semibold text-foreground">Amount (Points)</Label>
               <Input
                 type="number"
                 hasError={!!adjustErrors.amount}
@@ -331,13 +331,13 @@ export default function AdminUsersPage() {
                   setAdjustAmount(e.target.value);
                   if (adjustErrors.amount) setAdjustErrors((p) => ({ ...p, amount: undefined }));
                 }}
-                className="bg-slate-900 border-slate-800 font-mono text-xs"
+                className="bg-background border-border font-mono text-xs text-foreground"
               />
               <FieldError message={adjustErrors.amount} />
             </div>
 
             <div className="space-y-1.5">
-              <Label className="text-xs font-semibold text-slate-200">Administrative Reason (Audit Log)</Label>
+              <Label className="text-xs font-semibold text-foreground">Administrative Reason (Audit Log)</Label>
               <Input
                 placeholder="e.g. Compensation for delayed offer postback"
                 hasError={!!adjustErrors.reason}
@@ -346,17 +346,17 @@ export default function AdminUsersPage() {
                   setAdjustReason(e.target.value);
                   if (adjustErrors.reason) setAdjustErrors((p) => ({ ...p, reason: undefined }));
                 }}
-                className="bg-slate-900 border-slate-800 text-xs"
+                className="bg-background border-border text-xs text-foreground"
               />
               <FieldError message={adjustErrors.reason} />
             </div>
           </div>
 
           <DialogFooter>
-            <Button variant="outline" size="sm" onClick={() => setAdjustModalUser(null)} className="border-slate-800 text-slate-300">
+            <Button variant="outline" size="sm" onClick={() => setAdjustModalUser(null)} className="border-border text-foreground hover:bg-accent">
               Cancel
             </Button>
-            <Button size="sm" onClick={handleConfirmAdjustment} className="bg-amber-500 hover:bg-amber-600 text-slate-950 font-bold">
+            <Button size="sm" onClick={handleConfirmAdjustment} className="bg-primary hover:bg-primary/90 text-primary-foreground font-bold">
               Commit Ledger Adjustment
             </Button>
           </DialogFooter>

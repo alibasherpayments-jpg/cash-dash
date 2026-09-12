@@ -175,26 +175,26 @@ export default function AdminWithdrawalDetailPage() {
       )}
 
       {/* Header */}
-      <div className="p-6 rounded-2xl bg-[#12141d] border border-slate-800 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+      <div className="p-6 rounded-2xl bg-card border border-border flex flex-col sm:flex-row sm:items-center justify-between gap-4 shadow-sm">
         <div>
           <div className="flex items-center gap-2.5">
-            <h1 className="text-xl font-black text-white">{data.id}</h1>
+            <h1 className="text-xl font-black text-foreground">{data.id}</h1>
             <Badge
               className={`text-xs font-bold ${
                 data.status === "PAID"
-                  ? "bg-emerald-500/10 text-emerald-400 border-emerald-500/20"
+                  ? "bg-emerald-500/10 text-emerald-500 border-emerald-500/20"
                   : data.status === "PROCESSING"
-                  ? "bg-amber-500/10 text-amber-400 border-amber-500/20"
+                  ? "bg-amber-500/10 text-amber-500 border-amber-500/20"
                   : data.status === "PENDING"
-                  ? "bg-indigo-500/10 text-indigo-400 border border-indigo-500/20"
-                  : "bg-rose-500/10 text-rose-400 border-rose-500/20"
+                  ? "bg-indigo-500/10 text-indigo-500 border-indigo-500/20"
+                  : "bg-rose-500/10 text-rose-500 border-rose-500/20"
               }`}
             >
               {data.status}
             </Badge>
           </div>
-          <p className="text-xs text-slate-400 mt-1">
-            Submitted {data.submittedAt} by user <strong className="text-white">{data.user}</strong> ({data.email})
+          <p className="text-xs text-muted-foreground mt-1">
+            Submitted {data.submittedAt} by user <strong className="text-foreground">{data.user}</strong> ({data.email})
           </p>
         </div>
 
@@ -212,7 +212,7 @@ export default function AdminWithdrawalDetailPage() {
                 size="sm"
                 variant="outline"
                 onClick={() => setModalAction("REJECT")}
-                className="border-rose-500/30 text-rose-400 hover:bg-rose-500/10 text-xs"
+                className="border-rose-500/30 text-rose-500 hover:bg-rose-500/10 text-xs"
               >
                 Reject & Refund
               </Button>
@@ -224,7 +224,7 @@ export default function AdminWithdrawalDetailPage() {
               <Button
                 size="sm"
                 onClick={() => setModalAction("MARK_PAID")}
-                className="bg-amber-500 hover:bg-amber-600 text-slate-950 font-bold text-xs"
+                className="bg-primary hover:bg-primary/90 text-primary-foreground font-bold text-xs"
               >
                 Confirm Paid
               </Button>
@@ -232,7 +232,7 @@ export default function AdminWithdrawalDetailPage() {
                 size="sm"
                 variant="outline"
                 onClick={() => setModalAction("REJECT")}
-                className="border-rose-500/30 text-rose-400 hover:bg-rose-500/10 text-xs"
+                className="border-rose-500/30 text-rose-500 hover:bg-rose-500/10 text-xs"
               >
                 Reject & Refund
               </Button>
@@ -243,76 +243,76 @@ export default function AdminWithdrawalDetailPage() {
 
       {/* Financial Breakdown */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-        <div className="p-4 rounded-xl bg-[#12141d] border border-slate-800">
-          <span className="text-[10px] uppercase font-bold text-slate-400 block">Payout Method</span>
-          <span className="text-lg font-bold text-white">{data.method}</span>
-          <span className="text-xs text-slate-400 block">Ratio: 1,000 pts = $1.00 USD</span>
+        <div className="p-4 rounded-xl bg-card border border-border shadow-sm">
+          <span className="text-[10px] uppercase font-bold text-muted-foreground block">Payout Method</span>
+          <span className="text-lg font-bold text-foreground">{data.method}</span>
+          <span className="text-xs text-muted-foreground block">Ratio: 1,000 pts = $1.00 USD</span>
         </div>
 
-        <div className="p-4 rounded-xl bg-[#12141d] border border-slate-800">
-          <span className="text-[10px] uppercase font-bold text-slate-400 block">Points Deducted</span>
-          <span className="text-lg font-mono font-bold text-white">{formatPoints(data.points)}</span>
-          <span className="text-xs text-slate-400 block">Reserved in user ledger</span>
+        <div className="p-4 rounded-xl bg-card border border-border shadow-sm">
+          <span className="text-[10px] uppercase font-bold text-muted-foreground block">Points Deducted</span>
+          <span className="text-lg font-mono font-bold text-foreground">{formatPoints(data.points)}</span>
+          <span className="text-xs text-muted-foreground block">Reserved in user ledger</span>
         </div>
 
-        <div className="p-4 rounded-xl bg-[#12141d] border border-slate-800">
-          <span className="text-[10px] uppercase font-bold text-slate-400 block">Net Payout Value</span>
-          <span className="text-lg font-bold text-emerald-400">{formatCash(data.cashValue)} USD</span>
-          <span className="text-xs text-slate-400 block">Zero platform fee</span>
+        <div className="p-4 rounded-xl bg-card border border-border shadow-sm">
+          <span className="text-[10px] uppercase font-bold text-muted-foreground block">Net Payout Value</span>
+          <span className="text-lg font-bold text-emerald-500">{formatCash(data.cashValue)} USD</span>
+          <span className="text-xs text-muted-foreground block">Zero platform fee</span>
         </div>
       </div>
 
       {/* Destination & Fraud Telemetry */}
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-        <Card className="bg-[#12141d] border-slate-800 text-slate-100">
+        <Card className="bg-card border-border text-card-foreground shadow-sm">
           <CardHeader className="p-5 pb-3">
-            <CardTitle className="text-sm font-bold text-white">Destination Details</CardTitle>
+            <CardTitle className="text-sm font-bold text-foreground">Destination Details</CardTitle>
           </CardHeader>
           <CardContent className="p-5 pt-0 space-y-2.5 text-xs">
-            <div className="p-3.5 rounded-lg bg-slate-900 border border-slate-800 space-y-1.5 font-mono">
+            <div className="p-3.5 rounded-lg bg-background/60 border border-border space-y-1.5 font-mono">
               {Object.entries(data.destination).map(([k, v]) => (
                 <div key={k} className="flex justify-between">
-                  <span className="text-slate-400">{k}:</span>
-                  <span className="text-amber-400 font-bold">{String(v)}</span>
+                  <span className="text-muted-foreground">{k}:</span>
+                  <span className="text-primary font-bold">{String(v)}</span>
                 </div>
               ))}
             </div>
 
             {data.externalTxId && (
-              <div className="p-2.5 rounded-lg bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 font-mono text-[11px]">
+              <div className="p-2.5 rounded-lg bg-emerald-500/10 border border-emerald-500/20 text-emerald-500 font-mono text-[11px]">
                 TxID: {data.externalTxId}
               </div>
             )}
 
             {data.adminNote && (
-              <div className="p-2.5 rounded-lg bg-slate-900 border border-slate-800 text-slate-300 text-xs">
-                <span className="text-slate-500 block text-[10px] uppercase font-bold">Admin Note:</span>
+              <div className="p-2.5 rounded-lg bg-background/60 border border-border text-foreground text-xs">
+                <span className="text-muted-foreground block text-[10px] uppercase font-bold">Admin Note:</span>
                 {data.adminNote}
               </div>
             )}
           </CardContent>
         </Card>
 
-        <Card className="bg-[#12141d] border-slate-800 text-slate-100">
+        <Card className="bg-card border-border text-card-foreground shadow-sm">
           <CardHeader className="p-5 pb-3">
-            <CardTitle className="text-sm font-bold text-white flex items-center gap-2">
-              <ShieldAlert className="h-4 w-4 text-emerald-400" /> Fraud & Risk Telemetry
+            <CardTitle className="text-sm font-bold text-foreground flex items-center gap-2">
+              <ShieldAlert className="h-4 w-4 text-emerald-500" /> Fraud & Risk Telemetry
             </CardTitle>
           </CardHeader>
           <CardContent className="p-5 pt-0 space-y-2 text-xs">
-            <div className="flex justify-between items-center py-1.5 border-b border-slate-800">
-              <span className="text-slate-400">Risk Assessment</span>
-              <Badge className="bg-emerald-500/10 text-emerald-400 border-emerald-500/20 text-[10px]">
+            <div className="flex justify-between items-center py-1.5 border-b border-border">
+              <span className="text-muted-foreground">Risk Assessment</span>
+              <Badge className="bg-emerald-500/10 text-emerald-500 border-emerald-500/20 text-[10px]">
                 Score: {data.riskScore} / 100 (LOW RISK)
               </Badge>
             </div>
-            <div className="flex justify-between items-center py-1.5 border-b border-slate-800">
-              <span className="text-slate-400">IP Geolocation</span>
-              <span className="text-slate-200">Egypt (EG) — Vodafone Data Clean ASN</span>
+            <div className="flex justify-between items-center py-1.5 border-b border-border">
+              <span className="text-muted-foreground">IP Geolocation</span>
+              <span className="text-foreground">Egypt (EG) — Vodafone Data Clean ASN</span>
             </div>
             <div className="flex justify-between items-center py-1.5">
-              <span className="text-slate-400">VPN / Proxy Detection</span>
-              <span className="text-emerald-400 font-bold">Clean (No Proxy Detected)</span>
+              <span className="text-muted-foreground">VPN / Proxy Detection</span>
+              <span className="text-emerald-500 font-bold">Clean (No Proxy Detected)</span>
             </div>
           </CardContent>
         </Card>
@@ -320,9 +320,9 @@ export default function AdminWithdrawalDetailPage() {
 
       {/* Action Dialog */}
       <Dialog open={!!modalAction} onOpenChange={(open) => !open && setModalAction(null)}>
-        <DialogContent className="max-w-md bg-[#12141d] border-slate-800 text-slate-100">
+        <DialogContent className="max-w-md bg-card border-border text-card-foreground">
           <DialogHeader>
-            <DialogTitle className="text-base font-bold text-white flex items-center gap-2">
+            <DialogTitle className="text-base font-bold text-foreground flex items-center gap-2">
               {modalAction === "REJECT" && <XCircle className="h-5 w-5 text-rose-500" />}
               {modalAction === "MARK_PAID" && <CheckCircle2 className="h-5 w-5 text-emerald-500" />}
               {modalAction === "APPROVE" && <ShieldAlert className="h-5 w-5 text-amber-500" />}
@@ -330,7 +330,7 @@ export default function AdminWithdrawalDetailPage() {
               {modalAction === "MARK_PAID" && "Confirm Disbursement (Mark Paid)"}
               {modalAction === "REJECT" && "Reject & Auto-Refund Points"}
             </DialogTitle>
-            <DialogDescription className="text-xs text-slate-400">
+            <DialogDescription className="text-xs text-muted-foreground">
               {modalAction === "REJECT"
                 ? "Points will be immediately credited back to user balance upon rejection."
                 : `Updating payout for ${data.user}.`}
@@ -340,18 +340,18 @@ export default function AdminWithdrawalDetailPage() {
           <div className="space-y-3 py-2 text-xs">
             {modalAction === "MARK_PAID" && (
               <div className="space-y-1.5">
-                <Label className="text-xs font-semibold text-slate-200">Gateway Transaction ID / TxID</Label>
+                <Label className="text-xs font-semibold text-foreground">Gateway Transaction ID / TxID</Label>
                 <Input
                   placeholder="e.g. Binance TxID or Vodafone Ref #"
                   value={txIdInput}
                   onChange={(e) => setTxIdInput(e.target.value)}
-                  className="bg-slate-900 border-slate-800 text-xs font-mono text-slate-200"
+                  className="bg-background border-border text-xs font-mono text-foreground"
                 />
               </div>
             )}
 
             <div className="space-y-1.5">
-              <Label className="text-xs font-semibold text-slate-200">
+              <Label className="text-xs font-semibold text-foreground">
                 {modalAction === "REJECT" ? "Rejection Reason (Sent to User)" : "Admin Note (Optional)"}
               </Label>
               <Textarea
@@ -359,7 +359,7 @@ export default function AdminWithdrawalDetailPage() {
                 placeholder="Reason or notes..."
                 value={adminNoteInput}
                 onChange={(e) => setAdminNoteInput(e.target.value)}
-                className="bg-slate-900 border-slate-800 text-xs text-slate-200"
+                className="bg-background border-border text-xs text-foreground"
               />
             </div>
           </div>
@@ -370,7 +370,7 @@ export default function AdminWithdrawalDetailPage() {
               size="sm"
               disabled={isSubmitting}
               onClick={() => setModalAction(null)}
-              className="border-slate-800 text-slate-300"
+              className="border-border text-foreground hover:bg-accent"
             >
               Cancel
             </Button>
@@ -381,7 +381,7 @@ export default function AdminWithdrawalDetailPage() {
               className={`font-bold ${
                 modalAction === "REJECT"
                   ? "bg-rose-600 hover:bg-rose-500 text-white"
-                  : "bg-amber-500 hover:bg-amber-600 text-slate-950"
+                  : "bg-primary hover:bg-primary/90 text-primary-foreground"
               }`}
             >
               {isSubmitting && <Loader2 className="h-3.5 w-3.5 mr-1.5 animate-spin" />}

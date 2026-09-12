@@ -116,11 +116,11 @@ export default function AdminWithdrawalMethodsPage() {
         </div>
       )}
 
-      <Card className="bg-[#12141d] border-slate-800">
+      <Card className="bg-card border-border shadow-sm">
         <CardContent className="p-0">
           <div className="overflow-x-auto">
-            <table className="w-full text-left text-xs text-slate-300">
-              <thead className="border-b border-slate-800 text-slate-400 text-[10px] uppercase tracking-wider bg-slate-900/40">
+            <table className="w-full text-left text-xs text-foreground">
+              <thead className="border-b border-border text-muted-foreground text-[10px] uppercase tracking-wider bg-muted/30">
                 <tr>
                   <th className="py-3.5 px-5 font-semibold">Method Name</th>
                   <th className="py-3.5 px-5 font-semibold">Identifier (Slug)</th>
@@ -132,35 +132,35 @@ export default function AdminWithdrawalMethodsPage() {
                   <th className="py-3.5 px-5 font-semibold text-right">Actions</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-800/60">
+              <tbody className="divide-y divide-border">
                 {loading ? (
                   <tr>
-                    <td colSpan={8} className="py-12 text-center text-slate-400">
-                      <Loader2 className="h-5 w-5 animate-spin text-amber-500 mx-auto mb-2" />
+                    <td colSpan={8} className="py-12 text-center text-muted-foreground">
+                      <Loader2 className="h-5 w-5 animate-spin text-primary mx-auto mb-2" />
                       Loading payment methods from database...
                     </td>
                   </tr>
                 ) : methods.length === 0 ? (
                   <tr>
-                    <td colSpan={8} className="py-12 text-center text-slate-500">
+                    <td colSpan={8} className="py-12 text-center text-muted-foreground">
                       No payout methods configured yet. Click &quot;Add New Payment Method&quot; above to create one.
                     </td>
                   </tr>
                 ) : (
                   methods.map((m) => (
-                  <tr key={m.id} className="hover:bg-slate-800/30 transition-colors">
-                    <td className="py-3.5 px-5 font-bold text-white">{m.name}</td>
-                    <td className="py-3.5 px-5 font-mono text-slate-400 text-[11px]">{m.slug}</td>
+                  <tr key={m.id} className="hover:bg-muted/40 transition-colors">
+                    <td className="py-3.5 px-5 font-bold text-foreground">{m.name}</td>
+                    <td className="py-3.5 px-5 font-mono text-muted-foreground text-[11px]">{m.slug}</td>
                     <td className="py-3.5 px-5">
-                      <span className="font-bold text-white font-mono">{formatPoints(m.minimumPoints)}</span>
-                      <span className="text-[10px] text-emerald-400 block font-semibold">
+                      <span className="font-bold text-foreground font-mono">{formatPoints(m.minimumPoints)}</span>
+                      <span className="text-[10px] text-emerald-500 block font-semibold">
                         ≈ {formatCash(m.minimumPoints / 1000)} USD
                       </span>
                     </td>
-                    <td className="py-3.5 px-5">{m.feePercent}%</td>
-                    <td className="py-3.5 px-5 text-emerald-400 font-semibold">{m.processingTime}</td>
+                    <td className="py-3.5 px-5 text-muted-foreground">{m.feePercent}%</td>
+                    <td className="py-3.5 px-5 text-emerald-500 font-semibold">{m.processingTime}</td>
                     <td className="py-3.5 px-5">
-                      <Badge variant="outline" className="text-[10px] text-amber-400 border-amber-500/30 font-medium">
+                      <Badge variant="outline" className="text-[10px] text-primary border-primary/30 font-medium">
                         {m.fieldsCount} Custom Fields
                       </Badge>
                     </td>
@@ -169,15 +169,15 @@ export default function AdminWithdrawalMethodsPage() {
                         onClick={() => handleToggleActive(m.id, m.isActive)}
                         className={`px-2.5 py-0.5 rounded-full text-[10px] font-bold cursor-pointer transition-colors ${
                           m.isActive
-                            ? "bg-emerald-500/10 text-emerald-400 border border-emerald-500/20"
-                            : "bg-slate-800 text-slate-400 border border-slate-700"
+                            ? "bg-emerald-500/10 text-emerald-500 border border-emerald-500/20"
+                            : "bg-muted text-muted-foreground border border-border"
                         }`}
                       >
                         {m.isActive ? "Enabled" : "Disabled"}
                       </button>
                     </td>
                     <td className="py-3.5 px-5 text-right space-x-1 whitespace-nowrap">
-                      <Button size="sm" variant="ghost" asChild className="h-7 px-2 text-xs text-amber-400 hover:text-amber-300">
+                      <Button size="sm" variant="ghost" asChild className="h-7 px-2 text-xs text-primary hover:text-primary/80">
                         <Link href={`/admin/withdrawal-methods/${m.id}/edit`}>
                           <Edit className="h-3.5 w-3.5" />
                         </Link>
@@ -186,7 +186,7 @@ export default function AdminWithdrawalMethodsPage() {
                         size="sm"
                         variant="ghost"
                         onClick={() => handleDeleteMethod(m.id, m.name)}
-                        className="h-7 px-2 text-xs text-rose-400 hover:text-rose-300"
+                        className="h-7 px-2 text-xs text-rose-500 hover:text-rose-400"
                       >
                         <Trash2 className="h-3.5 w-3.5" />
                       </Button>

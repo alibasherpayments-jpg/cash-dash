@@ -82,11 +82,11 @@ export default function AdminSupportPage() {
         </Button>
       </div>
 
-      <Card className="bg-[#12141d] border-slate-800">
+      <Card className="bg-card border-border shadow-sm">
         <CardContent className="p-0">
           <div className="overflow-x-auto">
-            <table className="w-full text-left text-xs text-slate-300">
-              <thead className="border-b border-slate-800 text-slate-400 text-[10px] uppercase tracking-wider bg-slate-900/40">
+            <table className="w-full text-left text-xs text-foreground">
+              <thead className="border-b border-border text-muted-foreground text-[10px] uppercase tracking-wider bg-muted/30">
                 <tr>
                   <th className="py-3.5 px-5 font-semibold">Ticket ID</th>
                   <th className="py-3.5 px-5 font-semibold">User</th>
@@ -97,28 +97,28 @@ export default function AdminSupportPage() {
                   <th className="py-3.5 px-5 font-semibold text-right">Actions</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-800/60">
+              <tbody className="divide-y divide-border">
                 {loading ? (
                   <tr>
-                    <td colSpan={7} className="py-12 text-center text-slate-400">
-                      <Loader2 className="h-5 w-5 animate-spin text-amber-500 mx-auto mb-2" />
+                    <td colSpan={7} className="py-12 text-center text-muted-foreground">
+                      <Loader2 className="h-5 w-5 animate-spin text-primary mx-auto mb-2" />
                       Loading support desk queue from database...
                     </td>
                   </tr>
                 ) : tickets.length === 0 ? (
                   <tr>
-                    <td colSpan={7} className="py-12 text-center text-slate-500">
+                    <td colSpan={7} className="py-12 text-center text-muted-foreground">
                       Support desk is clear! No active tickets in the queue.
                     </td>
                   </tr>
                 ) : (
                   tickets.map((t) => (
-                    <tr key={t.id} className="hover:bg-slate-800/30 transition-colors">
-                      <td className="py-3.5 px-5 font-mono text-[11px] font-bold text-white">{t.id}</td>
-                      <td className="py-3.5 px-5 font-bold text-white">{t.user}</td>
-                      <td className="py-3.5 px-5 max-w-xs truncate">{t.subject}</td>
+                    <tr key={t.id} className="hover:bg-muted/40 transition-colors">
+                      <td className="py-3.5 px-5 font-mono text-[11px] font-bold text-foreground">{t.id}</td>
+                      <td className="py-3.5 px-5 font-bold text-foreground">{t.user}</td>
+                      <td className="py-3.5 px-5 max-w-xs truncate text-muted-foreground">{t.subject}</td>
                       <td className="py-3.5 px-5">
-                        <Badge variant="outline" className="text-[10px] text-slate-400 border-slate-700">
+                        <Badge variant="outline" className="text-[10px] text-muted-foreground border-border">
                           {t.category.replace("_", " ")}
                         </Badge>
                       </td>
@@ -126,26 +126,26 @@ export default function AdminSupportPage() {
                         <span
                           className={`px-2 py-0.5 rounded text-[10px] font-bold ${
                             t.status === "RESOLVED"
-                              ? "bg-emerald-500/10 text-emerald-400 border border-emerald-500/20"
-                              : "bg-amber-500/10 text-amber-400 border border-amber-500/20"
+                              ? "bg-emerald-500/10 text-emerald-500 border border-emerald-500/20"
+                              : "bg-amber-500/10 text-amber-500 border border-amber-500/20"
                           }`}
                         >
                           {t.status.replace("_", " ")}
                         </span>
                       </td>
-                      <td className="py-3.5 px-5 text-slate-400">{formatDateTime(t.createdAt)}</td>
+                      <td className="py-3.5 px-5 text-muted-foreground">{formatDateTime(t.createdAt)}</td>
                       <td className="py-3.5 px-5 text-right space-x-1.5">
                         {t.status !== "RESOLVED" && (
                           <Button
                             size="sm"
                             variant="ghost"
                             onClick={() => handleResolve(t.id)}
-                            className="h-7 text-xs text-emerald-400 hover:text-emerald-300"
+                            className="h-7 text-xs text-emerald-500 hover:text-emerald-400"
                           >
                             Resolve
                           </Button>
                         )}
-                        <Button size="sm" variant="ghost" asChild className="h-7 text-xs text-amber-400">
+                        <Button size="sm" variant="ghost" asChild className="h-7 text-xs text-primary hover:text-primary/80">
                           <Link href={`/support/tickets/${t.id}`}>
                             <Eye className="h-3.5 w-3.5" />
                           </Link>

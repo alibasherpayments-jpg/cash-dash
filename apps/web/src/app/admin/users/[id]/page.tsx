@@ -166,42 +166,42 @@ export default function AdminUserDetailPage() {
       </Button>
 
       {/* ─── Profile Overview ────────────────────────────────────── */}
-      <div className="p-6 rounded-2xl bg-[#12141d] border border-slate-800 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+      <div className="p-6 rounded-2xl bg-card border border-border flex flex-col sm:flex-row sm:items-center justify-between gap-4 shadow-sm">
         <div className="flex items-center gap-4">
           <AvatarWithFallback username={userData.username} size="lg" />
           <div>
             <div className="flex items-center gap-2">
-              <h1 className="text-xl font-black text-white">{userData.username}</h1>
+              <h1 className="text-xl font-black text-foreground">{userData.username}</h1>
               <Badge
                 className={`text-xs ${
                   userData.status === "ACTIVE"
-                    ? "bg-emerald-500/10 text-emerald-400 border-emerald-500/20"
-                    : "bg-red-500/10 text-red-400 border-red-500/20"
+                    ? "bg-emerald-500/10 text-emerald-500 border-emerald-500/20"
+                    : "bg-red-500/10 text-red-500 border-red-500/20"
                 }`}
               >
                 {userData.status}
               </Badge>
               {userData.role === "ADMIN" && (
-                <Badge className="bg-amber-500/10 text-amber-400 border-amber-500/20 text-xs">
+                <Badge className="bg-primary/10 text-primary border-primary/20 text-xs">
                   ADMIN
                 </Badge>
               )}
             </div>
-            <p className="text-xs text-slate-400">
+            <p className="text-xs text-muted-foreground">
               {userData.email} • {userData.profile?.country || "Worldwide"}
             </p>
-            <p className="text-[11px] text-slate-500 mt-1">
-              User ID: <span className="font-mono text-slate-400">{userData.id}</span> • Registered {formatDateTime(userData.createdAt)}
+            <p className="text-[11px] text-muted-foreground mt-1">
+              User ID: <span className="font-mono text-foreground">{userData.id}</span> • Registered {formatDateTime(userData.createdAt)}
             </p>
           </div>
         </div>
 
         <div className="flex items-center gap-3">
-          <div className="p-3 rounded-xl bg-slate-900 border border-slate-800 text-center">
-            <span className="text-[10px] uppercase font-bold text-slate-400 block">Risk Score</span>
+          <div className="p-3 rounded-xl bg-background/60 border border-border text-center">
+            <span className="text-[10px] uppercase font-bold text-muted-foreground block">Risk Score</span>
             <span
               className={`text-lg font-black ${
-                riskScore > 50 ? "text-red-400" : riskScore > 20 ? "text-amber-400" : "text-emerald-400"
+                riskScore > 50 ? "text-red-500" : riskScore > 20 ? "text-amber-500" : "text-emerald-500"
               }`}
             >
               {riskScore} / 100 ({riskScore > 50 ? "High Risk" : riskScore > 20 ? "Review" : "Clear"})
@@ -212,42 +212,42 @@ export default function AdminUserDetailPage() {
 
       {/* ─── Financial Balances ───────────────────────────────────── */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-        <div className="p-4 rounded-xl bg-[#12141d] border border-slate-800">
-          <span className="text-[10px] uppercase font-bold text-slate-400 block">Available Balance</span>
-          <span className="text-xl font-black text-white">{formatPoints(availablePoints)}</span>
-          <span className="text-xs text-emerald-400 block">≈ {formatCash(availablePoints / 1000)}</span>
+        <div className="p-4 rounded-xl bg-card border border-border shadow-sm">
+          <span className="text-[10px] uppercase font-bold text-muted-foreground block">Available Balance</span>
+          <span className="text-xl font-black text-foreground">{formatPoints(availablePoints)}</span>
+          <span className="text-xs text-emerald-500 block">≈ {formatCash(availablePoints / 1000)}</span>
         </div>
 
-        <div className="p-4 rounded-xl bg-[#12141d] border border-slate-800">
-          <span className="text-[10px] uppercase font-bold text-slate-400 block">Lifetime Earned</span>
-          <span className="text-xl font-black text-amber-400">{formatPoints(totalEarned)}</span>
-          <span className="text-xs text-slate-400 block">≈ {formatCash(totalEarned / 1000)}</span>
+        <div className="p-4 rounded-xl bg-card border border-border shadow-sm">
+          <span className="text-[10px] uppercase font-bold text-muted-foreground block">Lifetime Earned</span>
+          <span className="text-xl font-black text-amber-500">{formatPoints(totalEarned)}</span>
+          <span className="text-xs text-muted-foreground block">≈ {formatCash(totalEarned / 1000)}</span>
         </div>
 
-        <div className="p-4 rounded-xl bg-[#12141d] border border-slate-800">
-          <span className="text-[10px] uppercase font-bold text-slate-400 block">Total Withdrawn</span>
-          <span className="text-xl font-black text-emerald-400">{formatCash(totalWithdrawn)}</span>
-          <span className="text-xs text-slate-400 block">
+        <div className="p-4 rounded-xl bg-card border border-border shadow-sm">
+          <span className="text-[10px] uppercase font-bold text-muted-foreground block">Total Withdrawn</span>
+          <span className="text-xl font-black text-emerald-500">{formatCash(totalWithdrawn)}</span>
+          <span className="text-xs text-muted-foreground block">
             {userData._count?.withdrawalRequests ?? 0} cashout requests
           </span>
         </div>
 
-        <div className="p-4 rounded-xl bg-[#12141d] border border-slate-800">
-          <span className="text-[10px] uppercase font-bold text-slate-400 block">Offers Completed</span>
-          <span className="text-xl font-black text-white">{offersCount} Offers</span>
-          <span className="text-xs text-slate-400 block">
+        <div className="p-4 rounded-xl bg-card border border-border shadow-sm">
+          <span className="text-[10px] uppercase font-bold text-muted-foreground block">Offers Completed</span>
+          <span className="text-xl font-black text-foreground">{offersCount} Offers</span>
+          <span className="text-xs text-muted-foreground block">
             {userData._count?.referralsMade ?? 0} referrals made
           </span>
         </div>
       </div>
 
       {/* ─── Internal Notes ──────────────────────────────────────── */}
-      <Card className="bg-[#12141d] border-slate-800 text-slate-100">
+      <Card className="bg-card border-border text-card-foreground shadow-sm">
         <CardHeader className="p-5 pb-3">
-          <CardTitle className="text-sm font-bold text-white flex items-center gap-2">
-            <FileText className="h-4 w-4 text-amber-400" /> Internal Staff Notes (Audit Trail)
+          <CardTitle className="text-sm font-bold text-foreground flex items-center gap-2">
+            <FileText className="h-4 w-4 text-primary" /> Internal Staff Notes (Audit Trail)
           </CardTitle>
-          <CardDescription className="text-xs text-slate-400">
+          <CardDescription className="text-xs text-muted-foreground">
             Notes visible only to platform administrators and support officers
           </CardDescription>
         </CardHeader>
@@ -255,36 +255,36 @@ export default function AdminUserDetailPage() {
         <CardContent className="p-5 pt-0 space-y-4">
           <div className="space-y-3">
             {notes.length === 0 ? (
-              <p className="text-xs text-slate-500 py-3 italic">
+              <p className="text-xs text-muted-foreground py-3 italic">
                 No internal notes on this user profile yet. Add any observations below.
               </p>
             ) : (
               notes.map((n) => (
-                <div key={n.id} className="p-3.5 rounded-xl bg-slate-900 border border-slate-800 text-xs space-y-1">
-                  <div className="flex justify-between text-slate-400 text-[11px]">
-                    <strong className="text-amber-400">{n.author?.username || "Admin"}</strong>
+                <div key={n.id} className="p-3.5 rounded-xl bg-background/60 border border-border text-xs space-y-1">
+                  <div className="flex justify-between text-muted-foreground text-[11px]">
+                    <strong className="text-primary">{n.author?.username || "Admin"}</strong>
                     <span>{formatDateTime(n.createdAt)}</span>
                   </div>
-                  <p className="text-slate-300 leading-relaxed">{n.content}</p>
+                  <p className="text-foreground leading-relaxed">{n.content}</p>
                 </div>
               ))
             )}
           </div>
 
-          <form onSubmit={handleAddNote} noValidate className="space-y-2 pt-2 border-t border-slate-800">
+          <form onSubmit={handleAddNote} noValidate className="space-y-2 pt-2 border-t border-border">
             <Textarea
               rows={3}
               placeholder="Add staff observation or verification note..."
               value={newNote}
               onChange={(e) => setNewNote(e.target.value)}
-              className="bg-slate-900 border-slate-800 text-xs text-slate-200"
+              className="bg-background border-border text-xs text-foreground"
             />
             <div className="flex justify-end">
               <Button
                 type="submit"
                 disabled={addingNote || !newNote.trim()}
                 size="sm"
-                className="bg-amber-500 hover:bg-amber-600 text-slate-950 font-bold text-xs"
+                className="bg-primary hover:bg-primary/90 text-primary-foreground font-bold text-xs"
               >
                 {addingNote ? (
                   <Loader2 className="h-3.5 w-3.5 animate-spin mr-1" />

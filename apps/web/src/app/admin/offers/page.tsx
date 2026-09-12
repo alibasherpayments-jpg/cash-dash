@@ -118,20 +118,20 @@ export default function AdminOffersPage() {
         </div>
       </div>
 
-      <div className="p-4 rounded-2xl bg-[#12141d] border border-slate-800">
+      <div className="p-4 rounded-2xl bg-card border border-border shadow-sm">
         <Input
           value={search}
           onChange={(e) => setSearch(e.target.value)}
           placeholder="Filter offers by title, category, or provider..."
-          className="bg-slate-900 border-slate-800 text-xs h-10 text-slate-200"
+          className="bg-background border-border text-xs h-10 text-foreground"
         />
       </div>
 
-      <Card className="bg-[#12141d] border-slate-800">
+      <Card className="bg-card border-border shadow-sm">
         <CardContent className="p-0">
           <div className="overflow-x-auto">
-            <table className="w-full text-left text-xs text-slate-300">
-              <thead className="border-b border-slate-800 text-slate-400 text-[10px] uppercase tracking-wider bg-slate-900/40">
+            <table className="w-full text-left text-xs text-foreground">
+              <thead className="border-b border-border text-muted-foreground text-[10px] uppercase tracking-wider bg-muted/30">
                 <tr>
                   <th className="py-3.5 px-5 font-semibold">Offer Title</th>
                   <th className="py-3.5 px-5 font-semibold">Category</th>
@@ -142,56 +142,56 @@ export default function AdminOffersPage() {
                   <th className="py-3.5 px-5 font-semibold text-right">Actions</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-slate-800/60">
+              <tbody className="divide-y divide-border">
                 {loading ? (
                   <tr>
-                    <td colSpan={7} className="py-12 text-center text-slate-400">
-                      <Loader2 className="h-5 w-5 animate-spin text-amber-500 mx-auto mb-2" />
+                    <td colSpan={7} className="py-12 text-center text-muted-foreground">
+                      <Loader2 className="h-5 w-5 animate-spin text-primary mx-auto mb-2" />
                       Loading offer inventory from database...
                     </td>
                   </tr>
                 ) : filtered.length === 0 ? (
                   <tr>
-                    <td colSpan={7} className="py-12 text-center text-slate-500">
+                    <td colSpan={7} className="py-12 text-center text-muted-foreground">
                       No offers found matching your filters.
                     </td>
                   </tr>
                 ) : (
                   filtered.map((o) => (
-                    <tr key={o.id} className="hover:bg-slate-800/30 transition-colors">
-                      <td className="py-3.5 px-5 font-bold text-white">
+                    <tr key={o.id} className="hover:bg-muted/40 transition-colors">
+                      <td className="py-3.5 px-5 font-bold text-foreground">
                         <div className="flex items-center gap-2">
-                          {o.isFeatured && <Star className="h-3.5 w-3.5 fill-amber-400 text-amber-400" />}
+                          {o.isFeatured && <Star className="h-3.5 w-3.5 fill-primary text-primary" />}
                           <span>{o.title}</span>
                         </div>
                       </td>
                       <td className="py-3.5 px-5">
-                        <Badge variant="outline" className="text-[10px] text-slate-300 border-slate-700">
+                        <Badge variant="outline" className="text-[10px] text-muted-foreground border-border">
                           {o.category}
                         </Badge>
                       </td>
-                      <td className="py-3.5 px-5 text-slate-400">{o.provider}</td>
+                      <td className="py-3.5 px-5 text-muted-foreground">{o.provider}</td>
                       <td className="py-3.5 px-5">
-                        <span className="font-bold text-amber-400">{formatPoints(o.rewardPoints)}</span>
-                        <span className="text-[10px] text-emerald-400 block font-semibold">
+                        <span className="font-bold text-foreground">{formatPoints(o.rewardPoints)}</span>
+                        <span className="text-[10px] text-emerald-500 block font-semibold">
                           ≈ {formatPointsAsCash(o.rewardPoints)}
                         </span>
                       </td>
-                      <td className="py-3.5 px-5 font-mono">{o.completions}</td>
+                      <td className="py-3.5 px-5 font-mono text-muted-foreground">{o.completions}</td>
                       <td className="py-3.5 px-5">
                         <button
                           onClick={() => handleToggleStatus(o.id, o.status)}
                           className={`px-2 py-0.5 rounded text-[10px] font-bold cursor-pointer transition-colors ${
                             o.status === "ACTIVE"
-                              ? "bg-emerald-500/10 text-emerald-400 border border-emerald-500/20"
-                              : "bg-slate-800 text-slate-400 border border-slate-700"
+                              ? "bg-emerald-500/10 text-emerald-500 border border-emerald-500/20"
+                              : "bg-muted text-muted-foreground border border-border"
                           }`}
                         >
                           {o.status}
                         </button>
                       </td>
                       <td className="py-3.5 px-5 text-right space-x-1">
-                        <Button size="sm" variant="ghost" asChild className="h-7 text-xs text-amber-400">
+                        <Button size="sm" variant="ghost" asChild className="h-7 text-xs text-primary hover:text-primary/80">
                           <Link href={`/admin/offers/${o.id}/edit`}>
                             <Edit className="h-3.5 w-3.5" />
                           </Link>
@@ -200,7 +200,7 @@ export default function AdminOffersPage() {
                           size="sm"
                           variant="ghost"
                           onClick={() => handleDelete(o.id, o.title)}
-                          className="h-7 text-xs text-rose-400 hover:text-rose-300"
+                          className="h-7 text-xs text-rose-500 hover:text-rose-400"
                         >
                           <Trash2 className="h-3.5 w-3.5" />
                         </Button>
