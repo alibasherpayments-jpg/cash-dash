@@ -24,10 +24,11 @@ import { Public } from '../common/decorators/public.decorator';
 import { CurrentUser } from '../common/decorators/current-user.decorator';
 import { User } from '@prisma/client';
 
+const isProd = process.env['NODE_ENV'] === 'production';
 const COOKIE_OPTIONS = {
   httpOnly: true,
-  secure: process.env['NODE_ENV'] === 'production',
-  sameSite: 'lax' as const,
+  secure: isProd,
+  sameSite: (isProd ? 'none' : 'lax') as 'none' | 'lax',
   maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days in ms
   path: '/',
 };
@@ -44,9 +45,10 @@ export class AuthController {
     const ip = req.ip;
     const { user, tokens } = await this.authService.register(dto, ip);
     res.cookie('refresh_token', tokens.refreshToken, COOKIE_OPTIONS);
+    res.cookie('access_token', tokens.accessToken, { ...COOKIE_OPTIONS, maxAge: 15 * 60 * 1000 });
     return {
       success: true,
-      data: { user, accessToken: tokens.accessToken },
+      data: { user, accessToken: tokens.accessToken, refreshToken: tokens.refreshToken },
       message: 'Registration successful. Please verify your email.',
     };
   }
@@ -60,9 +62,10 @@ export class AuthController {
     const ua = req.headers['user-agent'];
     const { user, tokens } = await this.authService.login(dto, ip, ua);
     res.cookie('refresh_token', tokens.refreshToken, COOKIE_OPTIONS);
+    res.cookie('access_token', tokens.accessToken, { ...COOKIE_OPTIONS, maxAge: 15 * 60 * 1000 });
     return {
       success: true,
-      data: { user, accessToken: tokens.accessToken },
+      data: { user, accessToken: tokens.accessToken, refreshToken: tokens.refreshToken },
       message: 'Login successful',
     };
   }
@@ -71,26 +74,28 @@ export class AuthController {
   @HttpCode(HttpStatus.OK)
   @ApiOperation({ summary: 'Logout and invalidate refresh token' })
   async logout(@Req() req: Request, @Res({ passthrough: true }) res: Response) {
-    const refreshToken: string = req.cookies?.['refresh_token'] ?? '';
+    const refreshToken: string = req.cookies?.['refresh_token'] || (req.body as any)?.refreshToken || '';
     if (refreshToken) {
       await this.authService.logout(refreshToken);
     }
-    res.clearCookie('refresh_token', { path: '/' });
+    res.clearCookie('refresh_token', { path: '/', sameSite: (isProd ? 'none' : 'lax') as any, secure: isProd });
+    res.clearCookie('access_token', { path: '/', sameSite: (isProd ? 'none' : 'lax') as any, secure: isProd });
     return { success: true, message: 'Logged out successfully' };
   }
 
   @Public()
   @Post('refresh')
   @HttpCode(HttpStatus.OK)
-  @ApiOperation({ summary: 'Refresh access token using HttpOnly cookie' })
+  @ApiOperation({ summary: 'Refresh access token using HttpOnly cookie or body' })
   async refresh(@Req() req: Request, @Res({ passthrough: true }) res: Response) {
-    const refreshToken: string = req.cookies?.['refresh_token'] ?? '';
+    const refreshToken: string = req.cookies?.['refresh_token'] || (req.body as any)?.refreshToken || '';
     const ip = req.ip;
     const tokens = await this.authService.refreshTokens(refreshToken, ip);
     res.cookie('refresh_token', tokens.refreshToken, COOKIE_OPTIONS);
+    res.cookie('access_token', tokens.accessToken, { ...COOKIE_OPTIONS, maxAge: 15 * 60 * 1000 });
     return {
       success: true,
-      data: { accessToken: tokens.accessToken },
+      data: { accessToken: tokens.accessToken, refreshToken: tokens.refreshToken },
     };
   }
 

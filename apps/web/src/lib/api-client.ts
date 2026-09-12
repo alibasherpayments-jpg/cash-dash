@@ -22,7 +22,21 @@ function processQueue(error: unknown) {
 }
 
 apiClient.interceptors.request.use(
-  (config: InternalAxiosRequestConfig) => config,
+  (config: InternalAxiosRequestConfig) => {
+    if (typeof window !== 'undefined') {
+      try {
+        const stored = localStorage.getItem('cashdash-auth');
+        if (stored) {
+          const parsed = JSON.parse(stored);
+          const token = parsed?.state?.accessToken;
+          if (token && !config.headers.Authorization) {
+            config.headers.Authorization = `Bearer ${token}`;
+          }
+        }
+      } catch {}
+    }
+    return config;
+  },
   (error) => Promise.reject(error),
 );
 
@@ -39,12 +53,41 @@ apiClient.interceptors.response.use(
       originalRequest._retry = true;
       isRefreshing = true;
       try {
-        await apiClient.post('/auth/refresh');
+        let storedRefreshToken: string | undefined;
+        if (typeof window !== 'undefined') {
+          try {
+            const raw = localStorage.getItem('cashdash-auth');
+            if (raw) storedRefreshToken = JSON.parse(raw)?.state?.refreshToken;
+          } catch {}
+        }
+        const refreshRes = await apiClient.post<{ data: { accessToken: string; refreshToken?: string } }>(
+          '/auth/refresh',
+          { refreshToken: storedRefreshToken },
+        );
+        const newAccessToken = refreshRes.data?.data?.accessToken;
+        const newRefreshToken = refreshRes.data?.data?.refreshToken;
+        if (newAccessToken && typeof window !== 'undefined') {
+          try {
+            const raw = localStorage.getItem('cashdash-auth');
+            if (raw) {
+              const parsed = JSON.parse(raw);
+              parsed.state = parsed.state || {};
+              parsed.state.accessToken = newAccessToken;
+              if (newRefreshToken) parsed.state.refreshToken = newRefreshToken;
+              localStorage.setItem('cashdash-auth', JSON.stringify(parsed));
+            }
+          } catch {}
+        }
+        if (originalRequest.headers && newAccessToken) {
+          originalRequest.headers.Authorization = `Bearer ${newAccessToken}`;
+        }
         processQueue(null);
         return apiClient(originalRequest);
       } catch (refreshError) {
         processQueue(refreshError);
-        if (typeof window !== 'undefined') window.location.href = '/login';
+        if (typeof window !== 'undefined' && !window.location.pathname.startsWith('/login') && !window.location.pathname.startsWith('/register')) {
+          window.location.href = '/login';
+        }
         return Promise.reject(refreshError);
       } finally {
         isRefreshing = false;
