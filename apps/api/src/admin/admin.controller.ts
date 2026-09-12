@@ -111,6 +111,17 @@ export class AdminController {
     return { success: true, message: 'Balance adjusted' };
   }
 
+  @Delete('users/:id')
+  @ApiOperation({ summary: 'Permanently delete a user account and all associated data' })
+  async deleteUser(
+    @Param('id') userId: string,
+    @CurrentUser('id') adminId: string,
+    @Req() req: Request,
+  ) {
+    const result = await this.adminService.deleteUser(userId, adminId, req.ip);
+    return { success: true, ...result };
+  }
+
   @Get('users/:id/notes')
   @ApiOperation({ summary: 'Get admin notes for a user' })
   async getUserNotes(@Param('id') userId: string) {

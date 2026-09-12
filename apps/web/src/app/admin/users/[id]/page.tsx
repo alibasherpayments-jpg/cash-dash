@@ -2,11 +2,21 @@
 
 import React, { useState, useEffect } from "react";
 import Link from "next/link";
-import { useParams } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { AvatarWithFallback } from "@/components/common/avatar-with-fallback";
 import {
   ArrowLeft,
@@ -20,6 +30,8 @@ import {
   Plus,
   Loader2,
   AlertCircle,
+  AlertTriangle,
+  Trash2,
 } from "lucide-react";
 import { formatPoints, formatCash, formatDateTime } from "@/lib/formatters";
 import apiClient from "@/lib/api-client";
@@ -65,6 +77,7 @@ interface AdminNoteItem {
 }
 
 export default function AdminUserDetailPage() {
+  const router = useRouter();
   const params = useParams();
   const userId = params.id as string;
 
@@ -74,6 +87,12 @@ export default function AdminUserDetailPage() {
   const [error, setError] = useState<string | null>(null);
   const [newNote, setNewNote] = useState("");
   const [addingNote, setAddingNote] = useState(false);
+
+  // Delete modal state
+  const [deleteModalOpen, setDeleteModalOpen] = useState(false);
+  const [deleteConfirmationText, setDeleteConfirmationText] = useState("");
+  const [isDeleting, setIsDeleting] = useState(false);
+  const [deleteError, setDeleteError] = useState<string | null>(null);
 
   useEffect(() => {
     if (!userId) return;
@@ -123,6 +142,19 @@ export default function AdminUserDetailPage() {
       // Ignore or display error
     } finally {
       setAddingNote(false);
+    }
+  };
+
+  const handleDeleteUser = async () => {
+    if (!userData) return;
+    setIsDeleting(true);
+    setDeleteError(null);
+    try {
+      await apiClient.delete(`/admin/users/${userData.id}`);
+      router.push("/admin/users");
+    } catch (err: any) {
+      setDeleteError(err.response?.data?.message || err.message || "Failed to delete user account.");
+      setIsDeleting(false);
     }
   };
 
@@ -297,6 +329,117 @@ export default function AdminUserDetailPage() {
           </form>
         </CardContent>
       </Card>
+
+      {/* ─── Danger Zone ─────────────────────────────────────────── */}
+      {userData.role !== "ADMIN" && (
+        <Card className="border-red-500/20 bg-red-500/5">
+          <CardHeader className="pb-3">
+            <CardTitle className="text-sm font-bold text-red-500 flex items-center gap-2">
+              <AlertTriangle className="h-4 w-4 text-red-500" /> Danger Zone: Permanently Delete Account
+            </CardTitle>
+            <CardDescription className="text-xs text-muted-foreground">
+              Once you delete a user account, there is no going back. All balances, points, sessions, and ticket history will be irrevocably purged.
+            </CardDescription>
+          </CardHeader>
+          <CardContent className="flex flex-col sm:flex-row justify-between sm:items-center gap-3 pt-0">
+            <span className="text-xs text-muted-foreground">
+              Delete member <strong className="text-foreground">@{userData.username}</strong> ({userData.email})
+            </span>
+            <Button
+              variant="destructive"
+              size="sm"
+              onClick={() => {
+                setDeleteModalOpen(true);
+                setDeleteConfirmationText("");
+                setDeleteError(null);
+              }}
+              className="text-xs font-bold bg-red-600 hover:bg-red-700 text-white w-fit"
+            >
+              <Trash2 className="h-3.5 w-3.5 mr-1" /> Delete Account
+            </Button>
+          </CardContent>
+        </Card>
+      )}
+
+      {/* ─── Delete User Dialog ─────────────────────────────────── */}
+      <Dialog open={deleteModalOpen} onOpenChange={setDeleteModalOpen}>
+        <DialogContent className="max-w-md bg-card border-border text-card-foreground">
+          <DialogHeader>
+            <DialogTitle className="text-base font-bold text-destructive flex items-center gap-2">
+              <AlertTriangle className="h-5 w-5 text-destructive" /> Permanently Delete Account
+            </DialogTitle>
+            <DialogDescription className="text-xs text-muted-foreground">
+              Are you sure you want to permanently delete{" "}
+              <strong className="text-foreground">@{userData?.username}</strong>?
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="space-y-3 py-2 text-xs">
+            <div className="p-3 rounded-lg bg-destructive/10 border border-destructive/20 text-destructive text-xs space-y-1">
+              <p className="font-semibold">⚠️ Irreversible Platform Action</p>
+              <p className="text-[11px] leading-relaxed opacity-90">
+                This action cannot be undone. All wallet balances, ledger entries, withdrawals, referrals, and support tickets for this user will be completely destroyed.
+              </p>
+            </div>
+
+            <div className="p-2.5 rounded-lg bg-background/70 border border-border text-[11px] space-y-1 text-muted-foreground">
+              <div>Username: <span className="font-bold text-foreground">@{userData?.username}</span></div>
+              <div>Email: <span className="font-mono text-foreground">{userData?.email}</span></div>
+              <div>Available Balance: <span className="font-mono text-foreground font-bold">{formatPoints(availablePoints)} pts</span></div>
+            </div>
+
+            {deleteError && (
+              <div className="p-2.5 rounded-lg bg-destructive/10 border border-destructive/20 text-destructive text-xs">
+                {deleteError}
+              </div>
+            )}
+
+            <div className="space-y-1.5">
+              <Label className="text-xs font-medium text-foreground">
+                To confirm, type <span className="font-bold text-destructive">{userData?.username}</span> below:
+              </Label>
+              <Input
+                placeholder={userData?.username}
+                value={deleteConfirmationText}
+                onChange={(e) => setDeleteConfirmationText(e.target.value)}
+                className="bg-background border-border text-xs text-foreground font-mono"
+              />
+            </div>
+          </div>
+
+          <DialogFooter className="gap-2 sm:gap-0">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => {
+                setDeleteModalOpen(false);
+                setDeleteConfirmationText("");
+                setDeleteError(null);
+              }}
+              className="border-border text-foreground hover:bg-accent text-xs"
+            >
+              Cancel
+            </Button>
+            <Button
+              size="sm"
+              variant="destructive"
+              disabled={isDeleting || deleteConfirmationText !== userData?.username}
+              onClick={handleDeleteUser}
+              className="font-bold text-xs bg-red-600 hover:bg-red-700 text-white"
+            >
+              {isDeleting ? (
+                <>
+                  <Loader2 className="h-3.5 w-3.5 animate-spin mr-1" /> Deleting...
+                </>
+              ) : (
+                <>
+                  <Trash2 className="h-3.5 w-3.5 mr-1" /> Permanently Delete
+                </>
+              )}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

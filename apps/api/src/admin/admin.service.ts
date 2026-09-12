@@ -245,6 +245,137 @@ export class AdminService {
     return this.fraudService.getRiskAssessment(userId);
   }
 
+  async deleteUser(userId: string, adminId: string, ipAddress?: string) {
+    if (userId === adminId) {
+      throw new BadRequestException('You cannot delete your own administrator account.');
+    }
+
+    const user = await this.prisma.user.findUnique({
+      where: { id: userId },
+      include: { wallet: true },
+    });
+
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
+
+    if (user.role === 'ADMIN') {
+      throw new BadRequestException('Administrator accounts cannot be deleted.');
+    }
+
+    await this.prisma.$transaction(async (tx) => {
+      // 1. Unlink referrals where this user is referredBy
+      await tx.user.updateMany({
+        where: { referredById: userId },
+        data: { referredById: null },
+      });
+
+      // 2. Delete referrals
+      await tx.referral.deleteMany({
+        where: { OR: [{ referrerId: userId }, { referredId: userId }] },
+      });
+
+      // 3. Delete admin notes on this user or authored by this user
+      await tx.adminNote.deleteMany({
+        where: { OR: [{ targetId: userId }, { authorId: userId }] },
+      });
+
+      // 4. Delete support tickets & messages
+      const tickets = await tx.supportTicket.findMany({
+        where: { userId },
+        select: { id: true },
+      });
+      if (tickets.length > 0) {
+        await tx.supportMessage.deleteMany({
+          where: { ticketId: { in: tickets.map((t) => t.id) } },
+        });
+        await tx.supportTicket.deleteMany({
+          where: { userId },
+        });
+      }
+      await tx.supportMessage.deleteMany({
+        where: { authorId: userId },
+      });
+
+      // 5. Delete withdrawal requests & status histories
+      const withdrawals = await tx.withdrawalRequest.findMany({
+        where: { userId },
+        select: { id: true },
+      });
+      if (withdrawals.length > 0) {
+        await tx.withdrawalStatusHistory.deleteMany({
+          where: { withdrawalId: { in: withdrawals.map((w) => w.id) } },
+        });
+        await tx.withdrawalRequest.deleteMany({
+          where: { userId },
+        });
+      }
+      await tx.withdrawalStatusHistory.deleteMany({
+        where: { changedById: userId },
+      });
+
+      // 6. Delete offer completions and clicks
+      await tx.offerCompletion.deleteMany({
+        where: { userId },
+      });
+      await tx.offerClick.deleteMany({
+        where: { userId },
+      });
+
+      // 7. Delete fraud signals & risk assessment
+      await tx.fraudSignal.deleteMany({
+        where: { userId },
+      });
+      await tx.riskAssessment.deleteMany({
+        where: { userId },
+      });
+
+      // 8. Delete user achievements & streak
+      await tx.userAchievement.deleteMany({
+        where: { userId },
+      });
+      await tx.userStreak.deleteMany({
+        where: { userId },
+      });
+
+      // 9. Delete ledger transactions
+      if (user.wallet) {
+        await tx.ledgerTransaction.deleteMany({
+          where: { walletId: user.wallet.id },
+        });
+      }
+      await tx.ledgerTransaction.deleteMany({
+        where: { userId },
+      });
+
+      // 10. Delete sessions, notifications, profile, wallet, and finally user
+      await tx.session.deleteMany({ where: { userId } });
+      await tx.notification.deleteMany({ where: { userId } });
+      await tx.notificationPreference.deleteMany({ where: { userId } });
+      await tx.leaderboardSnapshot.deleteMany({ where: { userId } });
+      await tx.profile.deleteMany({ where: { userId } });
+      await tx.wallet.deleteMany({ where: { userId } });
+
+      // Delete the user record
+      await tx.user.delete({
+        where: { id: userId },
+      });
+    });
+
+    // Write audit log
+    await this.auditService.log({
+      adminId,
+      action: AuditAction.USER_DELETED,
+      entityType: 'User',
+      entityId: userId,
+      previousValue: { username: user.username, email: user.email },
+      metadata: { reason: 'Permanently deleted by administrator' },
+      ipAddress,
+    });
+
+    return { message: `User @${user.username} (${user.email}) deleted successfully.` };
+  }
+
   // ─── Offers ──────────────────────────────────────────────────────────────
 
   async createOffer(dto: CreateOfferDto, adminId: string, ipAddress?: string) {

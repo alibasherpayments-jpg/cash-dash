@@ -29,6 +29,7 @@ import {
   AlertTriangle,
   Loader2,
   RefreshCw,
+  Trash2,
 } from "lucide-react";
 import { formatPoints, formatCash, formatPointsAsCash, formatDateTime } from "@/lib/formatters";
 import apiClient from "@/lib/api-client";
@@ -56,6 +57,13 @@ export default function AdminUsersPage() {
   const [adjustDirection, setAdjustDirection] = useState<"ADD" | "DEDUCT">("ADD");
   const [adjustReason, setAdjustReason] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
+
+  // Delete user state
+  const [deleteModalUser, setDeleteModalUser] = useState<AdminUserRow | null>(null);
+  const [deleteConfirmationText, setDeleteConfirmationText] = useState("");
+  const [isDeleting, setIsDeleting] = useState(false);
+  const [deleteError, setDeleteError] = useState<string | null>(null);
+  const [deleteSuccessMessage, setDeleteSuccessMessage] = useState<string | null>(null);
 
   const fetchUsers = async () => {
     setLoading(true);
@@ -142,6 +150,24 @@ export default function AdminUsersPage() {
     }
   };
 
+  const handleDeleteUser = async () => {
+    if (!deleteModalUser) return;
+    setIsDeleting(true);
+    setDeleteError(null);
+    try {
+      await apiClient.delete(`/admin/users/${deleteModalUser.id}`);
+      setUsers((prev) => prev.filter((u) => u.id !== deleteModalUser.id));
+      setDeleteSuccessMessage(`User @${deleteModalUser.username} has been permanently deleted.`);
+      setTimeout(() => setDeleteSuccessMessage(null), 4000);
+      setDeleteModalUser(null);
+      setDeleteConfirmationText("");
+    } catch (err: any) {
+      setDeleteError(err.response?.data?.message || err.message || "Failed to delete user account.");
+    } finally {
+      setIsDeleting(false);
+    }
+  };
+
   return (
     <div className="space-y-6">
       {/* ─── Header ─────────────────────────────────────────────── */}
@@ -159,6 +185,13 @@ export default function AdminUsersPage() {
           Total Users: {users.length}
         </Badge>
       </div>
+
+      {deleteSuccessMessage && (
+        <div className="p-3.5 rounded-xl bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-xs flex items-center gap-2">
+          <CheckCircle2 className="h-4 w-4 shrink-0 text-emerald-400" />
+          <span>{deleteSuccessMessage}</span>
+        </div>
+      )}
 
       {/* ─── Search Bar ──────────────────────────────────────────── */}
       <div className="p-4 rounded-2xl bg-card border border-border flex items-center gap-3 shadow-sm">
@@ -251,12 +284,23 @@ export default function AdminUsersPage() {
                         </span>
                       </td>
 
-                      <td className="py-3.5 px-5 text-right space-x-1.5">
+                      <td className="py-3.5 px-5 text-right space-x-1.5 whitespace-nowrap">
+                        <Link href={`/admin/users/${u.id}`}>
+                          <Button
+                            size="sm"
+                            variant="ghost"
+                            className="h-7 px-2 text-xs text-sky-400 hover:text-sky-300 hover:bg-sky-400/10"
+                            title="View member details"
+                          >
+                            <Eye className="h-3.5 w-3.5 mr-1" /> View
+                          </Button>
+                        </Link>
+
                         <Button
                           size="sm"
                           variant="ghost"
                           onClick={() => setAdjustModalUser(u)}
-                          className="h-7 px-2 text-xs text-amber-400 hover:text-amber-300"
+                          className="h-7 px-2 text-xs text-amber-400 hover:text-amber-300 hover:bg-amber-400/10"
                           title="Adjust balance"
                         >
                           <Coins className="h-3.5 w-3.5 mr-1" /> Adjust
@@ -268,12 +312,28 @@ export default function AdminUsersPage() {
                           onClick={() => handleToggleSuspend(u.id, u.status)}
                           className={`h-7 px-2 text-xs ${
                             u.status === "ACTIVE"
-                              ? "text-rose-400 hover:text-rose-300"
-                              : "text-emerald-400 hover:text-emerald-300"
+                              ? "text-rose-400 hover:text-rose-300 hover:bg-rose-400/10"
+                              : "text-emerald-400 hover:text-emerald-300 hover:bg-emerald-400/10"
                           }`}
                         >
                           {u.status === "ACTIVE" ? "Suspend" : "Activate"}
                         </Button>
+
+                        {u.role !== "ADMIN" && (
+                          <Button
+                            size="sm"
+                            variant="ghost"
+                            onClick={() => {
+                              setDeleteModalUser(u);
+                              setDeleteConfirmationText("");
+                              setDeleteError(null);
+                            }}
+                            className="h-7 px-2 text-xs text-rose-500 hover:text-rose-400 hover:bg-rose-500/10"
+                            title="Delete user account"
+                          >
+                            <Trash2 className="h-3.5 w-3.5 mr-1" /> Delete
+                          </Button>
+                        )}
                       </td>
                     </tr>
                   ))}
@@ -358,6 +418,95 @@ export default function AdminUsersPage() {
             </Button>
             <Button size="sm" onClick={handleConfirmAdjustment} className="bg-primary hover:bg-primary/90 text-primary-foreground font-bold">
               Commit Ledger Adjustment
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* ─── Delete User Dialog ─────────────────────────────────── */}
+      <Dialog
+        open={!!deleteModalUser}
+        onOpenChange={(open) => {
+          if (!open) {
+            setDeleteModalUser(null);
+            setDeleteConfirmationText("");
+            setDeleteError(null);
+          }
+        }}
+      >
+        <DialogContent className="max-w-md bg-card border-border text-card-foreground">
+          <DialogHeader>
+            <DialogTitle className="text-base font-bold text-destructive flex items-center gap-2">
+              <AlertTriangle className="h-5 w-5 text-destructive" /> Delete User Account
+            </DialogTitle>
+            <DialogDescription className="text-xs text-muted-foreground">
+              Are you sure you want to permanently delete{" "}
+              <strong className="text-foreground">@{deleteModalUser?.username}</strong>?
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="space-y-3 py-2 text-xs">
+            <div className="p-3 rounded-lg bg-destructive/10 border border-destructive/20 text-destructive text-xs space-y-1">
+              <p className="font-semibold">⚠️ Irreversible Platform Action</p>
+              <p className="text-[11px] leading-relaxed opacity-90">
+                This will permanently remove this user along with their wallet, transactions, withdrawal requests, support tickets, and revoke all sessions.
+              </p>
+            </div>
+
+            <div className="p-2.5 rounded-lg bg-background/70 border border-border text-[11px] space-y-1 text-muted-foreground">
+              <div>Email: <span className="font-mono text-foreground">{deleteModalUser?.email}</span></div>
+              <div>Available Balance: <span className="font-mono text-foreground font-bold">{formatPoints(deleteModalUser?.availablePoints ?? 0)} pts</span></div>
+              <div>User ID: <span className="font-mono text-foreground">{deleteModalUser?.id}</span></div>
+            </div>
+
+            {deleteError && (
+              <div className="p-2.5 rounded-lg bg-destructive/10 border border-destructive/20 text-destructive text-xs">
+                {deleteError}
+              </div>
+            )}
+
+            <div className="space-y-1.5">
+              <Label className="text-xs font-medium text-foreground">
+                To confirm, type <span className="font-bold text-destructive">{deleteModalUser?.username}</span> below:
+              </Label>
+              <Input
+                placeholder={deleteModalUser?.username}
+                value={deleteConfirmationText}
+                onChange={(e) => setDeleteConfirmationText(e.target.value)}
+                className="bg-background border-border text-xs text-foreground font-mono"
+              />
+            </div>
+          </div>
+
+          <DialogFooter className="gap-2 sm:gap-0">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => {
+                setDeleteModalUser(null);
+                setDeleteConfirmationText("");
+                setDeleteError(null);
+              }}
+              className="border-border text-foreground hover:bg-accent text-xs"
+            >
+              Cancel
+            </Button>
+            <Button
+              size="sm"
+              variant="destructive"
+              disabled={isDeleting || deleteConfirmationText !== deleteModalUser?.username}
+              onClick={handleDeleteUser}
+              className="font-bold text-xs bg-red-600 hover:bg-red-700 text-white"
+            >
+              {isDeleting ? (
+                <>
+                  <Loader2 className="h-3.5 w-3.5 animate-spin mr-1" /> Deleting...
+                </>
+              ) : (
+                <>
+                  <Trash2 className="h-3.5 w-3.5 mr-1" /> Permanently Delete
+                </>
+              )}
             </Button>
           </DialogFooter>
         </DialogContent>
