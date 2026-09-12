@@ -30,7 +30,12 @@ export function useWallet() {
     queryFn: async () => {
       try {
         const res = await apiGet<any>("/wallet/transactions");
-        return res.data || [];
+        const list = Array.isArray(res) ? res : res?.data || [];
+        return list.map((tx: any) => ({
+          ...tx,
+          points: tx.points ?? tx.amount ?? 0,
+          amount: tx.amount ?? tx.points ?? 0,
+        }));
       } catch {
         return [];
       }

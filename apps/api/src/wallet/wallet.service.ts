@@ -230,6 +230,11 @@ export class WalletService {
       this.prisma.ledgerTransaction.count({ where }),
     ]);
 
-    return paginate(transactions, total, page, take);
+    const mapped = transactions.map((tx) => ({
+      ...tx,
+      points: tx.amount,
+    }));
+
+    return paginate(mapped, total, page, take);
   }
 }

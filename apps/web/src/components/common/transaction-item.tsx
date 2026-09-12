@@ -7,6 +7,7 @@ interface TransactionItemProps {
   type?: TransactionType;
   direction?: TransactionDirection;
   points?: number;
+  amount?: number;
   description?: string;
   createdAt?: string;
   status?: string;
@@ -15,7 +16,8 @@ interface TransactionItemProps {
     id?: string;
     type: TransactionType;
     direction: TransactionDirection;
-    points: number;
+    points?: number;
+    amount?: number;
     description?: string;
     createdAt: string;
     status?: string;
@@ -37,7 +39,8 @@ export function TransactionItem(props: TransactionItemProps) {
   const tx = props.transaction;
   const type = tx?.type ?? props.type ?? TransactionType.OFFER_REWARD;
   const direction = tx?.direction ?? props.direction ?? TransactionDirection.CREDIT;
-  const points = tx?.points ?? props.points ?? 0;
+  const rawPoints = (tx as any)?.amount ?? tx?.points ?? (props as any)?.amount ?? props.points ?? 0;
+  const points = typeof rawPoints === 'number' ? rawPoints : parseInt(String(rawPoints), 10) || 0;
   const description = tx?.description ?? props.description ?? "";
   const createdAt = tx?.createdAt ?? props.createdAt ?? new Date().toISOString();
   const className = props.className;
