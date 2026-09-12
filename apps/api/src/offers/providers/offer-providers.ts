@@ -1,4 +1,5 @@
 import { Injectable, Logger } from '@nestjs/common';
+import * as crypto from 'crypto';
 
 /**
  * Interface that all offer providers must implement.
@@ -11,116 +12,114 @@ export interface IOfferProvider {
   processCompletion(externalTxId: string, userId: string, rewardPoints: number): Promise<void>;
 }
 
-// ─── Mock Provider A: Games + Apps ────────────────────────────────────────────
+// ─── Taskwall.io Provider ─────────────────────────────────────────────────────
 
 @Injectable()
-export class MockOfferProviderA implements IOfferProvider {
-  private readonly logger = new Logger(MockOfferProviderA.name);
-  readonly slug = 'mock-provider-a';
-  readonly name = 'MockOfferProviderA';
+export class TaskwallProvider implements IOfferProvider {
+  private readonly logger = new Logger(TaskwallProvider.name);
+  readonly slug = 'taskwall';
+  readonly name = 'Taskwall.io';
 
-  validateWebhook(payload: unknown, signature: string, secret: string): boolean {
-    // In production: compute HMAC-SHA256 of payload with secret and compare
-    const crypto = require('crypto') as typeof import('crypto');
-    const expected = crypto
-      .createHmac('sha256', secret)
-      .update(JSON.stringify(payload))
-      .digest('hex');
-    return signature === expected;
+  validateWebhook(payload: unknown, signatureOrSecret: string, secret: string): boolean {
+    if (!signatureOrSecret || !secret) return false;
+    try {
+      if (signatureOrSecret.length === secret.length) {
+        if (crypto.timingSafeEqual(Buffer.from(signatureOrSecret), Buffer.from(secret))) return true;
+      }
+      const expected = crypto
+        .createHmac('sha256', secret)
+        .update(typeof payload === 'string' ? payload : JSON.stringify(payload))
+        .digest('hex');
+      const sigBuffer = Buffer.from(signatureOrSecret, 'hex');
+      const expBuffer = Buffer.from(expected, 'hex');
+      if (sigBuffer.length === expBuffer.length && crypto.timingSafeEqual(sigBuffer, expBuffer)) {
+        return true;
+      }
+      return false;
+    } catch {
+      return false;
+    }
   }
 
   async processCompletion(externalTxId: string, userId: string, rewardPoints: number): Promise<void> {
-    this.logger.log(`MockProviderA: Processing completion ${externalTxId} for user ${userId} (${rewardPoints} pts)`);
+    this.logger.log(`Taskwall: Processing completion ${externalTxId} for user ${userId} (${rewardPoints} pts)`);
   }
 }
 
-// ─── Mock Provider B: Shopping + Finance ──────────────────────────────────────
+// ─── CPALead Provider ─────────────────────────────────────────────────────────
 
 @Injectable()
-export class MockOfferProviderB implements IOfferProvider {
-  private readonly logger = new Logger(MockOfferProviderB.name);
-  readonly slug = 'mock-provider-b';
-  readonly name = 'MockOfferProviderB';
+export class CPALeadProvider implements IOfferProvider {
+  private readonly logger = new Logger(CPALeadProvider.name);
+  readonly slug = 'cpalead';
+  readonly name = 'CPALead';
 
-  validateWebhook(payload: unknown, signature: string, secret: string): boolean {
-    const crypto = require('crypto') as typeof import('crypto');
-    const expected = crypto
-      .createHmac('sha256', secret)
-      .update(JSON.stringify(payload))
-      .digest('hex');
-    return signature === expected;
+  validateWebhook(payload: unknown, signatureOrSecret: string, secret: string): boolean {
+    if (!signatureOrSecret || !secret) return false;
+    try {
+      if (signatureOrSecret.length === secret.length) {
+        if (crypto.timingSafeEqual(Buffer.from(signatureOrSecret), Buffer.from(secret))) return true;
+      }
+      const expected = crypto
+        .createHmac('sha256', secret)
+        .update(typeof payload === 'string' ? payload : JSON.stringify(payload))
+        .digest('hex');
+      const sigBuffer = Buffer.from(signatureOrSecret, 'hex');
+      const expBuffer = Buffer.from(expected, 'hex');
+      if (sigBuffer.length === expBuffer.length && crypto.timingSafeEqual(sigBuffer, expBuffer)) {
+        return true;
+      }
+      return false;
+    } catch {
+      return false;
+    }
   }
 
   async processCompletion(externalTxId: string, userId: string, rewardPoints: number): Promise<void> {
-    this.logger.log(`MockProviderB: Processing completion ${externalTxId} for user ${userId} (${rewardPoints} pts)`);
+    this.logger.log(`CPALead: Processing completion ${externalTxId} for user ${userId} (${rewardPoints} pts)`);
   }
 }
 
-// ─── Mock Provider C: Sign-up + Trials ────────────────────────────────────────
+// ─── ClickWall.io Provider ───────────────────────────────────────────────────
 
 @Injectable()
-export class MockOfferProviderC implements IOfferProvider {
-  private readonly logger = new Logger(MockOfferProviderC.name);
-  readonly slug = 'mock-provider-c';
-  readonly name = 'MockOfferProviderC';
+export class ClickWallProvider implements IOfferProvider {
+  private readonly logger = new Logger(ClickWallProvider.name);
+  readonly slug = 'clickwall';
+  readonly name = 'ClickWall.io';
 
-  validateWebhook(payload: unknown, signature: string, secret: string): boolean {
-    const crypto = require('crypto') as typeof import('crypto');
-    const expected = crypto
-      .createHmac('sha256', secret)
-      .update(JSON.stringify(payload))
-      .digest('hex');
-    return signature === expected;
+  validateWebhook(payload: unknown, signatureOrSecret: string, secret: string): boolean {
+    if (!signatureOrSecret || !secret) return false;
+    try {
+      if (signatureOrSecret.length === secret.length) {
+        if (crypto.timingSafeEqual(Buffer.from(signatureOrSecret), Buffer.from(secret))) return true;
+      }
+      const expected = crypto
+        .createHmac('sha256', secret)
+        .update(typeof payload === 'string' ? payload : JSON.stringify(payload))
+        .digest('hex');
+      const sigBuffer = Buffer.from(signatureOrSecret, 'hex');
+      const expBuffer = Buffer.from(expected, 'hex');
+      if (sigBuffer.length === expBuffer.length && crypto.timingSafeEqual(sigBuffer, expBuffer)) {
+        return true;
+      }
+      return false;
+    } catch {
+      return false;
+    }
   }
 
   async processCompletion(externalTxId: string, userId: string, rewardPoints: number): Promise<void> {
-    this.logger.log(`MockProviderC: Processing completion ${externalTxId} for user ${userId} (${rewardPoints} pts)`);
+    this.logger.log(`ClickWall: Processing completion ${externalTxId} for user ${userId} (${rewardPoints} pts)`);
   }
 }
 
-// ─── Mock Survey Provider ─────────────────────────────────────────────────────
-
-@Injectable()
-export class MockSurveyProvider implements IOfferProvider {
-  private readonly logger = new Logger(MockSurveyProvider.name);
-  readonly slug = 'mock-survey-provider';
-  readonly name = 'MockSurveyProvider';
-
-  validateWebhook(payload: unknown, signature: string, secret: string): boolean {
-    const crypto = require('crypto') as typeof import('crypto');
-    const expected = crypto
-      .createHmac('sha256', secret)
-      .update(JSON.stringify(payload))
-      .digest('hex');
-    return signature === expected;
-  }
-
-  async processCompletion(externalTxId: string, userId: string, rewardPoints: number): Promise<void> {
-    this.logger.log(`MockSurveyProvider: Survey ${externalTxId} completed for user ${userId} (${rewardPoints} pts)`);
-  }
-}
-
-// ─── Mock Game Provider ───────────────────────────────────────────────────────
-
-@Injectable()
-export class MockGameProvider implements IOfferProvider {
-  private readonly logger = new Logger(MockGameProvider.name);
-  readonly slug = 'mock-game-provider';
-  readonly name = 'MockGameProvider';
-
-  validateWebhook(payload: unknown, signature: string, secret: string): boolean {
-    const crypto = require('crypto') as typeof import('crypto');
-    const expected = crypto
-      .createHmac('sha256', secret)
-      .update(JSON.stringify(payload))
-      .digest('hex');
-    return signature === expected;
-  }
-
-  async processCompletion(externalTxId: string, userId: string, rewardPoints: number): Promise<void> {
-    this.logger.log(`MockGameProvider: Game ${externalTxId} level reached for user ${userId} (${rewardPoints} pts)`);
-  }
-}
+// Aliases for compatibility
+export { TaskwallProvider as MockOfferProviderA };
+export { CPALeadProvider as MockOfferProviderB };
+export { ClickWallProvider as MockOfferProviderC };
+export { TaskwallProvider as MockSurveyProvider };
+export { CPALeadProvider as MockGameProvider };
 
 // ─── Provider Registry ────────────────────────────────────────────────────────
 
@@ -129,18 +128,20 @@ export class ProviderRegistry {
   private readonly providers: Map<string, IOfferProvider>;
 
   constructor(
-    private providerA: MockOfferProviderA,
-    private providerB: MockOfferProviderB,
-    private providerC: MockOfferProviderC,
-    private surveyProvider: MockSurveyProvider,
-    private gameProvider: MockGameProvider,
+    private taskwall: TaskwallProvider,
+    private cpalead: CPALeadProvider,
+    private clickwall: ClickWallProvider,
   ) {
     this.providers = new Map<string, IOfferProvider>([
-      [providerA.slug, providerA],
-      [providerB.slug, providerB],
-      [providerC.slug, providerC],
-      [surveyProvider.slug, surveyProvider],
-      [gameProvider.slug, gameProvider],
+      [taskwall.slug, taskwall],
+      [cpalead.slug, cpalead],
+      [clickwall.slug, clickwall],
+      // Legacy aliases
+      ['mock-provider-a', taskwall],
+      ['mock-provider-b', cpalead],
+      ['mock-provider-c', clickwall],
+      ['mock-survey-provider', taskwall],
+      ['mock-game-provider', cpalead],
     ]);
   }
 
@@ -149,6 +150,6 @@ export class ProviderRegistry {
   }
 
   getAllProviders(): IOfferProvider[] {
-    return Array.from(this.providers.values());
+    return [this.taskwall, this.cpalead, this.clickwall];
   }
 }

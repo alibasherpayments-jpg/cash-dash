@@ -17,7 +17,6 @@ export default function RegisterPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
-  const [referralCode, setReferralCode] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
 
@@ -38,7 +37,7 @@ export default function RegisterPage() {
     setIsLoading(true);
 
     try {
-      await register(username, email, password, referralCode ? referralCode : undefined);
+      await register(username, email, password);
       router.push("/dashboard");
     } catch (err: any) {
       setError(err?.response?.data?.message || err?.message || "Failed to create account. Username or email might be in use.");
@@ -56,7 +55,7 @@ export default function RegisterPage() {
           </div>
           <CardTitle className="text-2xl font-black tracking-tight">Create Free Account</CardTitle>
           <CardDescription className="text-xs">
-            Join CashDash and claim your first rewards immediately
+            Join Cash Dash and claim your first rewards immediately
           </CardDescription>
         </CardHeader>
 
@@ -121,21 +120,6 @@ export default function RegisterPage() {
               />
             </div>
 
-            <div className="space-y-2">
-              <div className="flex items-center justify-between">
-                <Label htmlFor="referralCode" className="text-xs font-semibold">Referral Code (Optional)</Label>
-                <span className="text-[10px] text-muted-foreground">Bonus Points</span>
-              </div>
-              <Input
-                id="referralCode"
-                type="text"
-                value={referralCode}
-                onChange={(e) => setReferralCode(e.target.value)}
-                placeholder="e.g. REF-ALEX"
-                className="h-10 text-sm"
-              />
-            </div>
-
             <div className="text-[11px] text-muted-foreground space-y-1 pt-1">
               <div className="flex items-center gap-1.5 text-emerald-500">
                 <CheckCircle2 className="h-3.5 w-3.5" />
@@ -145,14 +129,8 @@ export default function RegisterPage() {
           </CardContent>
 
           <CardFooter className="flex flex-col space-y-4">
-            <Button type="submit" disabled={isLoading} className="w-full font-bold h-10">
-              {isLoading ? (
-                <>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" /> Creating Account...
-                </>
-              ) : (
-                "Get Started Free"
-              )}
+            <Button type="submit" loading={isLoading} className="w-full font-bold h-10">
+              {isLoading ? "Creating Account..." : "Get Started Free"}
             </Button>
 
             <div className="text-center text-xs text-muted-foreground">

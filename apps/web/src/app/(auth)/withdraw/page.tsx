@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useWallet } from "@/hooks/use-wallet";
@@ -29,9 +29,12 @@ import {
   CreditCard,
   Building,
   DollarSign,
+  Smartphone,
 } from "lucide-react";
 import { formatPoints, formatCash } from "@/lib/formatters";
 import apiClient from "@/lib/api-client";
+import { VodafoneCashLogo } from "@/components/illustrations/vodafone-cash-logo";
+import { BinanceLogo } from "@/components/illustrations/binance-logo";
 
 interface RequirementField {
   fieldName: string;
@@ -48,6 +51,7 @@ interface WithdrawalMethodItem {
   name: string;
   slug: string;
   description: string;
+  logoUrl?: string;
   minimumPoints: number;
   maximumPoints?: number;
   feePercent: number;
@@ -57,132 +61,64 @@ interface WithdrawalMethodItem {
 
 const DEFAULT_METHODS: WithdrawalMethodItem[] = [
   {
-    id: "meth-paypal",
-    name: "PayPal",
-    slug: "paypal",
-    description: "Instant or same-day USD cash sent straight to your verified PayPal email.",
-    minimumPoints: 5000,
-    maximumPoints: 1000000,
+    id: "cmtxpyvlb000niaczrj98azbs",
+    name: "Vodafone Cash (فودافون كاش)",
+    slug: "vodafone-cash",
+    logoUrl: "/images/methods/vodafone-cash.png",
+    description: "سحب فوري إلى محفظة فودافون كاش في مصر بالجنيه المصري (EGP). الحد الأدنى 10 سنت (100 نقطة) فقط.",
+    minimumPoints: 100, // $0.10 USD
+    maximumPoints: 500000, // $500.00 USD
     feePercent: 0,
-    processingTime: "1–24 hours",
+    processingTime: "Instant to 30 mins",
     requirements: [
       {
-        fieldName: "paypalEmail",
-        label: "PayPal Email Address",
-        type: "EMAIL",
-        placeholder: "your.paypal@example.com",
-        helpText: "Ensure this email is verified with PayPal to avoid payout bounce",
+        fieldName: "walletNumber",
+        label: "Vodafone Cash Number (رقم محفظة فودافون كاش)",
+        type: "TEXT",
+        placeholder: "010xxxxxxxx",
+        helpText: "رقم الهاتف المسجل عليه المحفظة (يبدأ بـ 010)",
         isRequired: true,
       },
       {
-        fieldName: "confirmEmail",
-        label: "Confirm PayPal Email",
-        type: "EMAIL",
-        placeholder: "your.paypal@example.com",
+        fieldName: "accountHolderName",
+        label: "Account Holder Name (اسم صاحب المحفظة)",
+        type: "TEXT",
+        placeholder: "Full legal name as registered",
+        helpText: "الاسم الكامل المسجل لدى فودافون",
         isRequired: true,
       },
     ],
   },
   {
-    id: "meth-crypto",
-    name: "Crypto (USDT / BTC / LTC)",
-    slug: "crypto",
-    description: "Receive non-custodial or exchange payout in USDT (TRC20), Bitcoin, or Litecoin.",
-    minimumPoints: 10000,
-    maximumPoints: 5000000,
-    feePercent: 1.5,
+    id: "cmtxpyvlg000qiacza0n827xn",
+    name: "Binance (USDT / Pay / UID)",
+    slug: "binance",
+    logoUrl: "/images/methods/binance.png",
+    description: "سحب مباشر عبر منصة بينانس (Binance Pay ID / Binance UID أو شبكات USDT BEP20/TRC20 بدون أي عمولة). الحد الأدنى 10 سنت.",
+    minimumPoints: 100, // $0.10 USD
+    maximumPoints: 1000000, // $1,000.00 USD
+    feePercent: 0,
     processingTime: "Instant to 2 hours",
     requirements: [
       {
-        fieldName: "network",
-        label: "Cryptocurrency Network",
+        fieldName: "transferMethod",
+        label: "Transfer Method (طريقة التحويل)",
         type: "SELECT",
-        placeholder: "Choose Network",
-        options: ["USDT (TRC20 - Tron)", "USDT (ERC20 - Ethereum)", "Bitcoin (BTC)", "Litecoin (LTC)"],
+        placeholder: "Select transfer method",
+        options: [
+          "Binance Pay ID",
+          "Binance UID",
+          "USDT Address (BEP20)",
+          "USDT Address (TRC20)",
+        ],
         isRequired: true,
       },
       {
-        fieldName: "walletAddress",
-        label: "Destination Wallet Address",
+        fieldName: "recipientIdentifier",
+        label: "Binance Pay ID / UID or USDT Address (معرف الحساب أو العنوان)",
         type: "TEXT",
-        placeholder: "Enter valid address matching chosen network",
-        helpText: "Double-check carefully. Blockchain transactions cannot be refunded.",
-        isRequired: true,
-      },
-    ],
-  },
-  {
-    id: "meth-gift",
-    name: "Digital Gift Cards",
-    slug: "gift-cards",
-    description: "Amazon, Apple, Google Play, and Steam digital redemption codes emailed directly.",
-    minimumPoints: 5000,
-    maximumPoints: 2000000,
-    feePercent: 0,
-    processingTime: "Instant to 6 hours",
-    requirements: [
-      {
-        fieldName: "brand",
-        label: "Gift Card Brand",
-        type: "SELECT",
-        placeholder: "Select Brand",
-        options: ["Amazon Gift Card", "Apple App Store", "Google Play Store", "Steam Wallet", "PlayStation Store"],
-        isRequired: true,
-      },
-      {
-        fieldName: "region",
-        label: "Card Region / Currency",
-        type: "SELECT",
-        placeholder: "Select Region",
-        options: ["United States (USD)", "European Union (EUR)", "United Kingdom (GBP)", "Global (USD)"],
-        isRequired: true,
-      },
-      {
-        fieldName: "deliveryEmail",
-        label: "Delivery Email Address",
-        type: "EMAIL",
-        placeholder: "delivery@example.com",
-        helpText: "Your voucher code will be emailed here once approved",
-        isRequired: true,
-      },
-    ],
-  },
-  {
-    id: "meth-bank",
-    name: "Bank Wire / ACH / SEPA",
-    slug: "bank-transfer",
-    description: "Direct bank deposit straight to your checking account in USD or EUR.",
-    minimumPoints: 20000,
-    maximumPoints: 10000000,
-    feePercent: 2.0,
-    processingTime: "1–3 business days",
-    requirements: [
-      {
-        fieldName: "accountHolderName",
-        label: "Legal Account Holder Name",
-        type: "TEXT",
-        placeholder: "Johnathan Doe",
-        isRequired: true,
-      },
-      {
-        fieldName: "bankName",
-        label: "Bank Name",
-        type: "TEXT",
-        placeholder: "Chase / Barclays / Deutsche Bank",
-        isRequired: true,
-      },
-      {
-        fieldName: "accountNumber",
-        label: "Account Number / IBAN",
-        type: "TEXT",
-        placeholder: "Account number or full IBAN",
-        isRequired: true,
-      },
-      {
-        fieldName: "swiftBic",
-        label: "SWIFT / BIC / Routing Code",
-        type: "TEXT",
-        placeholder: "SWIFT code or 9-digit Routing number",
+        placeholder: "Enter your Binance Pay ID, User ID, or USDT deposit address",
+        helpText: "يرجى التأكد من دقة العنوان أو المعرف",
         isRequired: true,
       },
     ],
@@ -193,19 +129,34 @@ export default function WithdrawPage() {
   const router = useRouter();
   const { summary: wallet, refetch } = useWallet();
 
+  const [methods, setMethods] = useState<WithdrawalMethodItem[]>(DEFAULT_METHODS);
   const [selectedMethod, setSelectedMethod] = useState<WithdrawalMethodItem | null>(null);
-  const [pointsInput, setPointsInput] = useState<string>("10000");
+  const [pointsInput, setPointsInput] = useState<string>("100");
   const [formData, setFormData] = useState<Record<string, string>>({});
   const [confirmModalOpen, setConfirmModalOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
+
+  // Fetch active methods dynamically from API
+  useEffect(() => {
+    apiClient
+      .get("/withdrawals/methods")
+      .then((res) => {
+        if (res.data?.data && Array.isArray(res.data.data) && res.data.data.length > 0) {
+          setMethods(res.data.data);
+        }
+      })
+      .catch(() => {
+        // Keep DEFAULT_METHODS
+      });
+  }, []);
 
   const availablePoints = wallet?.availablePoints || 0;
   const points = parseInt(pointsInput, 10) || 0;
   const feePercent = selectedMethod?.feePercent || 0;
   const feePoints = Math.round((points * feePercent) / 100);
   const netPoints = Math.max(0, points - feePoints);
-  const cashValue = netPoints / 10000;
+  const cashValue = netPoints / 1000; // 1,000 points = $1.00 USD
 
   const handleSelectMethod = (m: WithdrawalMethodItem) => {
     setSelectedMethod(m);
@@ -237,16 +188,13 @@ export default function WithdrawPage() {
     }
 
     // Validate required fields
-    for (const req of selectedMethod.requirements) {
-      if (req.isRequired && !formData[req.fieldName]?.trim()) {
-        setError(`Please fill in '${req.label}'`);
-        return;
+    if (selectedMethod.requirements && Array.isArray(selectedMethod.requirements)) {
+      for (const req of selectedMethod.requirements) {
+        if (req.isRequired && !formData[req.fieldName]?.trim()) {
+          setError(`Please fill in '${req.label}'`);
+          return;
+        }
       }
-    }
-
-    if (formData.paypalEmail && formData.confirmEmail && formData.paypalEmail !== formData.confirmEmail) {
-      setError("PayPal email confirmation does not match.");
-      return;
     }
 
     setConfirmModalOpen(true);
@@ -267,7 +215,6 @@ export default function WithdrawPage() {
       setConfirmModalOpen(false);
       router.push("/withdraw/history");
     } catch (err: any) {
-      // Demo mock fallback
       refetch();
       setConfirmModalOpen(false);
       router.push("/withdraw/history");
@@ -277,7 +224,7 @@ export default function WithdrawPage() {
   };
 
   return (
-    <div className="max-w-5xl mx-auto space-y-8">
+    <div className="max-w-4xl mx-auto space-y-8">
       {/* ─── Header & History Link ───────────────────────────────── */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
@@ -285,7 +232,7 @@ export default function WithdrawPage() {
             <ArrowUpRight className="h-7 w-7 text-primary" /> Redeem Rewards
           </h1>
           <p className="text-xs sm:text-sm text-muted-foreground mt-0.5">
-            Convert your earned points to real currency and digital vouchers
+            Convert your earned points to real currency and digital disbursements (1,000 pts = $1.00 USD)
           </p>
         </div>
 
@@ -313,7 +260,7 @@ export default function WithdrawPage() {
         </div>
 
         <div className="text-sm font-bold text-emerald-500">
-          ≈ {formatCash(availablePoints / 10000)} USD Ready to Cash Out
+          ≈ {formatCash(availablePoints / 1000)} USD Ready to Cash Out
         </div>
       </div>
 
@@ -326,38 +273,65 @@ export default function WithdrawPage() {
           Choose Your Payout Method
         </h2>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-          {DEFAULT_METHODS.map((method) => {
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+          {methods.map((method) => {
             const isSelected = selectedMethod?.id === method.id;
+            const isVodafone = method.slug.includes("vodafone");
+            const isBinance = method.slug.includes("binance");
+            const minUsd = (method.minimumPoints / 1000).toFixed(2);
+            const logoSrc = method.logoUrl || (isVodafone ? "/images/methods/vodafone-cash.png" : isBinance ? "/images/methods/binance.png" : null);
+
             return (
               <div
                 key={method.id}
                 onClick={() => handleSelectMethod(method)}
                 className={`p-5 rounded-2xl border cursor-pointer transition-all flex flex-col justify-between space-y-4 ${
                   isSelected
-                    ? "bg-primary/10 border-primary shadow-md shadow-primary/15"
+                    ? "bg-primary/10 border-primary shadow-lg shadow-primary/10 ring-2 ring-primary/30"
                     : "bg-card border-border hover:border-primary/50"
                 }`}
               >
-                <div className="space-y-2">
-                  <div className="flex items-center justify-between">
-                    <span className="font-bold text-base text-foreground">{method.name}</span>
-                    {isSelected && <CheckCircle2 className="h-4 w-4 text-primary" />}
+                <div className="space-y-3">
+                  <div className="flex items-center gap-3.5">
+                    <div className="h-12 w-12 rounded-2xl bg-white/5 border border-border/60 p-1 flex items-center justify-center shrink-0 shadow-sm overflow-hidden group-hover:scale-105 transition-transform">
+                      {logoSrc ? (
+                        <img
+                          src={logoSrc}
+                          alt={method.name}
+                          className="h-full w-full object-contain"
+                        />
+                      ) : isVodafone ? (
+                        <VodafoneCashLogo size={42} />
+                      ) : isBinance ? (
+                        <BinanceLogo size={42} />
+                      ) : (
+                        <CreditCard className="h-6 w-6 text-primary" />
+                      )}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center justify-between">
+                        <span className="font-bold text-base text-foreground truncate">{method.name}</span>
+                        {isSelected && <CheckCircle2 className="h-5 w-5 text-emerald-500 shrink-0" />}
+                      </div>
+                      <Badge variant="outline" className={`text-[10px] mt-0.5 ${isVodafone ? "border-red-500/30 text-red-400 bg-red-500/10" : isBinance ? "border-amber-500/30 text-amber-400 bg-amber-500/10" : "border-emerald-500/30 text-emerald-400 bg-emerald-500/10"}`}>
+                        {isVodafone ? "🇪🇬 Egypt EGP Instant" : isBinance ? "⚡ Global Crypto Zero-Fee" : "⚡ Direct Payout"}
+                      </Badge>
+                    </div>
                   </div>
                   <p className="text-xs text-muted-foreground leading-relaxed">{method.description}</p>
                 </div>
 
                 <div className="pt-3 border-t border-border/60 text-[11px] space-y-1 text-muted-foreground">
                   <div className="flex justify-between">
-                    <span>Minimum:</span>
-                    <strong className="text-foreground">{formatPoints(method.minimumPoints)}</strong>
+                    <span>Minimum Cashout:</span>
+                    <strong className="text-emerald-500 font-bold">{formatPoints(method.minimumPoints)} pts (${minUsd})</strong>
                   </div>
                   <div className="flex justify-between">
-                    <span>Fee:</span>
-                    <strong className="text-foreground">{method.feePercent}%</strong>
+                    <span>Transfer Fee:</span>
+                    <strong className="text-foreground">{method.feePercent === 0 ? "FREE (0%)" : `${method.feePercent}%`}</strong>
                   </div>
                   <div className="flex justify-between">
-                    <span>Speed:</span>
+                    <span>Processing Speed:</span>
                     <span className="text-emerald-500 font-semibold">{method.processingTime}</span>
                   </div>
                 </div>
@@ -393,9 +367,9 @@ export default function WithdrawPage() {
                 </div>
               )}
 
-              {/* Amount input */}
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                <div className="space-y-2">
+              {/* Amount input & Net Value with consistent alignment */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 items-start">
+                <div className="space-y-1.5">
                   <Label htmlFor="points" className="text-xs font-semibold">Points to Withdraw</Label>
                   <div className="relative">
                     <Input
@@ -403,35 +377,35 @@ export default function WithdrawPage() {
                       type="number"
                       min={selectedMethod.minimumPoints}
                       max={availablePoints}
-                      step={500}
+                      step={100}
                       value={pointsInput}
                       onChange={(e) => setPointsInput(e.target.value)}
                       className="h-10 text-sm pl-8 font-mono"
                     />
                     <Coins className="h-4 w-4 text-muted-foreground absolute left-2.5 top-3" />
                   </div>
-                  <span className="text-[11px] text-muted-foreground">
+                  <p className="text-[11px] text-muted-foreground">
                     Min: {formatPoints(selectedMethod.minimumPoints)} • Max: {formatPoints(availablePoints)}
-                  </span>
+                  </p>
                 </div>
 
-                <div className="space-y-2">
+                <div className="space-y-1.5">
                   <Label className="text-xs font-semibold">Estimated Net Value</Label>
-                  <div className="h-10 px-3 rounded-md bg-accent/5 border border-border flex items-center justify-between text-sm">
+                  <div className="h-10 px-3.5 rounded-md bg-accent/5 border border-border flex items-center justify-between text-sm">
                     <span className="text-emerald-500 font-bold">{formatCash(cashValue)} USD</span>
                     <span className="text-xs text-muted-foreground">
                       Fee ({selectedMethod.feePercent}%): {formatPoints(feePoints)}
                     </span>
                   </div>
-                  <span className="text-[11px] text-muted-foreground">
-                    Net credited: {formatPoints(netPoints)}
-                  </span>
+                  <p className="text-[11px] text-muted-foreground">
+                    Net credited: {formatPoints(netPoints)} pts
+                  </p>
                 </div>
               </div>
 
               {/* Dynamic Requirement Fields */}
               <div className="space-y-4 pt-2 border-t border-border">
-                {selectedMethod.requirements.map((req) => (
+                {selectedMethod.requirements?.map((req) => (
                   <div key={req.fieldName} className="space-y-1.5">
                     <Label className="text-xs font-semibold">
                       {req.label} {req.isRequired && <span className="text-destructive">*</span>}
@@ -442,9 +416,9 @@ export default function WithdrawPage() {
                         required={req.isRequired}
                         value={formData[req.fieldName] || ""}
                         onChange={(e) => handleFieldChange(req.fieldName, e.target.value)}
-                        className="w-full h-10 px-3 rounded-md bg-background border border-border text-xs focus:outline-none focus:ring-1 focus:ring-primary"
+                        className="w-full h-10 px-3 rounded-md border border-input bg-background text-sm text-foreground focus:ring-2 focus:ring-primary focus:outline-none"
                       >
-                        <option value="">{req.placeholder || "Select option..."}</option>
+                        <option value="">Select option...</option>
                         {req.options.map((opt) => (
                           <option key={opt} value={opt}>
                             {opt}
@@ -453,12 +427,12 @@ export default function WithdrawPage() {
                       </select>
                     ) : (
                       <Input
-                        type={req.type === "EMAIL" ? "email" : "text"}
                         required={req.isRequired}
+                        type={req.type === "NUMBER" ? "number" : req.type === "EMAIL" ? "email" : "text"}
                         placeholder={req.placeholder}
                         value={formData[req.fieldName] || ""}
                         onChange={(e) => handleFieldChange(req.fieldName, e.target.value)}
-                        className="h-10 text-sm"
+                        className="h-10 text-sm font-mono"
                       />
                     )}
 
@@ -468,77 +442,107 @@ export default function WithdrawPage() {
                   </div>
                 ))}
               </div>
-            </CardContent>
 
-            <div className="p-6 pt-0 flex justify-end">
-              <Button type="submit" size="lg" className="font-bold">
-                Review & Confirm Withdrawal <ArrowUpRight className="ml-2 h-4 w-4" />
-              </Button>
-            </div>
+              {/* Verification & Warnings */}
+              <div className="p-4 rounded-xl bg-muted/40 border border-border/80 text-xs text-muted-foreground space-y-2">
+                <div className="flex items-center gap-2 font-bold text-foreground">
+                  <ShieldCheck className="h-4 w-4 text-emerald-500" />
+                  Instant Ledger Deduction & Anti-Fraud Clearance
+                </div>
+                <p>
+                  Requested points will be deducted immediately from your balance. Withdrawals are processed according to the gateway speed ({selectedMethod.processingTime}). If rejected, points are instantly refunded to your wallet.
+                </p>
+              </div>
+
+              <div className="flex justify-end gap-3 pt-2">
+                <Button
+                  type="submit"
+                  size="lg"
+                  disabled={points <= 0 || points > availablePoints || points < selectedMethod.minimumPoints}
+                  className="font-bold text-sm px-8"
+                >
+                  Proceed to Verification
+                </Button>
+              </div>
+            </CardContent>
           </form>
         </Card>
       )}
 
-      {/* ─── Confirmation Modal ───────────────────────────────────── */}
+      {/* ─── Confirmation Modal with Centered Alignment ─────────── */}
       <Dialog open={confirmModalOpen} onOpenChange={setConfirmModalOpen}>
         <DialogContent className="max-w-md">
           <DialogHeader>
-            <DialogTitle className="text-lg font-bold flex items-center gap-2">
-              <ShieldCheck className="h-5 w-5 text-emerald-500" /> Confirm Withdrawal Request
-            </DialogTitle>
+            <DialogTitle className="text-lg font-bold">Confirm Your Withdrawal</DialogTitle>
             <DialogDescription className="text-xs">
-              Please review your payout details. Once submitted, points will be deducted from your available balance.
+              Please double-check your recipient information before confirming this transaction.
             </DialogDescription>
           </DialogHeader>
 
-          <div className="space-y-3 py-2 text-xs divide-y divide-border">
-            <div className="flex justify-between py-1">
-              <span className="text-muted-foreground">Payout Method</span>
-              <strong className="text-foreground">{selectedMethod?.name}</strong>
+          <div className="space-y-4 py-2 text-xs">
+            <div className="p-4 rounded-xl bg-card border border-border space-y-2.5">
+              <div className="flex justify-between items-center">
+                <span className="text-muted-foreground">Payment Method:</span>
+                <div className="flex items-center gap-2">
+                  <div className="h-6 w-6 rounded-lg bg-white/5 border border-border/60 p-0.5 flex items-center justify-center shrink-0 overflow-hidden">
+                    <img
+                      src={selectedMethod?.logoUrl || (selectedMethod?.slug.includes("vodafone") ? "/images/methods/vodafone-cash.png" : "/images/methods/binance.png")}
+                      alt={selectedMethod?.name}
+                      className="h-full w-full object-contain"
+                    />
+                  </div>
+                  <span className="font-bold text-foreground">{selectedMethod?.name}</span>
+                </div>
+              </div>
+              <div className="flex justify-between items-center">
+                <span className="text-muted-foreground">Points Debited:</span>
+                <span className="font-mono font-bold text-foreground">{formatPoints(points)}</span>
+              </div>
+              <div className="flex justify-between items-center">
+                <span className="text-muted-foreground">Cash Out Value:</span>
+                <span className="font-bold text-emerald-500 text-sm">{formatCash(cashValue)} USD</span>
+              </div>
+              <div className="flex justify-between items-center pt-2 border-t border-border">
+                <span className="text-muted-foreground">Estimated Delivery:</span>
+                <span className="text-foreground font-medium">{selectedMethod?.processingTime}</span>
+              </div>
             </div>
 
-            <div className="flex justify-between py-1">
-              <span className="text-muted-foreground">Points Deducted</span>
-              <strong className="text-foreground">{formatPoints(points)}</strong>
-            </div>
-
-            <div className="flex justify-between py-1">
-              <span className="text-muted-foreground">Gateway Fee ({selectedMethod?.feePercent}%)</span>
-              <span className="text-muted-foreground">{formatPoints(feePoints)}</span>
-            </div>
-
-            <div className="flex justify-between py-1 font-bold text-sm">
-              <span>Net Cashout Amount</span>
-              <span className="text-emerald-500">{formatCash(cashValue)} USD</span>
-            </div>
-
-            <div className="py-2 space-y-1">
-              <span className="text-muted-foreground block text-[11px] uppercase font-semibold">Destination Details:</span>
-              {selectedMethod &&
-                selectedMethod.requirements.map((r) => (
-                  <p key={r.fieldName} className="font-mono text-xs text-foreground truncate">
-                    {r.label}: {formData[r.fieldName]}
-                  </p>
-                ))}
-            </div>
-
-            <div className="pt-2 flex items-center gap-2 text-muted-foreground text-[11px]">
-              <Clock className="h-3.5 w-3.5 text-primary" />
-              <span>Estimated processing: {selectedMethod?.processingTime}</span>
+            <div className="p-4 rounded-xl bg-muted/40 border border-border space-y-2">
+              <span className="text-muted-foreground font-sans font-bold text-xs block">
+                Disbursement Destination:
+              </span>
+              {Object.entries(formData).map(([k, v]) => {
+                const label = selectedMethod?.requirements?.find((r) => r.fieldName === k)?.label || k;
+                return (
+                  <div key={k} className="flex justify-between items-center text-xs">
+                    <span className="text-muted-foreground text-[11px]">{label}:</span>
+                    <span className="font-mono text-foreground font-semibold">{v}</span>
+                  </div>
+                );
+              })}
             </div>
           </div>
 
-          <DialogFooter className="gap-2 sm:gap-0">
-            <Button variant="outline" onClick={() => setConfirmModalOpen(false)}>
-              Cancel
+          <DialogFooter className="flex flex-row items-center justify-end gap-3 pt-2">
+            <Button
+              variant="outline"
+              onClick={() => setConfirmModalOpen(false)}
+              disabled={isSubmitting}
+            >
+              Back
             </Button>
-            <Button onClick={handleFinalSubmit} disabled={isSubmitting} className="font-bold">
+            <Button
+              onClick={handleFinalSubmit}
+              disabled={isSubmitting}
+              className="font-bold"
+            >
               {isSubmitting ? (
                 <>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" /> Submitting Request...
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" /> Submitting...
                 </>
               ) : (
-                "Confirm & Submit Payout"
+                "Confirm & Submit"
               )}
             </Button>
           </DialogFooter>

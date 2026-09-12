@@ -23,7 +23,6 @@ import {
   Gift,
   Wallet,
   ArrowUpRight,
-  Users,
   Trophy,
   Bell,
   HelpCircle,
@@ -32,18 +31,19 @@ import {
   Shield,
   Menu,
   X,
-  Flame,
   ChevronDown,
+  Layers,
 } from "lucide-react";
 import { formatPoints, formatCash } from "@/lib/formatters";
 import { cn } from "@/lib/utils";
+import { ThemeSwitcher } from "@/components/common/theme-switcher";
 
 const navigationItems = [
   { name: "Dashboard", href: "/dashboard", icon: LayoutDashboard },
+  { name: "Offerwalls", href: "/offerwalls", icon: Layers },
   { name: "Offers", href: "/offers", icon: Gift },
   { name: "Wallet", href: "/wallet", icon: Wallet },
   { name: "Withdraw", href: "/withdraw", icon: ArrowUpRight },
-  { name: "Referrals", href: "/referrals", icon: Users },
   { name: "Leaderboard", href: "/leaderboard", icon: Trophy },
   { name: "Notifications", href: "/notifications", icon: Bell },
   { name: "Support", href: "/support", icon: HelpCircle },
@@ -74,7 +74,7 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
               <Coins className="h-5 w-5 text-white" />
             </div>
             <div>
-              <span className="text-xl font-black tracking-tight text-foreground">CashDash</span>
+              <span className="text-xl font-black tracking-tight text-foreground">Cash Dash</span>
               <span className="block text-[10px] font-bold uppercase tracking-wider text-accent -mt-1">Rewards</span>
             </div>
           </Link>
@@ -90,7 +90,7 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
             {formatPoints(wallet?.availablePoints || 0)} <span className="text-xs font-semibold text-accent">pts</span>
           </div>
           <div className="text-xs font-medium text-emerald-500 mt-0.5">
-            ≈ {formatCash((wallet?.availablePoints || 0) / 10000)}
+            ≈ {formatCash((wallet?.availablePoints || 0) / 1000)}
           </div>
           <div className="mt-3 grid grid-cols-2 gap-2">
             <Button size="sm" variant="default" className="h-7 text-xs font-semibold" asChild>
@@ -174,7 +174,7 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
               <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-primary">
                 <Coins className="h-4 w-4 text-white" />
               </div>
-              <span className="font-black text-foreground">CashDash</span>
+              <span className="font-black text-foreground">Cash Dash</span>
             </Link>
           </div>
 
@@ -184,13 +184,8 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
             </span>
           </div>
 
-          {/* Right actions: Balance badge, streak, notifications, user menu */}
+          {/* Right actions: Balance badge, notifications, user menu */}
           <div className="flex items-center gap-2.5 md:gap-4">
-            {/* Daily Streak */}
-            <div className="flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-amber-500/10 border border-amber-500/20 text-amber-500 text-xs font-bold">
-              <Flame className="h-3.5 w-3.5 fill-amber-500" />
-              <span>5 Days</span>
-            </div>
 
             {/* Quick Points Pill */}
             <Link
@@ -203,10 +198,13 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
               <div className="text-right">
                 <span className="text-xs font-black text-foreground">{formatPoints(wallet?.availablePoints || 0)}</span>
                 <span className="text-[10px] text-muted-foreground block -mt-1 font-medium">
-                  {formatCash((wallet?.availablePoints || 0) / 10000)}
+                  {formatCash((wallet?.availablePoints || 0) / 1000)}
                 </span>
               </div>
             </Link>
+
+            {/* Theme Switcher */}
+            <ThemeSwitcher />
 
             {/* Notification Bell */}
             <Button variant="ghost" size="icon" className="relative h-9 w-9 rounded-lg" asChild>
@@ -289,7 +287,7 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
                 <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary">
                   <Coins className="h-5 w-5 text-white" />
                 </div>
-                <span className="text-lg font-black">CashDash</span>
+                <span className="text-lg font-black">Cash Dash</span>
               </Link>
               <button onClick={() => setMobileMenuOpen(false)} className="p-1 text-muted-foreground hover:text-foreground">
                 <X className="h-5 w-5" />

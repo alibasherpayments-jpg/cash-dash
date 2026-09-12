@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException, Logger } from '@nestjs/common';
+import { Injectable, NotFoundException, BadRequestException, Logger } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { WalletService } from '../wallet/wallet.service';
 import { OffersService } from '../offers/offers.service';
@@ -18,6 +18,8 @@ import {
   AdminAdjustBalanceDto,
   AdminUpdateUserStatusDto,
   AdminBroadcastNotificationDto,
+  CreateOfferProviderDto,
+  UpdateOfferProviderDto,
 } from './dto/admin.dto';
 import { CreateOfferDto, UpdateOfferDto } from '../offers/dto/offers.dto';
 import {
@@ -296,6 +298,38 @@ export class AdminService {
     return provider;
   }
 
+  async createProvider(dto: CreateOfferProviderDto, adminId: string, ipAddress?: string) {
+    const slug = dto.slug.toLowerCase().trim();
+    const existing = await this.prisma.offerProvider.findUnique({
+      where: { slug },
+    });
+    if (existing) throw new BadRequestException(`Provider with slug '${slug}' already exists`);
+
+    const provider = await this.prisma.offerProvider.create({
+      data: {
+        name: dto.name,
+        type: dto.type ?? 'offerwall',
+        slug,
+        logoUrl: dto.logoUrl,
+        apiKeyMasked: dto.apiKeyMasked,
+        webhookSecret: dto.webhookSecret ?? `cd_wh_${Math.random().toString(36).substring(2, 12)}`,
+        postbackUrl: dto.postbackUrl ?? `http://localhost:3001/api/v1/webhooks/providers/${slug}`,
+        isActive: dto.isActive ?? true,
+      },
+    });
+
+    await this.auditService.log({
+      adminId,
+      action: AuditAction.PROVIDER_UPDATED,
+      entityType: 'OfferProvider',
+      entityId: provider.id,
+      newValue: { name: provider.name, slug: provider.slug },
+      ipAddress,
+    });
+
+    return provider;
+  }
+
   async updateProvider(id: string, data: Record<string, unknown>, adminId: string, ipAddress?: string) {
     const provider = await this.prisma.offerProvider.findUnique({ where: { id } });
     if (!provider) throw new NotFoundException('Provider not found');
@@ -319,6 +353,22 @@ export class AdminService {
     });
 
     return updated;
+  }
+
+  async deleteProvider(id: string, adminId: string, ipAddress?: string) {
+    const provider = await this.prisma.offerProvider.findUnique({ where: { id } });
+    if (!provider) throw new NotFoundException('Provider not found');
+
+    await this.prisma.offerProvider.delete({ where: { id } });
+
+    await this.auditService.log({
+      adminId,
+      action: AuditAction.PROVIDER_UPDATED,
+      entityType: 'OfferProvider',
+      entityId: id,
+      previousValue: { name: provider.name },
+      ipAddress,
+    });
   }
 
   // ─── Withdrawals ─────────────────────────────────────────────────────────

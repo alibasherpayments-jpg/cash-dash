@@ -10,7 +10,7 @@ import { EmptyNotifications } from "@/components/illustrations/empty-notificatio
 import { Bell, CheckCheck } from "lucide-react";
 
 export default function NotificationsPage() {
-  const { notifications, unreadCount, markAllRead, isLoading } = useNotifications();
+  const { notifications, unreadCount, markAllRead, markAsRead, isLoading } = useNotifications();
   const [filter, setFilter] = useState<"ALL" | "UNREAD">("ALL");
 
   const filtered = notifications.filter((n: any) => {
@@ -78,7 +78,7 @@ export default function NotificationsPage() {
             <div className="divide-y divide-border/40">
               {filtered.map((item: any) => (
                 <div key={item.id} className="py-2">
-                  <NotificationItem notification={item} />
+                  <NotificationItem notification={item} onClick={(id) => markAsRead(id)} />
                 </div>
               ))}
             </div>

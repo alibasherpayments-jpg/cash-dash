@@ -25,6 +25,8 @@ import {
   AdminUpdateUserStatusDto,
   AdminBroadcastNotificationDto,
   AdminUpdateSettingDto,
+  CreateOfferProviderDto,
+  UpdateOfferProviderDto,
 } from './dto/admin.dto';
 import { CreateOfferDto, UpdateOfferDto } from '../offers/dto/offers.dto';
 import {
@@ -166,6 +168,17 @@ export class AdminController {
     return { success: true, data };
   }
 
+  @Post('providers')
+  @ApiOperation({ summary: 'Create a new offerwall/survey provider' })
+  async createProvider(
+    @Body() dto: CreateOfferProviderDto,
+    @CurrentUser('id') adminId: string,
+    @Req() req: Request,
+  ) {
+    const data = await this.adminService.createProvider(dto, adminId, req.ip);
+    return { success: true, data };
+  }
+
   @Patch('providers/:id')
   @ApiOperation({ summary: 'Update provider config' })
   async updateProvider(
@@ -176,6 +189,18 @@ export class AdminController {
   ) {
     const data = await this.adminService.updateProvider(id, body, adminId, req.ip);
     return { success: true, data };
+  }
+
+  @Delete('providers/:id')
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: 'Delete an offerwall provider' })
+  async deleteProvider(
+    @Param('id') id: string,
+    @CurrentUser('id') adminId: string,
+    @Req() req: Request,
+  ) {
+    await this.adminService.deleteProvider(id, adminId, req.ip);
+    return { success: true, message: 'Provider deleted' };
   }
 
   // ─── Withdrawals ───────────────────────────────────────────────────────────

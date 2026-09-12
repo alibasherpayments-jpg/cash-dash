@@ -30,14 +30,14 @@ export default function TermsPage() {
           <section className="space-y-2">
             <h3 className="text-lg font-bold text-foreground">1. Acceptance of Terms</h3>
             <p>
-              By accessing or creating an account on CashDash, you agree to comply with and be bound by these Terms of Service, all applicable laws and regulations, and agree that you are responsible for compliance with any applicable local laws.
+              By accessing or creating an account on Cash Dash, you agree to comply with and be bound by these Terms of Service, all applicable laws and regulations, and agree that you are responsible for compliance with any applicable local laws.
             </p>
           </section>
 
           <section className="space-y-2">
             <h3 className="text-lg font-bold text-foreground">2. Virtual Currency and Points</h3>
             <p>
-              Points earned on CashDash are virtual promotional units and hold no real-world monetary value until an eligible and approved redemption request has been formally completed by the platform. Points may not be transferred between accounts.
+              Points earned on Cash Dash are virtual promotional units and hold no real-world monetary value until an eligible and approved redemption request has been formally completed by the platform. Points may not be transferred between accounts.
             </p>
           </section>
 
@@ -51,7 +51,7 @@ export default function TermsPage() {
           <section className="space-y-2">
             <h3 className="text-lg font-bold text-foreground">4. Payouts and Approvals</h3>
             <p>
-              All reward redemptions undergo automated and manual review for risk verification. CashDash reserves the right to withhold payments if a third-party offerwall provider reverses an offer postback.
+              All reward redemptions undergo automated and manual review for risk verification. Cash Dash reserves the right to withhold payments if a third-party offerwall provider reverses an offer postback.
             </p>
           </section>
         </div>

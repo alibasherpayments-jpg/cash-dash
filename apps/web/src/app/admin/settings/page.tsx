@@ -9,10 +9,10 @@ import { Switch } from "@/components/ui/switch";
 import { Settings, Save, CheckCircle2, Shield, DollarSign, Trophy } from "lucide-react";
 
 export default function AdminSettingsPage() {
-  const [siteName, setSiteName] = useState("CashDash");
+  const [siteName, setSiteName] = useState("Cash Dash");
   const [supportEmail, setSupportEmail] = useState("support@cashdash.io");
-  const [conversionRate, setConversionRate] = useState("10000");
-  const [minWithdrawal, setMinWithdrawal] = useState("5000");
+  const [conversionRate, setConversionRate] = useState("1000");
+  const [minWithdrawal, setMinWithdrawal] = useState("100");
   const [referralPercent, setReferralPercent] = useState("10");
   const [leaderboardEnabled, setLeaderboardEnabled] = useState(true);
   const [maintenanceMode, setMaintenanceMode] = useState(false);

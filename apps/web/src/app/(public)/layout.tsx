@@ -14,7 +14,7 @@ export default function PublicLayout({ children }: { children: ReactNode }) {
                 <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-primary">
                   <span className="text-xs font-bold text-white">CD</span>
                 </div>
-                <span className="font-black">CashDash</span>
+                <span className="font-black">Cash Dash</span>
               </div>
               <p className="mt-2 text-xs text-muted-foreground">Earn real rewards by completing tasks and surveys.</p>
             </div>
@@ -49,7 +49,7 @@ export default function PublicLayout({ children }: { children: ReactNode }) {
             </div>
           </div>
           <div className="mt-8 border-t border-border/50 pt-8 text-center text-xs text-muted-foreground">
-            <p>&copy; {new Date().getFullYear()} CashDash. All rights reserved.</p>
+            <p>&copy; {new Date().getFullYear()} Cash Dash. All rights reserved.</p>
           </div>
         </div>
       </footer>

@@ -33,6 +33,13 @@ describe('WithdrawalsService', () => {
       user: {
         findUnique: vi.fn(),
       },
+      wallet: {
+        findUnique: vi.fn(),
+        update: vi.fn(),
+      },
+      ledgerEntry: {
+        create: vi.fn(),
+      },
       $transaction: vi.fn((arg) => (typeof arg === 'function' ? arg(mockPrisma) : Promise.all(arg))),
     };
 
@@ -51,8 +58,9 @@ describe('WithdrawalsService', () => {
     };
 
     mockSettingsService = {
-      getPointsConversionRate: vi.fn().mockResolvedValue(10000),
-      getMinWithdrawalPoints: vi.fn().mockResolvedValue(5000),
+      getConversionRate: vi.fn().mockResolvedValue(1000),
+      getPointsConversionRate: vi.fn().mockResolvedValue(1000),
+      getMinWithdrawalPoints: vi.fn().mockResolvedValue(100),
     };
 
     service = new WithdrawalsService(
@@ -111,6 +119,9 @@ describe('WithdrawalsService', () => {
 
     mockWalletService.getWallet.mockResolvedValue({
       availablePoints: 3000, // less than requested 5000
+    });
+    mockPrisma.wallet.findUnique.mockResolvedValue({
+      availablePoints: 3000,
     });
 
     await expect(

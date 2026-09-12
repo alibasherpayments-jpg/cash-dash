@@ -25,7 +25,7 @@ import {
   ShieldAlert,
   Loader2,
 } from "lucide-react";
-import { formatPoints, formatCash } from "@/lib/formatters";
+import { formatPoints, formatCash, formatPointsAsCash } from "@/lib/formatters";
 import apiClient from "@/lib/api-client";
 
 export default function OfferDetailPage() {
@@ -99,7 +99,7 @@ export default function OfferDetailPage() {
               {formatPoints(offer.rewardPoints)}
             </div>
             <span className="text-xs font-bold text-emerald-500 block">
-              ≈ {formatCash(offer.rewardPoints / 10000)} USD
+              ≈ {formatPointsAsCash(offer.rewardPoints)} USD
             </span>
           </div>
         </div>

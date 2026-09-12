@@ -10,7 +10,7 @@ import { WalletService } from '../wallet/wallet.service';
 import { NotificationsService } from '../notifications/notifications.service';
 import { AuditService } from '../audit/audit.service';
 import { SettingsService } from '../settings/settings.service';
-import { WithdrawalStatus, TransactionType, AuditAction, NotificationType, Prisma } from '@prisma/client';
+import { WithdrawalStatus, TransactionType, TransactionDirection, TransactionStatus, AuditAction, NotificationType, Prisma } from '@prisma/client';
 import {
   CreateWithdrawalDto,
   CreateWithdrawalMethodDto,
@@ -132,10 +132,13 @@ export class WithdrawalsService {
     if (!method.isActive) throw new BadRequestException('This withdrawal method is not available');
     if (method.isMaintenanceMode) throw new BadRequestException('This withdrawal method is under maintenance');
 
+    const conversionRate = await this.settingsService.getConversionRate();
+
     // Check minimum
     if (dto.points < method.minimumPoints) {
+      const minDollar = (method.minimumPoints / conversionRate).toFixed(2);
       throw new BadRequestException(
-        `Minimum withdrawal is ${method.minimumPoints} points ($${method.minimumPoints / 10000})`,
+        `Minimum withdrawal is ${method.minimumPoints} points ($${minDollar})`,
       );
     }
 
@@ -151,22 +154,32 @@ export class WithdrawalsService {
       }
     }
 
-    // Get wallet and check balance
-    const wallet = await this.walletService.getWallet(userId);
-    if (wallet.availablePoints < dto.points) {
-      throw new BadRequestException(
-        `Insufficient balance. Available: ${wallet.availablePoints} points`,
-      );
-    }
-
-    // Calculate fee
+    // Calculate fee & net values
     const feePoints = Math.floor(dto.points * (method.feePercent / 100));
     const netPoints = dto.points - feePoints;
-    const conversionRate = await this.settingsService.getConversionRate();
     const cashValue = netPoints / conversionRate;
 
-    // Create withdrawal in transaction
+    // Atomic withdrawal creation + wallet debit + ledger entry in a single transaction
     const withdrawal = await this.prisma.$transaction(async (tx) => {
+      // 1. Check wallet balance atomically inside transaction
+      const wallet = await tx.wallet.findUnique({ where: { userId } });
+      if (!wallet) throw new NotFoundException(`Wallet not found for user: ${userId}`);
+      if (wallet.availablePoints < dto.points) {
+        throw new BadRequestException(
+          `Insufficient balance. Available: ${wallet.availablePoints} points`,
+        );
+      }
+
+      // 2. Decrement wallet available points
+      await tx.wallet.update({
+        where: { userId },
+        data: {
+          availablePoints: { decrement: dto.points },
+          totalWithdrawn: { increment: dto.points },
+        },
+      });
+
+      // 3. Create withdrawal request
       const wr = await tx.withdrawalRequest.create({
         data: {
           userId,
@@ -182,6 +195,27 @@ export class WithdrawalsService {
         include: { method: true },
       });
 
+      // 4. Create double-entry ledger transaction
+      await tx.ledgerTransaction.create({
+        data: {
+          userId,
+          walletId: wallet.id,
+          type: TransactionType.WITHDRAWAL,
+          direction: TransactionDirection.DEBIT,
+          amount: dto.points,
+          status: TransactionStatus.COMPLETED,
+          source: 'withdrawal',
+          referenceId: wr.id,
+          description: `Withdrawal via ${method.name}`,
+          metadata: {
+            methodName: method.name,
+            cashValue,
+            netPoints,
+          },
+        },
+      });
+
+      // 5. Create initial status history
       await tx.withdrawalStatusHistory.create({
         data: {
           withdrawalId: wr.id,
@@ -191,16 +225,6 @@ export class WithdrawalsService {
       });
 
       return wr;
-    });
-
-    // Debit wallet
-    await this.walletService.debit({
-      userId,
-      amount: dto.points,
-      type: TransactionType.WITHDRAWAL,
-      source: 'withdrawal',
-      description: `Withdrawal via ${method.name}`,
-      referenceId: withdrawal.id,
     });
 
     // Send notification

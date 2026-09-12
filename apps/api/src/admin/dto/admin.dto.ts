@@ -53,3 +53,81 @@ export class AdminUpdateSettingDto {
   @IsString()
   value: string;
 }
+
+export class CreateOfferProviderDto {
+  @ApiProperty()
+  @IsString()
+  name: string;
+
+  @ApiPropertyOptional({ default: 'offerwall' })
+  @IsOptional()
+  @IsString()
+  type?: string;
+
+  @ApiProperty()
+  @IsString()
+  slug: string;
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
+  logoUrl?: string;
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
+  apiKeyMasked?: string;
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
+  webhookSecret?: string;
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
+  postbackUrl?: string;
+
+  @ApiPropertyOptional({ default: true })
+  @IsOptional()
+  @IsBoolean()
+  isActive?: boolean;
+}
+
+export class UpdateOfferProviderDto {
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
+  name?: string;
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
+  type?: string;
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
+  logoUrl?: string;
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
+  apiKeyMasked?: string;
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
+  webhookSecret?: string;
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsString()
+  postbackUrl?: string;
+
+  @ApiPropertyOptional()
+  @IsOptional()
+  @IsBoolean()
+  isActive?: boolean;
+}
+

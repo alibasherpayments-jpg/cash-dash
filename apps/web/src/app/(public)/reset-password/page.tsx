@@ -48,7 +48,7 @@ export default function ResetPasswordPage() {
           </div>
           <CardTitle className="text-2xl font-black tracking-tight">Set New Password</CardTitle>
           <CardDescription className="text-xs">
-            Create a secure new password for your CashDash account
+            Create a secure new password for your Cash Dash account
           </CardDescription>
         </CardHeader>
 

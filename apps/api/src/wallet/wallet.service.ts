@@ -43,7 +43,7 @@ export class WalletService {
     return wallet;
   }
 
-  async getWalletSummary(userId: string, conversionRate = 10000) {
+  async getWalletSummary(userId: string, conversionRate = 1000) {
     const wallet = await this.getWallet(userId);
     return {
       availablePoints: wallet.availablePoints,

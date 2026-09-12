@@ -13,8 +13,8 @@ import { Coins, AlertCircle, Loader2, ArrowRight } from "lucide-react";
 export default function LoginPage() {
   const router = useRouter();
   const { login } = useAuthStore();
-  const [email, setEmail] = useState("user@cashdash.io");
-  const [password, setPassword] = useState("Password123!");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
 
@@ -31,16 +31,6 @@ export default function LoginPage() {
     } finally {
       setIsLoading(false);
     }
-  };
-
-  const handleFillAdmin = () => {
-    setEmail("admin@cashdash.io");
-    setPassword("Admin@CashDash2024!");
-  };
-
-  const handleFillUser = () => {
-    setEmail("user@cashdash.io");
-    setPassword("Password123!");
   };
 
   return (
@@ -96,29 +86,11 @@ export default function LoginPage() {
               />
             </div>
 
-            {/* Quick Demo Credentials Autofill */}
-            <div className="pt-2">
-              <span className="text-[10px] uppercase font-bold text-muted-foreground block mb-1.5 tracking-wider">
-                Quick Demo Login Autofill:
-              </span>
-              <div className="grid grid-cols-2 gap-2">
-                <Button type="button" variant="outline" size="sm" onClick={handleFillUser} className="text-xs h-7">
-                  Demo Member
-                </Button>
-                <Button type="button" variant="outline" size="sm" onClick={handleFillAdmin} className="text-xs h-7 text-amber-500">
-                  Admin Demo
-                </Button>
-              </div>
-            </div>
           </CardContent>
 
           <CardFooter className="flex flex-col space-y-4">
-            <Button type="submit" disabled={isLoading} className="w-full font-bold h-10">
-              {isLoading ? (
-                <>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" /> Signing In...
-                </>
-              ) : (
+            <Button type="submit" loading={isLoading} className="w-full font-bold h-10">
+              {isLoading ? "Signing In..." : (
                 <>
                   Sign In <ArrowRight className="ml-2 h-4 w-4" />
                 </>

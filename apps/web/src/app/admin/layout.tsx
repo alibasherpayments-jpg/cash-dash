@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useAuthStore } from "@/store/auth-store";
@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import {
   Shield,
+  ShieldAlert,
   LayoutDashboard,
   Users,
   Gift,
@@ -22,15 +23,18 @@ import {
   Menu,
   X,
   LogOut,
+  Layers,
+  Loader2,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 const adminNavItems = [
   { name: "Overview", href: "/admin", icon: LayoutDashboard },
+  { name: "Withdrawals Queue", href: "/admin/withdrawals", icon: ArrowUpRight },
+  { name: "Payment Methods", href: "/admin/withdrawal-methods", icon: CreditCard },
+  { name: "Offerwalls Networks", href: "/admin/offerwalls", icon: Layers },
   { name: "Users", href: "/admin/users", icon: Users },
-  { name: "Offers", href: "/admin/offers", icon: Gift },
-  { name: "Withdrawals", href: "/admin/withdrawals", icon: ArrowUpRight },
-  { name: "Withdrawal Methods", href: "/admin/withdrawal-methods", icon: CreditCard },
+  { name: "Offers Directory", href: "/admin/offers", icon: Gift },
   { name: "Broadcast Notifications", href: "/admin/notifications", icon: Bell },
   { name: "Support Tickets", href: "/admin/support", icon: LifeBuoy },
   { name: "Audit Logs", href: "/admin/audit-logs", icon: FileText },
@@ -40,13 +44,66 @@ const adminNavItems = [
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const router = useRouter();
-  const { user, logout } = useAuthStore();
+  const { user, logout, isLoading } = useAuthStore();
   const [mobileOpen, setMobileOpen] = useState(false);
+
+  useEffect(() => {
+    if (!isLoading) {
+      if (!user) {
+        router.push(`/login?redirect=${encodeURIComponent(pathname)}`);
+      } else if (user.role !== "ADMIN") {
+        const timer = setTimeout(() => {
+          router.push("/dashboard");
+        }, 3000);
+        return () => clearTimeout(timer);
+      }
+    }
+  }, [isLoading, user, pathname, router]);
 
   const handleLogout = async () => {
     await logout();
     router.push("/login");
   };
+
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-[#0b0c10] flex flex-col items-center justify-center text-slate-200">
+        <Loader2 className="h-8 w-8 animate-spin text-amber-500 mb-4" />
+        <p className="text-sm text-slate-400 font-medium">Verifying administrative credentials...</p>
+      </div>
+    );
+  }
+
+  if (!user || user.role !== "ADMIN") {
+    return (
+      <div className="min-h-screen bg-[#0b0c10] flex flex-col items-center justify-center p-4 text-center">
+        <div className="max-w-md w-full p-8 rounded-2xl bg-[#12141e] border border-rose-500/20 shadow-2xl flex flex-col items-center">
+          <div className="h-16 w-16 rounded-2xl bg-rose-500/10 border border-rose-500/30 flex items-center justify-center text-rose-500 mb-6 shadow-lg shadow-rose-500/10">
+            <ShieldAlert className="h-8 w-8" />
+          </div>
+          <Badge variant="outline" className="text-xs bg-rose-500/10 text-rose-400 border-rose-500/30 mb-3 px-3 py-1 font-bold tracking-wider">
+            403 • ACCESS DENIED
+          </Badge>
+          <h1 className="text-2xl font-black text-white mb-2">Administrative Console</h1>
+          <p className="text-sm text-slate-400 mb-6 leading-relaxed">
+            This area is restricted to Cash Dash Administrators only. Your account does not have permission to view or manage this console.
+          </p>
+          <div className="flex flex-col w-full gap-3">
+            <Button
+              className="w-full bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-slate-950 font-bold"
+              onClick={() => router.push("/dashboard")}
+            >
+              <ArrowLeft className="h-4 w-4 mr-2" />
+              Return to Member Dashboard
+            </Button>
+            <p className="text-xs text-slate-500">
+              Redirecting to member dashboard in 3 seconds...
+            </p>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-[#0b0c10] text-slate-100 flex flex-col md:flex-row">
@@ -59,7 +116,7 @@ export default function AdminLayout({ children }: { children: React.ReactNode })
               <Shield className="h-5 w-5 text-slate-950 font-bold" />
             </div>
             <div>
-              <span className="text-lg font-black tracking-tight text-white">CashDash</span>
+              <span className="text-lg font-black tracking-tight text-white">Cash Dash</span>
               <Badge variant="outline" className="text-[10px] bg-amber-500/10 text-amber-400 border-amber-500/30 px-1.5 py-0 block w-fit">
                 ADMIN CONSOLE
               </Badge>

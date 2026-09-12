@@ -21,11 +21,11 @@ const ACHIEVEMENTS: AchievementItem[] = [
   { id: "ach-1", name: "First Reward", desc: "Complete your first offer and earn points", xp: 50, unlocked: true, progress: 1, total: 1, color: "bg-indigo-500" },
   { id: "ach-2", name: "Offer Master I", desc: "Complete 10 eligible offers or surveys", xp: 150, unlocked: true, progress: 10, total: 10, color: "bg-purple-500" },
   { id: "ach-3", name: "First Cashout", desc: "Request your first reward payout", xp: 100, unlocked: true, progress: 1, total: 1, color: "bg-emerald-500" },
-  { id: "ach-4", name: "Week Warrior", desc: "Maintain a 7-day active earning streak", xp: 200, unlocked: false, progress: 5, total: 7, color: "bg-amber-500" },
+  { id: "ach-4", name: "Wall Explorer", desc: "Complete offers across partner networks", xp: 200, unlocked: true, progress: 3, total: 3, color: "bg-amber-500" },
   { id: "ach-5", name: "Offer Master II", desc: "Complete 50 eligible offers or surveys", xp: 500, unlocked: false, progress: 12, total: 50, color: "bg-pink-500" },
   { id: "ach-6", name: "Century Club", desc: "Withdraw over $100 equivalent in rewards", xp: 500, unlocked: false, progress: 15, total: 100, color: "bg-cyan-500" },
-  { id: "ach-7", name: "Social Butterfly", desc: "Invite your first friend who earns points", xp: 100, unlocked: true, progress: 4, total: 1, color: "bg-orange-500" },
-  { id: "ach-8", name: "Offer Legend", desc: "Complete 100 offers on CashDash", xp: 1000, unlocked: false, progress: 12, total: 100, color: "bg-rose-500" },
+  { id: "ach-7", name: "High Earner", desc: "Earn over 25,000 points from verified offers", xp: 300, unlocked: false, progress: 8500, total: 25000, color: "bg-orange-500" },
+  { id: "ach-8", name: "Offer Legend", desc: "Complete 100 offers on Cash Dash", xp: 1000, unlocked: false, progress: 12, total: 100, color: "bg-rose-500" },
 ];
 
 export default function AchievementsPage() {

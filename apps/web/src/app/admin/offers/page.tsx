@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Plus, Search, Gift, Edit, Trash2, Star } from "lucide-react";
-import { formatPoints, formatCash } from "@/lib/formatters";
+import { formatPoints, formatCash, formatPointsAsCash } from "@/lib/formatters";
 
 interface AdminOfferItem {
   id: string;
@@ -107,7 +107,7 @@ export default function AdminOffersPage() {
                     <td className="py-3.5 px-5">
                       <span className="font-bold text-amber-400">{formatPoints(o.rewardPoints)}</span>
                       <span className="text-[10px] text-emerald-400 block font-semibold">
-                        ≈ {formatCash(o.rewardPoints / 10000)}
+                        ≈ {formatPointsAsCash(o.rewardPoints)}
                       </span>
                     </td>
                     <td className="py-3.5 px-5 font-mono">{o.completions}</td>

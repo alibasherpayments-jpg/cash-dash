@@ -28,7 +28,7 @@ import {
   PlusCircle,
   AlertTriangle,
 } from "lucide-react";
-import { formatPoints, formatCash, formatDateTime } from "@/lib/formatters";
+import { formatPoints, formatCash, formatPointsAsCash, formatDateTime } from "@/lib/formatters";
 
 interface AdminUserRow {
   id: string;
@@ -166,12 +166,12 @@ export default function AdminUsersPage() {
                     <td className="py-3.5 px-5">
                       <span className="font-bold text-white">{formatPoints(u.availablePoints)}</span>
                       <span className="text-[10px] text-emerald-400 block">
-                        ≈ {formatCash(u.availablePoints / 10000)}
+                        ≈ {formatPointsAsCash(u.availablePoints)}
                       </span>
                     </td>
 
                     <td className="py-3.5 px-5 font-bold text-emerald-400">
-                      {formatCash(u.totalWithdrawn / 10000)}
+                      {formatPointsAsCash(u.totalWithdrawn)}
                     </td>
 
                     <td className="py-3.5 px-5">

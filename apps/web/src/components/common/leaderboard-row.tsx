@@ -1,5 +1,5 @@
 import { AvatarWithFallback } from "@/components/common/avatar-with-fallback";
-import { formatPoints, formatCash } from "@/lib/formatters";
+import { formatPoints, formatCash, formatPointsAsCash } from "@/lib/formatters";
 import { cn } from "@/lib/utils";
 import type { LeaderboardEntry } from "@cashdash/shared";
 import { LeaderboardMetric } from "@cashdash/shared";
@@ -17,7 +17,7 @@ export function LeaderboardRow({ entry, isCurrentUser }: LeaderboardRowProps) {
     ? formatPoints(entry.value)
     : entry.metric === LeaderboardMetric.TOTAL_REFERRALS
     ? `${entry.value} referrals`
-    : formatCash(entry.value / 10000);
+    : formatPointsAsCash(entry.value);
 
   return (
     <div className={cn("flex items-center gap-3 rounded-lg px-3 py-2.5 transition-colors",

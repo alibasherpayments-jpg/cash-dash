@@ -21,22 +21,26 @@ export class PaginationDto {
 export function paginate<T>(
   data: T[],
   total: number,
-  page: number,
-  limit: number,
+  page?: number,
+  limit?: number,
 ) {
+  const safePage = !page || isNaN(Number(page)) || Number(page) < 1 ? 1 : Math.floor(Number(page));
+  const safeLimit = !limit || isNaN(Number(limit)) || Number(limit) < 1 ? 20 : Math.min(Math.floor(Number(limit)), 100);
   return {
     data,
     meta: {
       total,
-      page,
-      limit,
-      totalPages: Math.ceil(total / limit),
+      page: safePage,
+      limit: safeLimit,
+      totalPages: Math.max(1, Math.ceil(total / safeLimit)),
     },
   };
 }
 
-export function getPaginationParams(page = 1, limit = 20) {
-  const take = Math.min(limit, 100);
-  const skip = (page - 1) * take;
+export function getPaginationParams(page?: number, limit?: number) {
+  const safePage = !page || isNaN(Number(page)) || Number(page) < 1 ? 1 : Math.floor(Number(page));
+  const safeLimit = !limit || isNaN(Number(limit)) || Number(limit) < 1 ? 20 : Math.min(Math.floor(Number(limit)), 100);
+  const take = safeLimit;
+  const skip = (safePage - 1) * take;
   return { take, skip };
 }

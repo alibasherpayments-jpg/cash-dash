@@ -6,7 +6,7 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { AvatarWithFallback } from "@/components/common/avatar-with-fallback";
 import { Trophy, Medal, Crown, TrendingUp, Users, ShieldCheck } from "lucide-react";
-import { formatCash, formatPoints } from "@/lib/formatters";
+import { formatCash, formatPoints, formatPointsAsCash } from "@/lib/formatters";
 
 interface LeaderboardUser {
   rank: number;
@@ -14,25 +14,24 @@ interface LeaderboardUser {
   avatarUrl?: string;
   withdrawn: number;
   earned: number;
-  referrals: number;
   country: string;
 }
 
 const TOP_USERS: LeaderboardUser[] = [
-  { rank: 1, username: "alex_dash", withdrawn: 482000, earned: 964000, referrals: 42, country: "US" },
-  { rank: 2, username: "mia_rewards", withdrawn: 451000, earned: 902000, referrals: 35, country: "UK" },
-  { rank: 3, username: "sam_earner", withdrawn: 412000, earned: 824000, referrals: 29, country: "CA" },
-  { rank: 4, username: "elena_crypto", withdrawn: 375000, earned: 750000, referrals: 24, country: "DE" },
-  { rank: 5, username: "david_surveys", withdrawn: 340000, earned: 680000, referrals: 18, country: "FR" },
-  { rank: 6, username: "sarah_gamer", withdrawn: 310000, earned: 620000, referrals: 16, country: "AU" },
-  { rank: 7, username: "marcus_tech", withdrawn: 285000, earned: 570000, referrals: 14, country: "US" },
-  { rank: 8, username: "yuki_tokyo", withdrawn: 260000, earned: 520000, referrals: 12, country: "JP" },
-  { rank: 9, username: "lucas_saopaulo", withdrawn: 235000, earned: 470000, referrals: 9, country: "BR" },
-  { rank: 10, username: "chloe_points", withdrawn: 210000, earned: 420000, referrals: 7, country: "NL" },
+  { rank: 1, username: "alex_dash", withdrawn: 482000, earned: 964000, country: "US" },
+  { rank: 2, username: "mia_rewards", withdrawn: 451000, earned: 902000, country: "UK" },
+  { rank: 3, username: "sam_earner", withdrawn: 412000, earned: 824000, country: "CA" },
+  { rank: 4, username: "elena_crypto", withdrawn: 375000, earned: 750000, country: "DE" },
+  { rank: 5, username: "david_surveys", withdrawn: 340000, earned: 680000, country: "FR" },
+  { rank: 6, username: "sarah_gamer", withdrawn: 310000, earned: 620000, country: "AU" },
+  { rank: 7, username: "marcus_tech", withdrawn: 285000, earned: 570000, country: "US" },
+  { rank: 8, username: "yuki_tokyo", withdrawn: 260000, earned: 520000, country: "JP" },
+  { rank: 9, username: "lucas_saopaulo", withdrawn: 235000, earned: 470000, country: "BR" },
+  { rank: 10, username: "chloe_points", withdrawn: 210000, earned: 420000, country: "NL" },
 ];
 
 export default function LeaderboardPage() {
-  const [activeTab, setActiveTab] = useState<"WITHDRAWALS" | "EARNERS" | "REFERRERS">("WITHDRAWALS");
+  const [activeTab, setActiveTab] = useState<"WITHDRAWALS" | "EARNERS">("WITHDRAWALS");
 
   const top3 = TOP_USERS.slice(0, 3);
   const remaining = TOP_USERS.slice(3);
@@ -67,14 +66,6 @@ export default function LeaderboardPage() {
           >
             Top Earners
           </Button>
-          <Button
-            size="sm"
-            variant={activeTab === "REFERRERS" ? "default" : "ghost"}
-            onClick={() => setActiveTab("REFERRERS")}
-            className="text-xs font-semibold h-8"
-          >
-            Top Referrers
-          </Button>
         </div>
       </div>
 
@@ -92,14 +83,12 @@ export default function LeaderboardPage() {
           </div>
           <div className="p-2.5 rounded-xl bg-accent/5 border border-border">
             <span className="text-[10px] uppercase font-bold text-muted-foreground block">
-              {activeTab === "WITHDRAWALS" ? "Total Withdrawn" : activeTab === "EARNERS" ? "Total Earned" : "Referrals"}
+              {activeTab === "WITHDRAWALS" ? "Total Withdrawn" : "Total Earned"}
             </span>
             <span className="text-lg font-black text-foreground">
               {activeTab === "WITHDRAWALS"
-                ? formatCash(top3[1].withdrawn / 10000)
-                : activeTab === "EARNERS"
-                ? formatPoints(top3[1].earned)
-                : `${top3[1].referrals} Friends`}
+                ? formatPointsAsCash(top3[1].withdrawn)
+                : formatPoints(top3[1].earned)}
             </span>
           </div>
         </div>
@@ -119,14 +108,12 @@ export default function LeaderboardPage() {
           </div>
           <div className="p-3 rounded-xl bg-amber-500/10 border border-amber-500/20">
             <span className="text-[10px] uppercase font-bold text-amber-500 block">
-              {activeTab === "WITHDRAWALS" ? "Total Withdrawn" : activeTab === "EARNERS" ? "Total Earned" : "Referrals"}
+              {activeTab === "WITHDRAWALS" ? "Total Withdrawn" : "Total Earned"}
             </span>
             <span className="text-2xl font-black text-emerald-500">
               {activeTab === "WITHDRAWALS"
-                ? formatCash(top3[0].withdrawn / 10000)
-                : activeTab === "EARNERS"
-                ? formatPoints(top3[0].earned)
-                : `${top3[0].referrals} Friends`}
+                ? formatPointsAsCash(top3[0].withdrawn)
+                : formatPoints(top3[0].earned)}
             </span>
           </div>
         </div>
@@ -143,14 +130,12 @@ export default function LeaderboardPage() {
           </div>
           <div className="p-2.5 rounded-xl bg-accent/5 border border-border">
             <span className="text-[10px] uppercase font-bold text-muted-foreground block">
-              {activeTab === "WITHDRAWALS" ? "Total Withdrawn" : activeTab === "EARNERS" ? "Total Earned" : "Referrals"}
+              {activeTab === "WITHDRAWALS" ? "Total Withdrawn" : "Total Earned"}
             </span>
             <span className="text-lg font-black text-foreground">
               {activeTab === "WITHDRAWALS"
-                ? formatCash(top3[2].withdrawn / 10000)
-                : activeTab === "EARNERS"
-                ? formatPoints(top3[2].earned)
-                : `${top3[2].referrals} Friends`}
+                ? formatPointsAsCash(top3[2].withdrawn)
+                : formatPoints(top3[2].earned)}
             </span>
           </div>
         </div>
@@ -183,13 +168,11 @@ export default function LeaderboardPage() {
                 <div className="text-right">
                   <span className="font-bold text-sm text-foreground block">
                     {activeTab === "WITHDRAWALS"
-                      ? formatCash(user.withdrawn / 10000)
-                      : activeTab === "EARNERS"
-                      ? formatPoints(user.earned)
-                      : `${user.referrals} referrals`}
+                      ? formatPointsAsCash(user.withdrawn)
+                      : formatPoints(user.earned)}
                   </span>
                   <span className="text-[10px] text-muted-foreground font-mono">
-                    {formatPoints(user.withdrawn)} pts
+                    {formatPoints(user.withdrawn)}
                   </span>
                 </div>
               </div>
@@ -206,7 +189,7 @@ export default function LeaderboardPage() {
           </div>
           <div>
             <span className="text-xs text-muted-foreground font-semibold uppercase tracking-wider">Your Position</span>
-            <h4 className="font-bold text-sm text-foreground">You are ranked #127 on CashDash</h4>
+            <h4 className="font-bold text-sm text-foreground">You are ranked #127 on Cash Dash</h4>
           </div>
         </div>
 

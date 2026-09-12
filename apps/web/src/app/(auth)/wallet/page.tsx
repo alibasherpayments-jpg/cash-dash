@@ -17,7 +17,7 @@ import {
   Filter,
   CheckCircle2,
 } from "lucide-react";
-import { formatPoints, formatCash } from "@/lib/formatters";
+import { formatPoints, formatCash, formatPointsAsCash } from "@/lib/formatters";
 
 const FILTER_TABS = [
   { label: "All Transactions", value: "ALL" },
@@ -68,7 +68,7 @@ export default function WalletPage() {
             {formatPoints(summary?.availablePoints || 0)}
           </div>
           <div className="text-xs font-bold text-emerald-500 mt-1">
-            ≈ {formatCash((summary?.availablePoints || 0) / 10000)} USD
+            ≈ {formatPointsAsCash(summary?.availablePoints || 0)} USD
           </div>
         </Card>
 
@@ -96,7 +96,7 @@ export default function WalletPage() {
             {formatPoints(summary?.totalEarned || 0)}
           </div>
           <div className="text-xs text-emerald-500 font-semibold mt-1">
-            ≈ {formatCash((summary?.totalEarned || 0) / 10000)} Total
+            ≈ {formatPointsAsCash(summary?.totalEarned || 0)} Total
           </div>
         </Card>
 
@@ -107,7 +107,7 @@ export default function WalletPage() {
             <ArrowUpRight className="h-4 w-4 text-emerald-500" />
           </div>
           <div className="text-2xl sm:text-3xl font-black text-foreground">
-            {formatCash((summary?.totalWithdrawn || 0) / 10000)}
+            {formatPointsAsCash(summary?.totalWithdrawn || 0)}
           </div>
           <div className="text-xs text-muted-foreground mt-1">
             {formatPoints(summary?.totalWithdrawn || 0)} Cashed Out

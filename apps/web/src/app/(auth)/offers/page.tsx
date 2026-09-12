@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
+import Link from "next/link";
 import { useOffers } from "@/hooks/use-offers";
 import { OfferCard } from "@/components/common/offer-card";
 import { SearchInput } from "@/components/common/search-input";
@@ -14,7 +15,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { EmptyOffers } from "@/components/illustrations/empty-offers";
-import { Gift, Sparkles, Filter, SlidersHorizontal } from "lucide-react";
+import { Gift, Sparkles, Filter, SlidersHorizontal, Layers, ArrowRight } from "lucide-react";
 import { OfferCategory } from "@cashdash/shared";
 
 const CATEGORIES = [
@@ -47,13 +48,13 @@ export default function OffersPage() {
             <Gift className="h-7 w-7 text-primary" /> Offer Marketplace
           </h1>
           <p className="text-xs sm:text-sm text-muted-foreground mt-0.5">
-            Discover verified tasks, surveys, and high-reward mobile games
+            Discover verified tasks, surveys, and high-reward campaigns
           </p>
         </div>
 
         <div className="flex items-center gap-2">
           <Badge variant="outline" className="bg-emerald-500/10 text-emerald-500 border-emerald-500/20 text-xs font-semibold">
-            ● 30+ Offers Available
+            {offers.length > 0 ? `● ${offers.length} Offers Available` : "● Offerwalls Active"}
           </Badge>
         </div>
       </div>
@@ -122,23 +123,36 @@ export default function OffersPage() {
           ))}
         </div>
       ) : (
-        <div className="p-12 text-center rounded-2xl bg-card border border-border space-y-4">
-          <EmptyOffers className="mx-auto h-32 w-32 opacity-80" />
-          <h3 className="text-lg font-bold">No Offers Matching Your Filter</h3>
-          <p className="text-xs text-muted-foreground max-w-sm mx-auto">
-            Try searching for different terms or reset your category filters to view all available earning tasks.
-          </p>
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => {
-              setSelectedCategory("ALL");
-              setSearchTerm("");
-              setSortBy("recommended");
-            }}
-          >
-            Reset Filters
-          </Button>
+        <div className="p-12 sm:p-16 text-center rounded-2xl bg-card border border-border space-y-5">
+          <div className="mx-auto h-16 w-16 rounded-2xl bg-primary/10 text-primary flex items-center justify-center">
+            <Layers className="h-8 w-8" />
+          </div>
+          <div className="space-y-2 max-w-md mx-auto">
+            <h3 className="text-xl font-bold text-foreground">No Direct Offers Listed Right Now</h3>
+            <p className="text-xs sm:text-sm text-muted-foreground leading-relaxed">
+              Direct marketplace offers are added periodically by administrators. In the meantime, head over to our <strong>Offerwalls Hub</strong> to earn unlimited points through 7 verified networks with instant postback clearance!
+            </p>
+          </div>
+          <div className="flex flex-wrap items-center justify-center gap-3 pt-2">
+            <Button asChild size="lg" className="font-bold shadow-lg shadow-primary/20">
+              <Link href="/offerwalls">
+                <Layers className="mr-2 h-4 w-4" /> Explore Offerwalls Hub <ArrowRight className="ml-1.5 h-4 w-4" />
+              </Link>
+            </Button>
+            {(selectedCategory !== "ALL" || searchTerm) && (
+              <Button
+                variant="outline"
+                size="lg"
+                onClick={() => {
+                  setSelectedCategory("ALL");
+                  setSearchTerm("");
+                  setSortBy("recommended");
+                }}
+              >
+                Reset Filters
+              </Button>
+            )}
+          </div>
         </div>
       )}
     </div>

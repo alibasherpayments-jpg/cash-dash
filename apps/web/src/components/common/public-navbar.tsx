@@ -6,6 +6,8 @@ import { Coins, Menu, X } from "lucide-react";
 import { useState } from "react";
 import { cn } from "@/lib/utils";
 
+import { ThemeSwitcher } from "@/components/common/theme-switcher";
+
 const navLinks = [
   { label: "Features", href: "/#features" },
   { label: "How It Works", href: "/#how-it-works" },
@@ -24,7 +26,7 @@ export function PublicNavbar() {
           <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary">
             <Coins className="h-5 w-5 text-white" />
           </div>
-          <span className="text-xl font-black tracking-tight">CashDash</span>
+          <span className="text-xl font-black tracking-tight">Cash Dash</span>
         </Link>
 
         <nav className="hidden items-center gap-6 md:flex">
@@ -36,6 +38,7 @@ export function PublicNavbar() {
         </nav>
 
         <div className="hidden items-center gap-3 md:flex">
+          <ThemeSwitcher />
           {isAuthenticated ? (
             <Button asChild>
               <Link href="/dashboard">Dashboard</Link>
@@ -52,9 +55,12 @@ export function PublicNavbar() {
           )}
         </div>
 
-        <button className="md:hidden" onClick={() => setMobileOpen(!mobileOpen)}>
-          {mobileOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
-        </button>
+        <div className="flex items-center gap-2 md:hidden">
+          <ThemeSwitcher />
+          <button onClick={() => setMobileOpen(!mobileOpen)}>
+            {mobileOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
+          </button>
+        </div>
       </div>
 
       {mobileOpen && (

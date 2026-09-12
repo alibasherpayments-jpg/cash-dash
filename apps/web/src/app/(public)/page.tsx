@@ -26,6 +26,7 @@ import {
   Star,
   DollarSign,
   Lock,
+  Layers,
 } from "lucide-react";
 import { formatPoints, formatCash } from "@/lib/formatters";
 
@@ -103,7 +104,7 @@ export default function LandingPage() {
                     <Coins className="h-5 w-5" />
                   </div>
                   <div>
-                    <h3 className="font-bold text-sm text-foreground">CashDash Wallet</h3>
+                    <h3 className="font-bold text-sm text-foreground">Cash Dash Wallet</h3>
                     <p className="text-xs text-muted-foreground">Verified Member Tier</p>
                   </div>
                 </div>
@@ -317,7 +318,7 @@ export default function LandingPage() {
                         {formatPoints(offer.reward)} <span className="text-xs font-bold text-accent">pts</span>
                       </p>
                       <p className="text-xs font-medium text-emerald-500">
-                        ≈ {formatCash(offer.reward / 10000)}
+                        ≈ {formatCash(offer.reward / 1000)}
                       </p>
                     </div>
 
@@ -340,7 +341,7 @@ export default function LandingPage() {
               TRUST & SECURITY
             </Badge>
             <h2 className="text-3xl sm:text-5xl font-black tracking-tight">
-              Why Serious Earners Choose CashDash
+              Why Serious Earners Choose Cash Dash
             </h2>
             <p className="text-muted-foreground">
               Built with financial-grade precision, transparent ledger tracking, and guaranteed payout integrity.
@@ -370,9 +371,9 @@ export default function LandingPage() {
                 icon: CheckCircle2,
               },
               {
-                title: "Social Referral Program",
-                desc: "Invite your friends and earn a lifetime 10% commission on all qualifying offers they complete.",
-                icon: Users,
+                title: "Top Partner Offerwalls",
+                desc: "Direct access to industry-leading networks including Taskwall, CPALead, and ClickWall with instant postbacks.",
+                icon: Layers,
               },
               {
                 title: "Dedicated Support Desk",
@@ -457,7 +458,7 @@ export default function LandingPage() {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             {[
               {
-                quote: "CashDash is the first rewards site where cashouts actually feel instantaneous and transparent. I withdrew $50 via PayPal within 2 hours of hitting my game milestone.",
+                quote: "Cash Dash is the first rewards site where cashouts actually feel instantaneous and transparent. I withdrew my earnings via Vodafone Cash and Binance with zero hassle.",
                 author: "Marcus T.",
                 role: "Mobile Gamer • Joined 6 months ago",
               },
@@ -467,9 +468,9 @@ export default function LandingPage() {
                 role: "Student • Cashed out $320+",
               },
               {
-                quote: "Referral commissions hit my wallet without any manual claiming. Love the clean aesthetic and quick survey approvals.",
+                quote: "Cash Dash has the cleanest interface and highest payouts compared to any other platform. Love the instant verification and quick approvals.",
                 author: "David K.",
-                role: "Content Creator • 40+ Referrals",
+                role: "Verified Earner • Top Tier",
               },
             ].map((t, idx) => (
               <div key={idx} className="p-6 rounded-2xl bg-card border border-border space-y-4">
@@ -504,7 +505,7 @@ export default function LandingPage() {
           <Accordion type="single" collapsible className="w-full space-y-3">
             <AccordionItem value="q1" className="border border-border rounded-xl px-4">
               <AccordionTrigger className="font-bold text-sm sm:text-base">
-                How do I earn points on CashDash?
+                How do I earn points on Cash Dash?
               </AccordionTrigger>
               <AccordionContent className="text-sm text-muted-foreground leading-relaxed">
                 You earn points by completing verified partner offers: downloading and reaching levels in mobile games, testing new SaaS tools or fintech apps, completing opinion surveys, or shopping with cashback partners.
@@ -516,7 +517,7 @@ export default function LandingPage() {
                 What is the points conversion rate?
               </AccordionTrigger>
               <AccordionContent className="text-sm text-muted-foreground leading-relaxed">
-                By default, 10,000 points equals $1.00 USD (or 100 points = $0.01). Conversion rates are dynamically computed across the entire app and never hardcoded.
+                1,000 points equals $1.00 USD (or 100 points = $0.10). Conversion rates are dynamically computed across the entire app.
               </AccordionContent>
             </AccordionItem>
 
@@ -525,7 +526,7 @@ export default function LandingPage() {
                 What is the minimum withdrawal amount?
               </AccordionTrigger>
               <AccordionContent className="text-sm text-muted-foreground leading-relaxed">
-                Minimum withdrawals start at just 5,000 points ($0.50) for PayPal and select Digital Gift Cards. Bank transfers require 20,000 points ($2.00).
+                Minimum withdrawals start at just 100 points ($0.10 USD) for Vodafone Cash and Binance.
               </AccordionContent>
             </AccordionItem>
 
@@ -534,7 +535,7 @@ export default function LandingPage() {
                 How long do withdrawals take to process?
               </AccordionTrigger>
               <AccordionContent className="text-sm text-muted-foreground leading-relaxed">
-                Most digital payouts (PayPal, Crypto, Gift Cards) are reviewed and processed within 1 to 24 hours. Bank transfers take 1 to 3 business days.
+                Most digital payouts (Vodafone Cash and Binance) are reviewed and processed within 1 to 24 hours.
               </AccordionContent>
             </AccordionItem>
 
@@ -575,13 +576,13 @@ export default function LandingPage() {
               <div className="h-8 w-8 rounded-lg bg-primary flex items-center justify-center text-white">
                 <Coins className="h-5 w-5" />
               </div>
-              <span className="text-xl font-black">CashDash</span>
+              <span className="text-xl font-black">Cash Dash</span>
             </div>
             <p className="text-xs text-muted-foreground max-w-sm leading-relaxed">
               Premium gamified rewards and virtual currency platform. Complete offers, earn digital points, and cash out with confidence.
             </p>
             <p className="text-[11px] text-muted-foreground/60">
-              © {new Date().getFullYear()} CashDash Inc. All rights reserved. Demo platform.
+              © {new Date().getFullYear()} Cash Dash Inc. All rights reserved. Demo platform.
             </p>
           </div>
 
@@ -591,7 +592,7 @@ export default function LandingPage() {
               <li><Link href="/offers" className="hover:text-foreground">Game Offers</Link></li>
               <li><Link href="/offers" className="hover:text-foreground">Surveys</Link></li>
               <li><Link href="/offers" className="hover:text-foreground">App Downloads</Link></li>
-              <li><Link href="/referrals" className="hover:text-foreground">Referral Program</Link></li>
+              <li><Link href="/offerwalls" className="hover:text-foreground">Partner Offerwalls</Link></li>
             </ul>
           </div>
 

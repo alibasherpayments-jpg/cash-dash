@@ -2,14 +2,14 @@ import { Injectable, Logger } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 
 const DEFAULT_SETTINGS: Record<string, { value: string; type: string; category: string; label: string }> = {
-  conversion_rate: { value: '10000', type: 'number', category: 'financial', label: 'Points per $1 USD' },
+  conversion_rate: { value: '1000', type: 'number', category: 'financial', label: 'Points per $1 USD' },
   referral_reward_percent: { value: '10', type: 'number', category: 'referrals', label: 'Referral reward percentage of first withdrawal' },
-  referral_bonus_points: { value: '5000', type: 'number', category: 'referrals', label: 'Referral bonus points on sign-up' },
-  min_withdrawal_points: { value: '5000', type: 'number', category: 'financial', label: 'Minimum withdrawal in points' },
+  referral_bonus_points: { value: '500', type: 'number', category: 'referrals', label: 'Referral bonus points on sign-up' },
+  min_withdrawal_points: { value: '100', type: 'number', category: 'financial', label: 'Minimum withdrawal in points' },
   max_withdrawal_points: { value: '5000000', type: 'number', category: 'financial', label: 'Maximum withdrawal in points' },
   leaderboard_enabled: { value: 'true', type: 'boolean', category: 'features', label: 'Leaderboard enabled' },
   leaderboard_update_interval: { value: '3600', type: 'number', category: 'features', label: 'Leaderboard update interval (seconds)' },
-  daily_bonus_points: { value: '100', type: 'number', category: 'rewards', label: 'Daily login bonus points' },
+  daily_bonus_points: { value: '50', type: 'number', category: 'rewards', label: 'Daily login bonus points' },
   maintenance_mode: { value: 'false', type: 'boolean', category: 'system', label: 'Global maintenance mode' },
   max_offers_per_day: { value: '10', type: 'number', category: 'limits', label: 'Maximum offers a user can start per day' },
 };
@@ -68,7 +68,7 @@ export class SettingsService {
   // ─── Typed convenience getters ─────────────────────────────────────────────
 
   async getConversionRate(): Promise<number> {
-    return this.getNumber('conversion_rate', 10000);
+    return this.getNumber('conversion_rate', 1000);
   }
 
   async getReferralRewardPercent(): Promise<number> {
@@ -76,11 +76,11 @@ export class SettingsService {
   }
 
   async getReferralBonusPoints(): Promise<number> {
-    return this.getNumber('referral_bonus_points', 5000);
+    return this.getNumber('referral_bonus_points', 500);
   }
 
   async getMinWithdrawalPoints(): Promise<number> {
-    return this.getNumber('min_withdrawal_points', 5000);
+    return this.getNumber('min_withdrawal_points', 100);
   }
 
   async isLeaderboardEnabled(): Promise<boolean> {

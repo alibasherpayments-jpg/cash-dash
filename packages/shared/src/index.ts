@@ -253,7 +253,7 @@ export interface NotificationPublic {
 }
 
 // ---- Points Formatting Helper Constants ----
-export const POINTS_PER_DOLLAR = 10000; // 10,000 points = $1.00
+export const POINTS_PER_DOLLAR = 1000; // 1,000 points = $1.00
 
 export function pointsToCash(points: number, conversionRate = POINTS_PER_DOLLAR): number {
   return points / conversionRate;

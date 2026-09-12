@@ -15,6 +15,7 @@ import { ApiTags, ApiOperation, ApiBearerAuth } from '@nestjs/swagger';
 import { Request } from 'express';
 import { WithdrawalsService } from './withdrawals.service';
 import { CreateWithdrawalDto } from './dto/withdrawals.dto';
+import { PaginationDto } from '../common/dto/pagination.dto';
 import { CurrentUser } from '../common/decorators/current-user.decorator';
 import { Public } from '../common/decorators/public.decorator';
 
@@ -55,10 +56,9 @@ export class WithdrawalsController {
   @ApiOperation({ summary: 'Get current user withdrawals' })
   async getMyWithdrawals(
     @CurrentUser('id') userId: string,
-    @Query('page') page?: number,
-    @Query('limit') limit?: number,
+    @Query() query: PaginationDto,
   ) {
-    const result = await this.withdrawalsService.getUserWithdrawals(userId, page, limit);
+    const result = await this.withdrawalsService.getUserWithdrawals(userId, query.page, query.limit);
     return { success: true, ...result };
   }
 

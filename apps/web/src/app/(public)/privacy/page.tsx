@@ -24,7 +24,7 @@ export default function PrivacyPage() {
 
         <div className="space-y-6 text-sm text-muted-foreground leading-relaxed">
           <div className="p-4 rounded-xl bg-card border border-border text-foreground font-medium">
-            Note: This privacy policy is a template placeholder for the CashDash prototype.
+            Note: This privacy policy is a template placeholder for the Cash Dash platform.
           </div>
 
           <section className="space-y-2">

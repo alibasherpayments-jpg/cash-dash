@@ -15,7 +15,7 @@ export default function AboutPage() {
           Pioneering the Next Era of Digital Rewards
         </h1>
         <p className="text-base sm:text-lg text-muted-foreground max-w-2xl mx-auto">
-          We built CashDash to eliminate the slow payments, opaque deductions, and clunky interfaces that have plagued traditional rewards sites for over a decade.
+          We built Cash Dash to eliminate the slow payments, opaque deductions, and clunky interfaces that have plagued traditional rewards sites for over a decade.
         </p>
       </div>
 
@@ -52,7 +52,7 @@ export default function AboutPage() {
       </div>
 
       <div className="p-8 rounded-2xl bg-gradient-to-br from-primary/10 to-transparent border border-primary/20 text-center space-y-4">
-        <h3 className="text-2xl font-black">Ready to experience CashDash?</h3>
+        <h3 className="text-2xl font-black">Ready to experience Cash Dash?</h3>
         <p className="text-sm text-muted-foreground max-w-md mx-auto">
           Sign up today, explore dozens of offers, and discover why thousands earn daily.
         </p>
