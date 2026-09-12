@@ -12,16 +12,39 @@ const inter = Inter({
   display: "swap",
 });
 
+const appUrl = process.env.NEXT_PUBLIC_APP_URL || "https://web-production-79a62.up.railway.app";
+
 export const metadata: Metadata = {
-  metadataBase: new URL(process.env.NEXT_PUBLIC_APP_URL || "https://web-production-79a62.up.railway.app"),
+  metadataBase: new URL(appUrl),
   title: {
-    default: "Cash Dash - Complete Offers. Earn Points. Get Rewarded.",
-    template: "%s | Cash Dash",
+    default: "Cash Dash - Play Games, Complete Offers & Earn Instant Cash Rewards",
+    template: "%s | Cash Dash Rewards",
   },
   description:
-    "Join thousands of users earning real rewards by completing surveys, trying apps, and more. Convert points to cash instantly.",
-  keywords: ["earn rewards", "cashback", "surveys", "offers", "points", "rewards program"],
-  authors: [{ name: "Cash Dash" }],
+    "Join thousands of users earning real money and crypto by playing games, taking surveys, and completing tasks. Instant cashouts starting at just $0.10 USD via Vodafone Cash & Binance.",
+  keywords: [
+    "cash dash",
+    "cash dash rewards",
+    "earn money online",
+    "play games for cash",
+    "paid surveys",
+    "instant cashout",
+    "vodafone cash rewards",
+    "binance crypto rewards",
+    "complete offers",
+    "get paid to test apps",
+    "free crypto rewards",
+    "earn points redeem cash",
+    "gpt sites 2026",
+    "best reward platform",
+  ],
+  authors: [{ name: "Cash Dash Team", url: appUrl }],
+  creator: "Cash Dash",
+  publisher: "Cash Dash",
+  category: "finance",
+  alternates: {
+    canonical: "/",
+  },
   icons: {
     icon: [
       { url: "/favicon.ico", sizes: "any" },
@@ -39,26 +62,37 @@ export const metadata: Metadata = {
   openGraph: {
     type: "website",
     locale: "en_US",
-    url: "https://cashdash.app",
-    siteName: "Cash Dash",
-    title: "Cash Dash - Complete Offers. Earn Points. Get Rewarded.",
-    description: "Join thousands of users earning real rewards by completing surveys, trying apps, and more.",
+    url: appUrl,
+    siteName: "Cash Dash Rewards",
+    title: "Cash Dash - Play Games, Complete Offers & Earn Instant Cash Rewards",
+    description: "Turn your free time into cash. Complete surveys, play mobile games, and cash out instantly starting from just $0.10 USD.",
     images: [
       {
         url: "/images/og-image.png",
         width: 1200,
         height: 630,
-        alt: "Cash Dash Rewards",
+        alt: "Cash Dash - Earn Instant Cash Rewards",
       },
     ],
   },
   twitter: {
     card: "summary_large_image",
-    title: "Cash Dash",
-    description: "Earn rewards by completing offers and surveys.",
+    title: "Cash Dash - Play Games, Complete Offers & Earn Instant Cash Rewards",
+    description: "Turn your free time into cash. Complete surveys, play mobile games, and cash out instantly starting from just $0.10 USD.",
     images: ["/images/og-image.png"],
+    creator: "@CashDashApp",
   },
-  robots: { index: true, follow: true },
+  robots: {
+    index: true,
+    follow: true,
+    googleBot: {
+      index: true,
+      follow: true,
+      "max-video-preview": -1,
+      "max-image-preview": "large",
+      "max-snippet": -1,
+    },
+  },
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {

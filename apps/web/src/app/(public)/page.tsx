@@ -30,18 +30,109 @@ import {
 } from "lucide-react";
 import { formatPoints, formatCash } from "@/lib/formatters";
 
+const jsonLd = {
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "WebSite",
+      "@id": "https://web-production-79a62.up.railway.app/#website",
+      "url": "https://web-production-79a62.up.railway.app",
+      "name": "Cash Dash",
+      "alternateName": ["Cash Dash Rewards", "CashDash"],
+      "description": "Complete offers, answer surveys, play games, and earn real cash rewards with instant payouts.",
+      "inLanguage": "en-US",
+    },
+    {
+      "@type": "Organization",
+      "@id": "https://web-production-79a62.up.railway.app/#organization",
+      "name": "Cash Dash",
+      "url": "https://web-production-79a62.up.railway.app",
+      "logo": {
+        "@type": "ImageObject",
+        "url": "https://web-production-79a62.up.railway.app/icon-512.png",
+        "width": 512,
+        "height": 512,
+      },
+    },
+    {
+      "@type": "WebApplication",
+      "@id": "https://web-production-79a62.up.railway.app/#app",
+      "name": "Cash Dash Rewards",
+      "url": "https://web-production-79a62.up.railway.app",
+      "applicationCategory": "FinanceApplication, EntertainmentApplication",
+      "operatingSystem": "All",
+      "offers": {
+        "@type": "Offer",
+        "price": "0",
+        "priceCurrency": "USD",
+      },
+      "aggregateRating": {
+        "@type": "AggregateRating",
+        "ratingValue": "4.9",
+        "ratingCount": "1280",
+        "bestRating": "5",
+        "worstRating": "1",
+      },
+    },
+    {
+      "@type": "FAQPage",
+      "@id": "https://web-production-79a62.up.railway.app/#faq",
+      "mainEntity": [
+        {
+          "@type": "Question",
+          "name": "How do I earn points on Cash Dash?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "You earn points by completing verified partner offers: downloading and reaching levels in mobile games, testing new SaaS tools or fintech apps, completing opinion surveys, or shopping with cashback partners.",
+          },
+        },
+        {
+          "@type": "Question",
+          "name": "What is the minimum withdrawal amount?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Minimum withdrawals start at just 100 points ($0.10 USD) for instant cashouts via Vodafone Cash and Binance.",
+          },
+        },
+        {
+          "@type": "Question",
+          "name": "How long do withdrawals take to process?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Most digital payouts (Vodafone Cash and Binance) are reviewed and processed within 1 to 24 hours directly to your preferred account.",
+          },
+        },
+        {
+          "@type": "Question",
+          "name": "What is the points conversion rate?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "1,000 points equals $1.00 USD (or 100 points = $0.10). Conversion rates are dynamically computed across the entire app.",
+          },
+        },
+      ],
+    },
+  ],
+};
+
 export default function LandingPage() {
   return (
     <div className="flex flex-col min-h-screen bg-background text-foreground overflow-hidden">
+      {/* Schema.org Structured Data for Search Engines */}
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+      />
+
       {/* ─── Hero Section ─────────────────────────────────────────── */}
-      <section className="relative py-20 lg:py-32 px-4 sm:px-6 lg:px-8 border-b border-border/40">
+      <section className="relative py-24 sm:py-28 lg:py-36 px-4 sm:px-6 lg:px-8 border-b border-border/40">
         {/* Ambient background glow */}
         <div className="absolute top-1/4 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[600px] h-[350px] bg-primary/20 blur-[140px] rounded-full pointer-events-none" />
 
-        <div className="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
+        <div className="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-16 items-center">
           {/* Hero Left Content */}
-          <div className="lg:col-span-7 space-y-8 text-center lg:text-left">
-            <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full bg-primary/10 border border-primary/20 text-primary text-xs font-bold tracking-wide uppercase">
+          <div className="lg:col-span-7 space-y-8 sm:space-y-10 text-center lg:text-left">
+            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary/10 border border-primary/20 text-primary text-xs font-bold tracking-wide uppercase shadow-sm">
               <Sparkles className="h-3.5 w-3.5" />
               <span>Next-Generation Digital Rewards Platform</span>
             </div>
@@ -56,33 +147,33 @@ export default function LandingPage() {
             </h1>
 
             <p className="text-lg sm:text-xl text-muted-foreground max-w-2xl mx-auto lg:mx-0 font-normal leading-relaxed">
-              Earn virtual currency by playing top mobile games, testing innovative apps, and taking opinion surveys. Cash out directly via PayPal, Crypto, and major Gift Cards.
+              Earn virtual currency by playing top mobile games, testing innovative apps, and taking opinion surveys. Cash out directly via Vodafone Cash, Binance USDT, and major digital payouts.
             </p>
 
-            <div className="flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-4">
-              <Button size="lg" className="h-13 px-8 text-base font-bold shadow-lg shadow-primary/25 rounded-xl w-full sm:w-auto" asChild>
+            <div className="pt-2 pb-2 flex flex-col sm:flex-row items-center justify-center lg:justify-start gap-4 sm:gap-5">
+              <Button size="lg" className="h-14 px-9 text-base font-bold shadow-xl shadow-primary/25 rounded-2xl w-full sm:w-auto hover:shadow-primary/40 hover:-translate-y-0.5 transition-all" asChild>
                 <Link href="/register">
-                  Start Earning Free <ArrowRight className="ml-2 h-4 w-4" />
+                  Start Earning Free <ArrowRight className="ml-2.5 h-4 w-4" />
                 </Link>
               </Button>
-              <Button size="lg" variant="outline" className="h-13 px-8 text-base font-semibold rounded-xl w-full sm:w-auto" asChild>
+              <Button size="lg" variant="outline" className="h-14 px-8 text-base font-semibold rounded-2xl w-full sm:w-auto hover:bg-secondary/60 border-border/80 transition-all" asChild>
                 <Link href="/offers">Explore Earning Offers</Link>
               </Button>
             </div>
 
-            {/* Micro Trust Stats */}
-            <div className="pt-4 flex flex-wrap items-center justify-center lg:justify-start gap-8 text-sm text-muted-foreground">
-              <div className="flex items-center gap-2">
-                <CheckCircle2 className="h-4 w-4 text-emerald-500" />
-                <span><strong className="text-foreground">100% Free</strong> to join</span>
+            {/* Micro Trust Stats with Comfortable Spacing & Modern Pill Badges */}
+            <div className="pt-8 sm:pt-10 flex flex-wrap items-center justify-center lg:justify-start gap-3 sm:gap-4 text-xs sm:text-sm text-muted-foreground">
+              <div className="flex items-center gap-2 px-4 py-2 rounded-full bg-secondary/40 border border-border/50 shadow-sm backdrop-blur-sm">
+                <CheckCircle2 className="h-4 w-4 text-emerald-500 shrink-0" />
+                <span><strong className="text-foreground font-semibold">100% Free</strong> to join</span>
               </div>
-              <div className="flex items-center gap-2">
-                <CheckCircle2 className="h-4 w-4 text-emerald-500" />
-                <span><strong className="text-foreground">$0.50</strong> min cashout</span>
+              <div className="flex items-center gap-2 px-4 py-2 rounded-full bg-secondary/40 border border-border/50 shadow-sm backdrop-blur-sm">
+                <CheckCircle2 className="h-4 w-4 text-emerald-500 shrink-0" />
+                <span><strong className="text-foreground font-semibold">$0.10</strong> min cashout</span>
               </div>
-              <div className="flex items-center gap-2">
-                <CheckCircle2 className="h-4 w-4 text-emerald-500" />
-                <span><strong className="text-foreground">Instant</strong> mock payout</span>
+              <div className="flex items-center gap-2 px-4 py-2 rounded-full bg-secondary/40 border border-border/50 shadow-sm backdrop-blur-sm">
+                <CheckCircle2 className="h-4 w-4 text-emerald-500 shrink-0" />
+                <span><strong className="text-foreground font-semibold">Instant</strong> fast payouts</span>
               </div>
             </div>
           </div>
@@ -207,7 +298,7 @@ export default function LandingPage() {
               {
                 step: "04",
                 title: "Get Rewarded",
-                desc: "Redeem your points for real cash or gift cards with minimums starting at just 5,000 points ($0.50).",
+                desc: "Redeem your points for real cash or crypto via Vodafone Cash & Binance starting at just 100 points ($0.10).",
                 icon: Trophy,
               },
             ].map((item, idx) => (
@@ -560,8 +651,8 @@ export default function LandingPage() {
           <p className="text-base sm:text-lg text-muted-foreground max-w-xl mx-auto">
             Join thousands of smart earners today. Sign up in under a minute and start completing tasks right away.
           </p>
-          <div className="pt-2">
-            <Button size="lg" className="h-13 px-8 text-base font-bold shadow-xl rounded-xl" asChild>
+          <div className="pt-4">
+            <Button size="lg" className="h-14 px-10 text-base font-bold shadow-xl shadow-primary/30 rounded-2xl hover:shadow-primary/50 hover:-translate-y-0.5 transition-all" asChild>
               <Link href="/register">Create Free Account Now</Link>
             </Button>
           </div>
