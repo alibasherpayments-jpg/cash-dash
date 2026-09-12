@@ -1,4 +1,4 @@
-﻿import { Injectable, Logger } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { SettingsService } from '../settings/settings.service';
 import { LeaderboardMetric, WithdrawalStatus } from '@prisma/client';
@@ -76,16 +76,12 @@ export class LeaderboardService {
     const enabled = await this.settingsService.isLeaderboardEnabled();
     if (!enabled) return [];
 
-    // Find wallets with withdrawals or users who have withdrawal requests
+    // Find wallets for visible platform users
     const wallets = await this.prisma.wallet.findMany({
       where: {
         NOT: {
           user: { profile: { isLeaderboardVisible: false } },
         },
-        OR: [
-          { totalWithdrawn: { gt: 0 } },
-          { user: { withdrawalRequests: { some: {} } } },
-        ],
       },
       select: {
         userId: true,
@@ -96,6 +92,7 @@ export class LeaderboardService {
           select: {
             id: true,
             username: true,
+            createdAt: true,
             profile: {
               select: { avatarUrl: true, country: true, isLeaderboardVisible: true },
             },
@@ -117,9 +114,9 @@ export class LeaderboardService {
 
     // Map each wallet with effective total withdrawn and extract payout destination
     const items = wallets
-      .filter((w) => w.user?.profile?.isLeaderboardVisible !== false)
+      .filter((w) => w.user && w.user.profile?.isLeaderboardVisible !== false)
       .map((w) => {
-        const validWithdrawals = w.user.withdrawalRequests.filter(
+        const validWithdrawals = (w.user.withdrawalRequests || []).filter(
           (r) =>
             r.status !== WithdrawalStatus.REJECTED &&
             r.status !== WithdrawalStatus.CANCELLED &&
@@ -130,7 +127,7 @@ export class LeaderboardService {
         const effectiveWithdrawn = Math.max(w.totalWithdrawn || 0, requestsSum);
 
         // Pick latest withdrawal request for destination masking
-        const latestReq = validWithdrawals[0] || w.user.withdrawalRequests[0];
+        const latestReq = validWithdrawals[0] || (w.user.withdrawalRequests || [])[0];
         let maskedDestination: string | null = null;
         let methodName: string | null = null;
 
@@ -151,15 +148,30 @@ export class LeaderboardService {
           totalEarned: Math.max(w.totalEarned || 0, w.availablePoints || 0),
           lastMethodName: methodName,
           lastPayoutMasked: maskedDestination,
+          createdAt: w.user.createdAt,
         };
       })
-      .filter((w) => w.totalWithdrawn > 0)
-      .sort((a, b) => b.totalWithdrawn - a.totalWithdrawn)
+      .sort((a, b) => {
+        if (b.totalWithdrawn !== a.totalWithdrawn) {
+          return b.totalWithdrawn - a.totalWithdrawn;
+        }
+        if (b.totalEarned !== a.totalEarned) {
+          return b.totalEarned - a.totalEarned;
+        }
+        return new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime();
+      })
       .slice(0, limit);
 
     return items.map((item, idx) => ({
       rank: idx + 1,
-      ...item,
+      userId: item.userId,
+      username: item.username,
+      avatarUrl: item.avatarUrl,
+      country: item.country,
+      totalWithdrawn: item.totalWithdrawn,
+      totalEarned: item.totalEarned,
+      lastMethodName: item.lastMethodName,
+      lastPayoutMasked: item.lastPayoutMasked,
     }));
   }
 
@@ -176,10 +188,6 @@ export class LeaderboardService {
         NOT: {
           user: { profile: { isLeaderboardVisible: false } },
         },
-        OR: [
-          { totalEarned: { gt: 0 } },
-          { availablePoints: { gt: 0 } },
-        ],
       },
       select: {
         userId: true,
@@ -190,6 +198,7 @@ export class LeaderboardService {
           select: {
             id: true,
             username: true,
+            createdAt: true,
             profile: {
               select: { avatarUrl: true, country: true, isLeaderboardVisible: true },
             },
@@ -208,7 +217,7 @@ export class LeaderboardService {
     });
 
     const items = wallets
-      .filter((w) => w.user?.profile?.isLeaderboardVisible !== false)
+      .filter((w) => w.user && w.user.profile?.isLeaderboardVisible !== false)
       .map((w) => {
         const effectiveEarned = Math.max(w.totalEarned || 0, w.availablePoints || 0);
 
@@ -232,15 +241,30 @@ export class LeaderboardService {
           totalEarned: effectiveEarned,
           lastMethodName: methodName,
           lastPayoutMasked: maskedDestination,
+          createdAt: w.user.createdAt,
         };
       })
-      .filter((w) => w.totalEarned > 0)
-      .sort((a, b) => b.totalEarned - a.totalEarned)
+      .sort((a, b) => {
+        if (b.totalEarned !== a.totalEarned) {
+          return b.totalEarned - a.totalEarned;
+        }
+        if (b.totalWithdrawn !== a.totalWithdrawn) {
+          return b.totalWithdrawn - a.totalWithdrawn;
+        }
+        return new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime();
+      })
       .slice(0, limit);
 
     return items.map((item, idx) => ({
       rank: idx + 1,
-      ...item,
+      userId: item.userId,
+      username: item.username,
+      avatarUrl: item.avatarUrl,
+      country: item.country,
+      totalWithdrawn: item.totalWithdrawn,
+      totalEarned: item.totalEarned,
+      lastMethodName: item.lastMethodName,
+      lastPayoutMasked: item.lastPayoutMasked,
     }));
   }
 
