@@ -1,0 +1,129 @@
+"use client";
+
+import React, { useState } from "react";
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
+import { Label } from "@/components/ui/label";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Bell, Send, CheckCircle2, Loader2, Users } from "lucide-react";
+
+export default function AdminBroadcastNotificationsPage() {
+  const [title, setTitle] = useState("");
+  const [message, setMessage] = useState("");
+  const [audience, setAudience] = useState("ALL");
+  const [type, setType] = useState("PROMOTIONAL");
+  const [isSending, setIsSending] = useState(false);
+  const [sent, setSent] = useState(false);
+
+  const handleSend = (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsSending(true);
+    setTimeout(() => {
+      setIsSending(false);
+      setSent(true);
+      setTitle("");
+      setMessage("");
+      setTimeout(() => setSent(false), 3000);
+    }, 800);
+  };
+
+  return (
+    <div className="max-w-3xl mx-auto space-y-6">
+      <div>
+        <h1 className="text-2xl sm:text-3xl font-black tracking-tight text-white flex items-center gap-2.5">
+          <Bell className="h-7 w-7 text-amber-500" /> Broadcast System Announcements
+        </h1>
+        <p className="text-xs sm:text-sm text-slate-400 mt-0.5">
+          Send in-app notifications and promotional alerts to segmented member groups
+        </p>
+      </div>
+
+      <Card className="bg-[#12141d] border-slate-800 text-slate-100">
+        <CardHeader>
+          <CardTitle className="text-base font-bold text-white">Create Announcement</CardTitle>
+          <CardDescription className="text-xs text-slate-400">
+            Dispatched instantly to users matching the audience filter
+          </CardDescription>
+        </CardHeader>
+
+        <CardContent>
+          <form onSubmit={handleSend} className="space-y-4 text-xs">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <div className="space-y-1.5">
+                <Label className="text-xs font-semibold text-slate-200">Target Audience</Label>
+                <Select value={audience} onValueChange={setAudience}>
+                  <SelectTrigger className="bg-slate-900 border-slate-800 text-slate-200 text-xs h-9">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent className="bg-slate-900 border-slate-800 text-slate-200 text-xs">
+                    <SelectItem value="ALL">All Registered Users (25)</SelectItem>
+                    <SelectItem value="ACTIVE">Active Users in Last 7 Days (18)</SelectItem>
+                    <SelectItem value="NEW">Users Registered Today (4)</SelectItem>
+                    <SelectItem value="WITHDRAWN">Users with ≥ 1 Paid Withdrawal (12)</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div className="space-y-1.5">
+                <Label className="text-xs font-semibold text-slate-200">Notification Type</Label>
+                <Select value={type} onValueChange={setType}>
+                  <SelectTrigger className="bg-slate-900 border-slate-800 text-slate-200 text-xs h-9">
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent className="bg-slate-900 border-slate-800 text-slate-200 text-xs">
+                    <SelectItem value="PROMOTIONAL">Promotional / Bonus Points</SelectItem>
+                    <SelectItem value="SYSTEM_ANNOUNCEMENT">System Maintenance / Update</SelectItem>
+                    <SelectItem value="ACHIEVEMENT">Special Platform Milestone</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+
+            <div className="space-y-1.5">
+              <Label className="text-xs font-semibold text-slate-200">Headline Title</Label>
+              <Input
+                required
+                placeholder="e.g. 2x Points Weekend Active!"
+                value={title}
+                onChange={(e) => setTitle(e.target.value)}
+                className="bg-slate-900 border-slate-800 text-xs h-9 text-slate-200"
+              />
+            </div>
+
+            <div className="space-y-1.5">
+              <Label className="text-xs font-semibold text-slate-200">Message Body</Label>
+              <Textarea
+                required
+                rows={4}
+                placeholder="Enter the full notification message shown to members..."
+                value={message}
+                onChange={(e) => setMessage(e.target.value)}
+                className="bg-slate-900 border-slate-800 text-xs text-slate-200"
+              />
+            </div>
+
+            <div className="pt-4 flex justify-between items-center border-t border-slate-800">
+              {sent && (
+                <span className="text-emerald-400 font-bold flex items-center gap-1.5 text-xs">
+                  <CheckCircle2 className="h-4 w-4" /> Broadcast dispatched to audience!
+                </span>
+              )}
+              <Button type="submit" disabled={isSending} className="ml-auto bg-amber-500 hover:bg-amber-600 text-slate-950 font-bold">
+                {isSending ? <Loader2 className="h-4 w-4 animate-spin mr-1" /> : <Send className="h-4 w-4 mr-1.5" />}
+                Send Broadcast
+              </Button>
+            </div>
+          </form>
+        </CardContent>
+      </Card>
+    </div>
+  );
+}

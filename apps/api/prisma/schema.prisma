@@ -1,0 +1,703 @@
+// f:\Projects\Cash Dash\apps\api\prisma\schema.prisma
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum UserRole {
+  USER
+  ADMIN
+  SUPPORT
+}
+
+enum UserStatus {
+  ACTIVE
+  SUSPENDED
+  BANNED
+  PENDING_VERIFICATION
+}
+
+enum OfferCategory {
+  GAMES
+  APPS
+  SURVEYS
+  SHOPPING
+  FINANCE
+  SIGN_UP
+  TRIALS
+  OTHER
+}
+
+enum OfferDifficulty {
+  EASY
+  MEDIUM
+  HARD
+}
+
+enum OfferStatus {
+  ACTIVE
+  INACTIVE
+  EXPIRED
+  FEATURED
+}
+
+enum OfferCompletionStatus {
+  CLICKED
+  STARTED
+  PENDING
+  COMPLETED
+  REJECTED
+  REVERSED
+  EXPIRED
+  UNDER_REVIEW
+}
+
+enum TransactionType {
+  OFFER_REWARD
+  SURVEY_REWARD
+  REFERRAL_REWARD
+  DAILY_BONUS
+  PROMOTIONAL_BONUS
+  WITHDRAWAL
+  WITHDRAWAL_REVERSAL
+  ADMIN_ADJUSTMENT
+}
+
+enum TransactionDirection {
+  CREDIT
+  DEBIT
+}
+
+enum TransactionStatus {
+  PENDING
+  COMPLETED
+  REVERSED
+  FAILED
+}
+
+enum WithdrawalStatus {
+  PENDING
+  PROCESSING
+  PAID
+  COMPLETED
+  REJECTED
+  CANCELLED
+  FAILED
+  REFUNDED
+  UNDER_REVIEW
+}
+
+enum WithdrawalFieldType {
+  TEXT
+  EMAIL
+  NUMBER
+  SELECT
+  TEXTAREA
+}
+
+enum NotificationType {
+  REWARD_ADDED
+  REWARD_PENDING
+  REWARD_REVERSED
+  WITHDRAWAL_REQUESTED
+  WITHDRAWAL_PROCESSING
+  WITHDRAWAL_COMPLETED
+  WITHDRAWAL_REJECTED
+  REFERRAL_REWARD
+  PROMOTIONAL
+  SYSTEM_ANNOUNCEMENT
+  ACHIEVEMENT_UNLOCKED
+}
+
+enum TicketStatus {
+  OPEN
+  WAITING_FOR_USER
+  IN_PROGRESS
+  RESOLVED
+  CLOSED
+}
+
+enum TicketCategory {
+  OFFER_ISSUE
+  WITHDRAWAL_ISSUE
+  ACCOUNT_ISSUE
+  PAYMENT_ISSUE
+  TECHNICAL_ISSUE
+  OTHER
+}
+
+enum RiskLevel {
+  LOW
+  MEDIUM
+  HIGH
+  CRITICAL
+}
+
+enum RiskStatus {
+  CLEAR
+  MONITORING
+  REVIEW_REQUIRED
+  RESTRICTED
+}
+
+enum LeaderboardMetric {
+  TOTAL_WITHDRAWN
+  TOTAL_EARNED
+  TOTAL_REFERRALS
+}
+
+enum AuditAction {
+  USER_SUSPENDED
+  USER_UNSUSPENDED
+  USER_VERIFIED
+  BALANCE_ADJUSTED
+  WITHDRAWAL_APPROVED
+  WITHDRAWAL_REJECTED
+  WITHDRAWAL_PAID
+  WITHDRAWAL_METHOD_CREATED
+  WITHDRAWAL_METHOD_UPDATED
+  WITHDRAWAL_METHOD_DELETED
+  OFFER_CREATED
+  OFFER_UPDATED
+  OFFER_DELETED
+  SETTINGS_UPDATED
+  PROVIDER_UPDATED
+  NOTIFICATION_SENT
+}
+
+model User {
+  id                  String     @id @default(cuid())
+  email               String     @unique
+  username            String     @unique
+  passwordHash        String
+  role                UserRole   @default(USER)
+  status              UserStatus @default(PENDING_VERIFICATION)
+  emailVerifiedAt     DateTime?
+  referralCode        String     @unique @default(cuid())
+  referredById        String?
+  createdAt           DateTime   @default(now())
+  updatedAt           DateTime   @updatedAt
+
+  referredBy          User?        @relation("Referrals", fields: [referredById], references: [id])
+  referrals           User[]       @relation("Referrals")
+  profile             Profile?
+  wallet              Wallet?
+  sessions            Session[]
+  offerClicks         OfferClick[]
+  offerCompletions    OfferCompletion[]
+  withdrawalRequests  WithdrawalRequest[]
+  notifications       Notification[]
+  notificationPref    NotificationPreference?
+  referralsMade       Referral[]   @relation("ReferrerUser")
+  referralReceived    Referral?    @relation("ReferredUser")
+  supportTickets      SupportTicket[]
+  adminNotes          AdminNote[]  @relation("AdminNoteTarget")
+  adminNotesMade      AdminNote[]  @relation("AdminNoteAuthor")
+  auditLogs           AuditLog[]   @relation("AuditLogAdmin")
+  riskAssessment      RiskAssessment?
+  fraudSignals        FraudSignal[]
+  userAchievements    UserAchievement[]
+  userStreak          UserStreak?
+  leaderboardEntries  LeaderboardSnapshot[]
+
+  @@index([email])
+  @@index([username])
+  @@index([referralCode])
+  @@index([status])
+  @@index([createdAt])
+}
+
+model Profile {
+  id                   String   @id @default(cuid())
+  userId               String   @unique
+  avatarUrl            String?
+  country              String?
+  bio                  String?
+  isLeaderboardVisible Boolean  @default(true)
+  isProfileVisible     Boolean  @default(true)
+  emailNotifications   Boolean  @default(true)
+  pushNotifications    Boolean  @default(false)
+  createdAt            DateTime @default(now())
+  updatedAt            DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  userId       String
+  refreshToken String   @unique
+  userAgent    String?
+  ipAddress    String?
+  expiresAt    DateTime
+  createdAt    DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([refreshToken])
+}
+
+model Wallet {
+  id              String   @id @default(cuid())
+  userId          String   @unique
+  availablePoints Int      @default(0)
+  pendingPoints   Int      @default(0)
+  totalEarned     Int      @default(0)
+  totalWithdrawn  Int      @default(0)
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  user         User               @relation(fields: [userId], references: [id], onDelete: Cascade)
+  transactions LedgerTransaction[]
+
+  @@index([userId])
+}
+
+model LedgerTransaction {
+  id          String               @id @default(cuid())
+  userId      String
+  walletId    String
+  type        TransactionType
+  direction   TransactionDirection
+  amount      Int                  // in points
+  status      TransactionStatus    @default(COMPLETED)
+  source      String               // e.g. "offer", "referral", "admin", "withdrawal"
+  referenceId String?              // external ID (offer completion ID, withdrawal ID, etc.)
+  description String
+  metadata    Json?                // flexible extra data
+  createdAt   DateTime             @default(now())
+  updatedAt   DateTime             @updatedAt
+
+  wallet Wallet @relation(fields: [walletId], references: [id])
+
+  @@index([userId])
+  @@index([walletId])
+  @@index([type])
+  @@index([status])
+  @@index([createdAt])
+  @@index([referenceId])
+}
+
+model OfferProvider {
+  id               String   @id @default(cuid())
+  name             String
+  type             String   // e.g. "offerwall", "survey", "game"
+  slug             String   @unique
+  logoUrl          String?
+  apiKeyMasked     String?
+  webhookSecret    String?
+  postbackUrl      String?
+  isActive         Boolean  @default(true)
+  lastWebhookAt    DateTime?
+  offersCount      Int      @default(0)
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  offers          Offer[]
+  webhookEvents   ProviderWebhookEvent[]
+
+  @@index([slug])
+  @@index([isActive])
+}
+
+model Offer {
+  id               String          @id @default(cuid())
+  providerId       String
+  externalId       String?         // Provider's own ID
+  title            String
+  description      String
+  category         OfferCategory
+  rewardPoints     Int
+  iconUrl          String?
+  imageUrl         String?
+  estimatedMinutes Int             @default(15)
+  difficulty       OfferDifficulty @default(MEDIUM)
+  countries        String[]        // ISO country codes
+  requirements     String[]
+  trackingUrl      String?
+  status           OfferStatus     @default(ACTIVE)
+  isFeatured       Boolean         @default(false)
+  isRecommended    Boolean         @default(false)
+  completionCount  Int             @default(0)
+  clickCount       Int             @default(0)
+  startDate        DateTime        @default(now())
+  expiresAt        DateTime?
+  createdAt        DateTime        @default(now())
+  updatedAt        DateTime        @updatedAt
+
+  provider     OfferProvider     @relation(fields: [providerId], references: [id])
+  clicks       OfferClick[]
+  completions  OfferCompletion[]
+
+  @@index([providerId])
+  @@index([category])
+  @@index([status])
+  @@index([isFeatured])
+  @@index([isRecommended])
+  @@index([rewardPoints])
+  @@index([createdAt])
+}
+
+model OfferClick {
+  id        String   @id @default(cuid())
+  userId    String
+  offerId   String
+  ipAddress String?
+  userAgent String?
+  clickedAt DateTime @default(now())
+
+  user  User  @relation(fields: [userId], references: [id])
+  offer Offer @relation(fields: [offerId], references: [id])
+
+  @@index([userId])
+  @@index([offerId])
+  @@index([clickedAt])
+}
+
+model OfferCompletion {
+  id                  String                @id @default(cuid())
+  userId              String
+  offerId             String
+  providerId          String
+  externalTxId        String?               // Provider's transaction ID
+  status              OfferCompletionStatus @default(STARTED)
+  rewardPoints        Int
+  clickedAt           DateTime?
+  startedAt           DateTime              @default(now())
+  completedAt         DateTime?
+  ipAddress           String?
+  userAgent           String?
+  metadata            Json?
+  createdAt           DateTime              @default(now())
+  updatedAt           DateTime              @updatedAt
+
+  user  User  @relation(fields: [userId], references: [id])
+  offer Offer @relation(fields: [offerId], references: [id])
+
+  @@unique([userId, offerId, externalTxId])
+  @@index([userId])
+  @@index([offerId])
+  @@index([status])
+  @@index([createdAt])
+  @@index([externalTxId])
+}
+
+model WithdrawalMethod {
+  id               String   @id @default(cuid())
+  name             String
+  slug             String   @unique
+  description      String
+  logoUrl          String?
+  minimumPoints    Int
+  maximumPoints    Int?
+  feePercent       Float    @default(0)
+  processingTime   String   // e.g. "1-24 hours"
+  isActive         Boolean  @default(true)
+  isMaintenanceMode Boolean @default(false)
+  enabledCountries String[] // Empty = all countries
+  displayOrder     Int      @default(0)
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+
+  requirements WithdrawalRequirement[]
+  requests     WithdrawalRequest[]
+
+  @@index([isActive])
+  @@index([displayOrder])
+}
+
+model WithdrawalRequirement {
+  id           String               @id @default(cuid())
+  methodId     String
+  fieldName    String
+  label        String
+  type         WithdrawalFieldType  @default(TEXT)
+  placeholder  String?
+  helpText     String?
+  isRequired   Boolean              @default(true)
+  validation   String?              // regex string
+  options      String[]             // for SELECT type
+  displayOrder Int                  @default(0)
+  createdAt    DateTime             @default(now())
+  updatedAt    DateTime             @updatedAt
+
+  method WithdrawalMethod @relation(fields: [methodId], references: [id], onDelete: Cascade)
+
+  @@index([methodId])
+}
+
+model WithdrawalRequest {
+  id              String           @id @default(cuid())
+  userId          String
+  methodId        String
+  points          Int
+  feePoints       Int              @default(0)
+  netPoints       Int
+  cashValue       Float
+  status          WithdrawalStatus @default(PENDING)
+  destination     Json             // Stores user's payout details (masked in responses)
+  externalTxId    String?          // Provider's transaction ID
+  adminNote       String?
+  riskScore       Int              @default(0)
+  ipAddress       String?
+  createdAt       DateTime         @default(now())
+  updatedAt       DateTime         @updatedAt
+
+  user        User              @relation(fields: [userId], references: [id])
+  method      WithdrawalMethod  @relation(fields: [methodId], references: [id])
+  statusHistory WithdrawalStatusHistory[]
+
+  @@index([userId])
+  @@index([methodId])
+  @@index([status])
+  @@index([createdAt])
+}
+
+model WithdrawalStatusHistory {
+  id           String           @id @default(cuid())
+  withdrawalId String
+  fromStatus   WithdrawalStatus?
+  toStatus     WithdrawalStatus
+  note         String?
+  changedById  String?          // admin user ID
+  createdAt    DateTime         @default(now())
+
+  withdrawal WithdrawalRequest @relation(fields: [withdrawalId], references: [id], onDelete: Cascade)
+
+  @@index([withdrawalId])
+}
+
+model Notification {
+  id                String           @id @default(cuid())
+  userId            String
+  type              NotificationType
+  title             String
+  message           String
+  isRead            Boolean          @default(false)
+  relatedEntityId   String?
+  relatedEntityType String?
+  link              String?
+  createdAt         DateTime         @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([isRead])
+  @@index([createdAt])
+}
+
+model NotificationPreference {
+  id                  String  @id @default(cuid())
+  userId              String  @unique
+  rewardNotifications Boolean @default(true)
+  withdrawalNotifications Boolean @default(true)
+  referralNotifications Boolean @default(true)
+  promotionalNotifications Boolean @default(false)
+  systemNotifications Boolean @default(true)
+  emailRewardNotifications Boolean @default(true)
+  emailWithdrawalNotifications Boolean @default(true)
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model Referral {
+  id          String   @id @default(cuid())
+  referrerId  String
+  referredId  String   @unique
+  rewardGiven Boolean  @default(false)
+  rewardPoints Int     @default(0)
+  createdAt   DateTime @default(now())
+
+  referrer User @relation("ReferrerUser", fields: [referrerId], references: [id])
+  referred User @relation("ReferredUser", fields: [referredId], references: [id])
+
+  @@index([referrerId])
+  @@index([createdAt])
+}
+
+model LeaderboardSnapshot {
+  id        String             @id @default(cuid())
+  userId    String
+  metric    LeaderboardMetric
+  value     Int                // points
+  rank      Int
+  period    String             @default("all-time")
+  snapshotAt DateTime          @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([metric])
+  @@index([rank])
+  @@index([snapshotAt])
+  @@index([userId, metric])
+}
+
+model SupportTicket {
+  id          String         @id @default(cuid())
+  userId      String
+  subject     String
+  category    TicketCategory
+  status      TicketStatus   @default(OPEN)
+  priority    String         @default("normal")
+  createdAt   DateTime       @default(now())
+  updatedAt   DateTime       @updatedAt
+
+  user     User             @relation(fields: [userId], references: [id])
+  messages SupportMessage[]
+
+  @@index([userId])
+  @@index([status])
+  @@index([createdAt])
+}
+
+model SupportMessage {
+  id          String   @id @default(cuid())
+  ticketId    String
+  authorId    String
+  isStaff     Boolean  @default(false)
+  content     String
+  createdAt   DateTime @default(now())
+
+  ticket SupportTicket @relation(fields: [ticketId], references: [id], onDelete: Cascade)
+
+  @@index([ticketId])
+  @@index([createdAt])
+}
+
+model AdminNote {
+  id        String   @id @default(cuid())
+  targetId  String   // user being noted on
+  authorId  String   // admin who wrote it
+  content   String
+  createdAt DateTime @default(now())
+
+  target User @relation("AdminNoteTarget", fields: [targetId], references: [id])
+  author User @relation("AdminNoteAuthor", fields: [authorId], references: [id])
+
+  @@index([targetId])
+}
+
+model AuditLog {
+  id           String      @id @default(cuid())
+  adminId      String
+  action       AuditAction
+  entityType   String
+  entityId     String?
+  previousValue Json?
+  newValue     Json?
+  ipAddress    String?
+  metadata     Json?
+  createdAt    DateTime    @default(now())
+
+  admin User @relation("AuditLogAdmin", fields: [adminId], references: [id])
+
+  @@index([adminId])
+  @@index([action])
+  @@index([entityType])
+  @@index([createdAt])
+}
+
+model SystemSetting {
+  id        String   @id @default(cuid())
+  key       String   @unique
+  value     String
+  type      String   @default("string") // string, number, boolean, json
+  category  String   @default("general")
+  label     String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([key])
+  @@index([category])
+}
+
+model FraudSignal {
+  id          String   @id @default(cuid())
+  userId      String
+  signalType  String   // e.g. "ip_mismatch", "velocity", "referral_abuse"
+  severity    String   // low, medium, high, critical
+  description String
+  metadata    Json?
+  createdAt   DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id])
+
+  @@index([userId])
+  @@index([createdAt])
+}
+
+model RiskAssessment {
+  id          String     @id @default(cuid())
+  userId      String     @unique
+  riskLevel   RiskLevel  @default(LOW)
+  riskStatus  RiskStatus @default(CLEAR)
+  riskScore   Int        @default(0)
+  lastChecked DateTime   @default(now())
+  notes       String?
+  updatedAt   DateTime   @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model Achievement {
+  id          String @id @default(cuid())
+  slug        String @unique
+  name        String
+  description String
+  iconUrl     String?
+  badgeColor  String @default("#6366F1")
+  requirement Json   // flexible requirement definition
+  xpReward    Int    @default(0)
+  isActive    Boolean @default(true)
+
+  userAchievements UserAchievement[]
+}
+
+model UserAchievement {
+  id            String   @id @default(cuid())
+  userId        String
+  achievementId String
+  unlockedAt    DateTime @default(now())
+
+  user        User        @relation(fields: [userId], references: [id])
+  achievement Achievement @relation(fields: [achievementId], references: [id])
+
+  @@unique([userId, achievementId])
+  @@index([userId])
+}
+
+model UserStreak {
+  id            String   @id @default(cuid())
+  userId        String   @unique
+  currentStreak Int      @default(0)
+  longestStreak Int      @default(0)
+  lastActiveAt  DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model ProviderWebhookEvent {
+  id           String   @id @default(cuid())
+  providerId   String
+  eventId      String   // Provider's event ID for idempotency
+  payload      Json
+  signature    String?
+  processedAt  DateTime?
+  status       String   @default("pending")
+  error        String?
+  createdAt    DateTime @default(now())
+
+  provider OfferProvider @relation(fields: [providerId], references: [id])
+
+  @@unique([providerId, eventId])
+  @@index([providerId])
+  @@index([status])
+  @@index([createdAt])
+}
