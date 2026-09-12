@@ -12,17 +12,18 @@ Administrators have access to an **Admin Console** featuring a **Dynamic Withdra
 
 - **Double-Entry Ledger-Based Wallet**: Balances are calculated through transaction history with credit/debit records, preventing balance corruption or client-side tampering.
 - **Dynamic Payout Requirement Builder**: Define custom input fields (email, text, select dropdowns, numbers) and validation rules in the Admin Panel that instantly render on customer cashout forms.
+- **Batch Payout Management**: Mass-select pending withdrawals or instantly group and approve all payout requests tied to the same wallet address in a single click.
 - **Provider Abstraction Architecture**: Clean `IOfferProvider` and `IPaymentProvider` interfaces. Switch seamlessly from mock providers to real third-party postbacks and disbursement APIs.
 - **BullMQ Background Task Processing**: Asynchronous worker queues for offer completion verification, ledger crediting, and real-time user notification dispatch.
 - **Multi-Role RBAC & Audit Trails**: Every administrative point adjustment, withdrawal status change, or setting update generates an immutable audit record.
-- **Fintech & Gaming Visual Identity**: Dark/light mode theme using custom tokens (Indigo `#6366F1`, Amber `#F59E0B`, Emerald `#10B981`) and accessible UI primitives.
+- **14 Modern Themes & Glassmorphism**: Switch instantly between 14 visual themes (Obsidian Black, Sky Aura, Fresh Mint, Glassmorphism, Cyberpunk Neon, Golden Royale, Sunset Crimson, Midnight Purple, Emerald Matrix, Deep Ocean, Nordic Frost, Rose Gold, Titanium Silver, Clean Light) with smooth horizontal navigation and custom modern scrollbars across the whole platform.
 
 ---
 
 ## 🏗️ Repository Architecture (Monorepo)
 
 ```
-f:\Projects\Cash Dash\
+cash-dash/
 ├── apps/
 │   ├── web/                     # Next.js 14 App Router frontend
 │   │   ├── src/app/(public)/    # Landing page, login, register, forgot/reset password, legal
@@ -69,15 +70,15 @@ Key environment configurations:
 
 ```env
 # Database & Cache
-DATABASE_URL="postgresql://cashdash:cashdash_dev@localhost:5432/cashdash?schema=public"
+DATABASE_URL="postgresql://<DB_USER>:<DB_PASSWORD>@localhost:5432/<DB_NAME>?schema=public"
 REDIS_URL="redis://localhost:6379"
 
-# Authentication Secrets
-JWT_ACCESS_SECRET="your-super-secret-access-token-key"
-JWT_REFRESH_SECRET="your-super-secret-refresh-token-key"
-COOKIE_SECRET="your-super-secret-cookie-key"
+# Authentication Secrets (Generate secure 32+ character random keys for production)
+JWT_ACCESS_SECRET="your-jwt-access-secret-min-32-chars"
+JWT_REFRESH_SECRET="your-jwt-refresh-secret-min-32-chars"
+COOKIE_SECRET="your-cookie-encryption-secret-min-32-chars"
 
-# Ports
+# Ports & URLs
 API_PORT=3001
 FRONTEND_URL="http://localhost:3000"
 NEXT_PUBLIC_API_URL="http://localhost:3001/api/v1"
@@ -117,16 +118,12 @@ pnpm dev
 
 ---
 
-## 🔑 Demo Seed Accounts
+## 🔑 Local Development & Test Accounts
 
-The platform is pre-populated with realistic users, offers, and transaction histories:
+Running `pnpm db:seed` provisions local mock users, offer providers, and sample transaction histories for development and testing.
 
-| Role | Email | Password | Access Level |
-|---|---|---|---|
-| **Superadmin** | `admin@cashdash.io` | `Admin@CashDash2024!` | Full Admin Console (`/admin`) + Member App |
-| **Demo Member** | `user@cashdash.io` | `Password123!` | Member Dashboard (`/dashboard`) |
-
-*(Quick autofill buttons are built directly into the `/login` page for easy testing)*
+- Custom admin credentials can be set via `ADMIN_EMAIL` and `ADMIN_PASSWORD` environment variables before executing the seed script.
+- In local development mode, convenient autofill test credentials can be enabled on the `/login` page for testing workflows without exposing production credentials in public repositories.
 
 ---
 
