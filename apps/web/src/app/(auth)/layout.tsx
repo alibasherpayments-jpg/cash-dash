@@ -219,14 +219,10 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
             </Link>
           </div>
 
-          <div className="hidden md:flex items-center gap-4">
-            <span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
-              Level 1 Earner • High Trust Tier
-            </span>
-          </div>
+          <div className="hidden md:block" />
 
           {/* Right actions: Balance badge, language switcher, theme switcher, alerts toggle, notifications, user menu */}
-          <div className="flex items-center gap-1.5 sm:gap-2 md:gap-3">
+          <div className="flex items-center gap-1.5 sm:gap-2 md:gap-3 ml-auto">
             {/* Quick Points Pill */}
             <Link
               href="/wallet"
