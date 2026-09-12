@@ -69,7 +69,7 @@ const INITIAL_OFFERWALLS: OfferwallItem[] = [
     rating: 4.9,
     avgPayout: "$1.00 - $25.00",
     devices: ["Web", "Android", "iOS"],
-    postbackUrl: "https://api-production-8237.up.railway.app/api/v1/webhooks/providers/taskwall?userid={userid}&offer_id={offer_id}&offer_name={offer_name}&payout={payout}&user_amount={user_amount}&password={password}",
+    postbackUrl: "https://api-production-8237.up.railway.app/api/v1/webhooks/providers/taskwall?userid={userid}&offer_id={offer_id}&offer_name={offer_name}&payout={payout}&tx_id={tx_id}",
     webhookSecret: "taskwall-secret-cashdash",
     isActive: true,
     completionsCount: 2450,
