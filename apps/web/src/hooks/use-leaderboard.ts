@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import { useQuery } from "@tanstack/react-query";
 import { apiGet } from "@/lib/api-client";
@@ -25,28 +25,30 @@ export function useLeaderboard() {
     queryKey: ["leaderboard", "withdrawers"],
     queryFn: async () => {
       try {
-        const res = await apiGet<LeaderboardResponse>("/leaderboard/live/withdrawers");
-        return res.data ?? [];
+        const res = await apiGet<any>("/leaderboard/live/withdrawers");
+        const list = res?.data || (Array.isArray(res) ? res : []);
+        return Array.isArray(list) ? list : [];
       } catch {
         return [];
       }
     },
-    staleTime: 60 * 1000,
-    refetchInterval: 60 * 1000,
+    staleTime: 10 * 1000,
+    refetchInterval: 15 * 1000,
   });
 
   const earnersQuery = useQuery({
     queryKey: ["leaderboard", "earners"],
     queryFn: async () => {
       try {
-        const res = await apiGet<LeaderboardResponse>("/leaderboard/live/earners");
-        return res.data ?? [];
+        const res = await apiGet<any>("/leaderboard/live/earners");
+        const list = res?.data || (Array.isArray(res) ? res : []);
+        return Array.isArray(list) ? list : [];
       } catch {
         return [];
       }
     },
-    staleTime: 60 * 1000,
-    refetchInterval: 60 * 1000,
+    staleTime: 10 * 1000,
+    refetchInterval: 15 * 1000,
   });
 
   return {
@@ -54,5 +56,9 @@ export function useLeaderboard() {
     earners: earnersQuery.data ?? [],
     isLoading: withdrawersQuery.isLoading || earnersQuery.isLoading,
     isError: withdrawersQuery.isError || earnersQuery.isError,
+    refetch: () => {
+      withdrawersQuery.refetch();
+      earnersQuery.refetch();
+    },
   };
 }
