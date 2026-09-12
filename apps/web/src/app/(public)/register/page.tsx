@@ -109,7 +109,7 @@ export default function RegisterPage() {
                   setUsername(e.target.value);
                   if (fieldErrors.username) setFieldErrors((prev) => ({ ...prev, username: undefined }));
                 }}
-                placeholder="your_earner_handle"
+                placeholder="username"
                 className="h-10 text-sm"
               />
               <FieldError message={fieldErrors.username} />

@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 import { useAuthStore } from "@/store/auth-store";
@@ -44,7 +44,30 @@ import { ThemeSwitcher } from "@/components/common/theme-switcher";
 export default function AuthLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const router = useRouter();
-  const { user, logout } = useAuthStore();
+  const { user, isAuthenticated, logout } = useAuthStore();
+  const [mounted, setMounted] = useState(false);
+
+  const checkStoredAuth = (): boolean => {
+    if (typeof window === "undefined") return false;
+    try {
+      const raw = localStorage.getItem("cashdash-auth");
+      if (!raw) return false;
+      const parsed = JSON.parse(raw);
+      return !!(parsed?.state?.accessToken && parsed?.state?.isAuthenticated);
+    } catch {
+      return false;
+    }
+  };
+
+  const hasSession = isAuthenticated || checkStoredAuth();
+
+  useEffect(() => {
+    setMounted(true);
+    if (!isAuthenticated && !checkStoredAuth()) {
+      router.replace("/register");
+    }
+  }, [isAuthenticated, router]);
+
   const { summary: wallet } = useWallet();
   const { unreadCount } = useNotifications();
   const { t, locale } = useTranslation();
@@ -66,6 +89,19 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
     await logout();
     router.push("/login");
   };
+
+  if (!mounted || !hasSession) {
+    return (
+      <div className="min-h-screen flex flex-col items-center justify-center bg-background text-foreground">
+        <div className="flex flex-col items-center gap-3 animate-fade-in">
+          <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-primary text-white shadow-lg shadow-primary/25 animate-pulse">
+            <Coins className="h-6 w-6" />
+          </div>
+          <p className="text-xs text-muted-foreground font-medium">Redirecting to register...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-background flex flex-col md:flex-row text-foreground">
