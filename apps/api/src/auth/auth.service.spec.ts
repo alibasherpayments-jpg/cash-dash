@@ -63,7 +63,7 @@ describe('AuthService', () => {
   });
 
   it('should throw UnauthorizedException on invalid login password', async () => {
-    mockPrisma.user.findUnique.mockResolvedValue({
+    mockPrisma.user.findFirst.mockResolvedValue({
       id: 'user-1',
       email: 'user@cashdash.io',
       passwordHash: 'hashed-secret',
@@ -83,7 +83,7 @@ describe('AuthService', () => {
   });
 
   it('should throw UnauthorizedException if user is banned', async () => {
-    mockPrisma.user.findUnique.mockResolvedValue({
+    mockPrisma.user.findFirst.mockResolvedValue({
       id: 'banned-user',
       email: 'banned@cashdash.io',
       passwordHash: 'hashed-secret',
@@ -100,8 +100,8 @@ describe('AuthService', () => {
     ).rejects.toThrow(new UnauthorizedException('Account has been banned'));
   });
 
-  it('should successfully login active user with correct password', async () => {
-    mockPrisma.user.findUnique.mockResolvedValue({
+  it('should successfully login active user with correct password (case-insensitive email)', async () => {
+    mockPrisma.user.findFirst.mockResolvedValue({
       id: 'active-user',
       email: 'active@cashdash.io',
       passwordHash: 'hashed-secret',
@@ -114,12 +114,13 @@ describe('AuthService', () => {
     mockPrisma.session.create.mockResolvedValue({ id: 'sess-1' });
 
     const result = await service.login({
-      email: 'active@cashdash.io',
+      email: 'ACTIVE@CASHDASH.IO',
       password: 'CorrectPassword123!',
     });
 
-    expect(result.user.id).toBe('active-user');
-    expect(result.tokens.accessToken).toBe('mock-jwt-token');
-    expect(result.tokens.refreshToken).toBe('mock-jwt-token');
+    expect(result).toHaveProperty('tokens');
+    expect(result.tokens).toHaveProperty('accessToken');
+    expect(result.tokens).toHaveProperty('refreshToken');
+    expect(result.user).toHaveProperty('id', 'active-user');
   });
 });

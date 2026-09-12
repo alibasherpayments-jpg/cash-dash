@@ -1,12 +1,15 @@
 import { IsEmail, IsString, MinLength, MaxLength, Matches, IsOptional } from 'class-validator';
+import { Transform } from 'class-transformer';
 import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 
 export class RegisterDto {
   @ApiProperty({ example: 'john@example.com' })
+  @Transform(({ value }) => (typeof value === 'string' ? value.trim().toLowerCase() : value))
   @IsEmail({}, { message: 'Invalid email address' })
   email: string;
 
   @ApiProperty({ example: 'johndoe123' })
+  @Transform(({ value }) => (typeof value === 'string' ? value.trim() : value))
   @IsString()
   @MinLength(3)
   @MaxLength(20)
@@ -30,6 +33,7 @@ export class RegisterDto {
 
 export class LoginDto {
   @ApiProperty({ example: 'john@example.com' })
+  @Transform(({ value }) => (typeof value === 'string' ? value.trim().toLowerCase() : value))
   @IsEmail()
   email: string;
 
@@ -41,6 +45,7 @@ export class LoginDto {
 
 export class ForgotPasswordDto {
   @ApiProperty({ example: 'john@example.com' })
+  @Transform(({ value }) => (typeof value === 'string' ? value.trim().toLowerCase() : value))
   @IsEmail()
   email: string;
 }

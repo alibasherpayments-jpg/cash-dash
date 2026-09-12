@@ -29,7 +29,7 @@ export default function ForgotPasswordPage() {
     setEmailError(null);
     setIsLoading(true);
     try {
-      await apiClient.post("/auth/forgot-password", { email });
+      await apiClient.post("/auth/forgot-password", { email: email.trim().toLowerCase() });
       setSubmitted(true);
     } catch {
       // Still show success to prevent email enumeration

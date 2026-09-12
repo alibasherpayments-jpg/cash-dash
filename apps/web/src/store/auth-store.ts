@@ -29,7 +29,7 @@ export const useAuthStore = create<AuthState>()(persist(
     setToken: (accessToken) => set({ accessToken }),
     setLoading: (isLoading) => set({ isLoading }),
     login: async (email, password) => {
-      const res = await apiLogin({ email, password });
+      const res = await apiLogin({ email: email.trim().toLowerCase(), password });
       if (res.data?.user) {
         set({
           user: res.data.user,
@@ -41,7 +41,12 @@ export const useAuthStore = create<AuthState>()(persist(
       }
     },
     register: async (username, email, password, referralCode) => {
-      const res = await apiRegister({ username, email, password, referralCode });
+      const res = await apiRegister({
+        username: username.trim(),
+        email: email.trim().toLowerCase(),
+        password,
+        referralCode: referralCode?.trim(),
+      });
       if (res.data?.user) {
         set({
           user: res.data.user,

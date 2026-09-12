@@ -29,13 +29,21 @@ export class AuthService {
   ) {}
 
   async register(dto: RegisterDto, ipAddress?: string): Promise<{ user: Record<string, unknown>; tokens: TokenPair }> {
-    // Check for existing email or username
+    const normalizedEmail = dto.email.trim().toLowerCase();
+    const normalizedUsername = dto.username.trim();
+
+    // Check for existing email or username (case-insensitive)
     const existing = await this.prisma.user.findFirst({
-      where: { OR: [{ email: dto.email }, { username: dto.username }] },
+      where: {
+        OR: [
+          { email: { equals: normalizedEmail, mode: 'insensitive' } },
+          { username: { equals: normalizedUsername, mode: 'insensitive' } },
+        ],
+      },
     });
 
     if (existing) {
-      if (existing.email === dto.email) {
+      if (existing.email.toLowerCase() === normalizedEmail) {
         throw new ConflictException('Email already in use');
       }
       throw new ConflictException('Username already taken');
@@ -59,8 +67,8 @@ export class AuthService {
     const user = await this.prisma.$transaction(async (tx) => {
       const newUser = await tx.user.create({
         data: {
-          email: dto.email,
-          username: dto.username,
+          email: normalizedEmail,
+          username: normalizedUsername,
           passwordHash,
           role: UserRole.USER,
           status: UserStatus.PENDING_VERIFICATION,
@@ -131,13 +139,30 @@ export class AuthService {
   }
 
   async login(dto: LoginDto, ipAddress?: string, userAgent?: string): Promise<{ user: Record<string, unknown>; tokens: TokenPair }> {
-    const user = await this.prisma.user.findUnique({
-      where: { email: dto.email },
+    const normalizedEmail = dto.email.trim().toLowerCase();
+
+    const user = await this.prisma.user.findFirst({
+      where: {
+        email: { equals: normalizedEmail, mode: 'insensitive' },
+      },
       include: { profile: true },
     });
 
     if (!user) {
       throw new UnauthorizedException('Invalid credentials');
+    }
+
+    // Auto-normalize stored email if it previously had uppercase characters
+    if (user.email !== normalizedEmail) {
+      try {
+        await this.prisma.user.update({
+          where: { id: user.id },
+          data: { email: normalizedEmail },
+        });
+        user.email = normalizedEmail;
+      } catch (err: any) {
+        this.logger.warn(`Could not update user ${user.id} email to lowercase: ${err.message}`);
+      }
     }
 
     if (user.status === UserStatus.BANNED) {
@@ -198,7 +223,10 @@ export class AuthService {
   }
 
   async forgotPassword(email: string): Promise<void> {
-    const user = await this.prisma.user.findUnique({ where: { email } });
+    const normalizedEmail = email.trim().toLowerCase();
+    const user = await this.prisma.user.findFirst({
+      where: { email: { equals: normalizedEmail, mode: 'insensitive' } },
+    });
     if (!user) {
       // Don't reveal whether email exists
       return;
