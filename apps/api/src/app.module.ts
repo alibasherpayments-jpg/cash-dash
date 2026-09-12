@@ -33,6 +33,7 @@ import { HealthController } from './common/controllers/health.controller';
     // Config (global)
     ConfigModule.forRoot({
       isGlobal: true,
+      envFilePath: ['.env', 'apps/api/.env', '../apps/api/.env'],
       load: [configuration],
       validate,
     }),
