@@ -26,6 +26,7 @@ import { SettingsModule } from './settings/settings.module';
 import { JwtAuthGuard } from './common/guards/jwt-auth.guard';
 import { RolesGuard } from './common/guards/roles.guard';
 import { GlobalExceptionFilter } from './common/filters/global-exception.filter';
+import { HealthController } from './common/controllers/health.controller';
 
 @Module({
   imports: [
@@ -75,6 +76,7 @@ import { GlobalExceptionFilter } from './common/filters/global-exception.filter'
     AuditModule,
     SettingsModule,
   ],
+  controllers: [HealthController],
   providers: [
     // Global JWT guard — all routes protected unless @Public()
     {
