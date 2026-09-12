@@ -28,6 +28,7 @@ export class LeaderboardService {
    * Snapshot-based leaderboard for legacy/compatibility
    */
   async getLeaderboard(metric: LeaderboardMetric, period = 'all-time', limit = 10) {
+    const safeLimit = typeof limit === 'number' && !isNaN(limit) && limit > 0 ? Math.min(limit, 100) : 10;
     const enabled = await this.settingsService.isLeaderboardEnabled();
     if (!enabled) return [];
 
@@ -51,7 +52,7 @@ export class LeaderboardService {
         },
       },
       orderBy: { rank: 'asc' },
-      take: limit,
+      take: safeLimit,
     });
 
     return snapshots
@@ -73,6 +74,7 @@ export class LeaderboardService {
    * Fully connected to database with masked wallet destination
    */
   async getLiveTopWithdrawers(limit = 10): Promise<LeaderboardUserResult[]> {
+    const safeLimit = typeof limit === 'number' && !isNaN(limit) && limit > 0 ? Math.min(limit, 100) : 10;
     try {
       const enabled = await this.settingsService.isLeaderboardEnabled();
       if (!enabled) {
@@ -167,7 +169,7 @@ export class LeaderboardService {
         // Latest registered users first when stats are equal
         return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
       })
-      .slice(0, limit);
+      .slice(0, safeLimit);
 
     return items.map((item, idx) => ({
       rank: idx + 1,
@@ -187,6 +189,7 @@ export class LeaderboardService {
    * Fully connected to database with activity data
    */
   async getLiveTopEarners(limit = 10): Promise<LeaderboardUserResult[]> {
+    const safeLimit = typeof limit === 'number' && !isNaN(limit) && limit > 0 ? Math.min(limit, 100) : 10;
     try {
       const enabled = await this.settingsService.isLeaderboardEnabled();
       if (!enabled) {
@@ -267,7 +270,7 @@ export class LeaderboardService {
         // Latest registered users first when stats are equal
         return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
       })
-      .slice(0, limit);
+      .slice(0, safeLimit);
 
     return items.map((item, idx) => ({
       rank: idx + 1,

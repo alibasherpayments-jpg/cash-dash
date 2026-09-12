@@ -28,7 +28,9 @@ import {
   Lock,
   Layers,
 } from "lucide-react";
-import { formatPoints, formatCash } from "@/lib/formatters";
+import { formatPoints, formatCash, formatPointsAsCash } from "@/lib/formatters";
+import { useLeaderboard } from "@/hooks/use-leaderboard";
+import { AvatarWithFallback } from "@/components/common/avatar-with-fallback";
 
 const jsonLd = {
   "@context": "https://schema.org",
@@ -116,6 +118,18 @@ const jsonLd = {
 };
 
 export default function LandingPage() {
+  const { withdrawers } = useLeaderboard();
+
+  const top1 = withdrawers?.[0];
+  const top2 = withdrawers?.[1];
+  const top3 = withdrawers?.[2];
+
+  const hallOfFame = [
+    { rank: "🥈 #2", user: top2, primary: false },
+    { rank: "🥇 #1", user: top1, primary: true },
+    { rank: "🥉 #3", user: top3, primary: false },
+  ].filter(item => Boolean(item.user));
+
   return (
     <div className="flex flex-col min-h-screen bg-background text-foreground overflow-hidden">
       {/* Schema.org Structured Data for Search Engines */}
@@ -500,29 +514,34 @@ export default function LandingPage() {
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 pt-4">
-            {[
-              { rank: "🥈 #2", name: "mia_rewards", amount: "$4,510.00", pts: "45,100,000 pts", country: "UK" },
-              { rank: "🥇 #1", name: "alex_dash", amount: "$4,820.00", pts: "48,200,000 pts", country: "US", primary: true },
-              { rank: "🥉 #3", name: "sam_earner", amount: "$4,120.00", pts: "41,200,000 pts", country: "CA" },
-            ].map((user, idx) => (
+            {hallOfFame.map(({ rank, user, primary }, idx) => (
               <div
-                key={idx}
+                key={user.userId || idx}
                 className={`p-6 rounded-2xl border transition-all ${
-                  user.primary
+                  primary
                     ? "bg-gradient-to-b from-amber-500/10 via-card to-card border-amber-500/40 shadow-xl shadow-amber-500/10 md:-translate-y-4"
                     : "bg-card border-border"
                 }`}
               >
-                <div className="text-2xl font-black mb-2">{user.rank}</div>
-                <div className="h-14 w-14 rounded-full bg-primary/20 mx-auto flex items-center justify-center font-bold text-lg mb-3">
-                  {user.name.slice(0, 2).toUpperCase()}
+                <div className="text-2xl font-black mb-2">{rank}</div>
+                <div className="mb-3 flex justify-center">
+                  <AvatarWithFallback username={user.username} avatarUrl={user.avatarUrl} size="lg" />
                 </div>
-                <h4 className="font-bold text-foreground">{user.name}</h4>
-                <p className="text-xs text-muted-foreground uppercase">{user.country}</p>
+                <h4 className="font-bold text-foreground truncate max-w-[200px] mx-auto">{user.username}</h4>
+                <p className="text-xs text-muted-foreground uppercase">{user.country || "EG"}</p>
+                {user.lastPayoutMasked && (
+                  <div className="text-[11px] text-muted-foreground font-mono mt-1">
+                    {user.lastPayoutMasked}
+                  </div>
+                )}
                 <div className="mt-4 pt-4 border-t border-border">
                   <span className="text-xs text-muted-foreground block">Total Withdrawn</span>
-                  <span className="text-xl font-black text-emerald-500">{user.amount}</span>
-                  <span className="text-[10px] text-muted-foreground block">{user.pts}</span>
+                  <span className="text-xl font-black text-emerald-500">
+                    {formatPointsAsCash(user.totalWithdrawn)}
+                  </span>
+                  <span className="text-[10px] text-muted-foreground block">
+                    {formatPoints(user.totalWithdrawn)} pts
+                  </span>
                 </div>
               </div>
             ))}

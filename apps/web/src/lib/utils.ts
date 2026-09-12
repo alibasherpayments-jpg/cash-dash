@@ -27,13 +27,17 @@ export function maskString(str: string, visibleChars = 4): string {
   return '*'.repeat(str.length - visibleChars) + str.slice(-visibleChars);
 }
 
-export function getInitials(name: string): string {
-  return name
-    .split(' ')
-    .map((part) => part[0])
-    .join('')
-    .toUpperCase()
-    .slice(0, 2);
+export function getInitials(name?: string): string {
+  if (!name) return 'U';
+  return (
+    name
+      .split(' ')
+      .filter(Boolean)
+      .map((part) => part[0])
+      .join('')
+      .toUpperCase()
+      .slice(0, 2) || 'U'
+  );
 }
 
 export function debounce<T extends (...args: any[]) => any>(fn: T, delay: number): (...args: Parameters<T>) => void {
@@ -44,6 +48,6 @@ export function debounce<T extends (...args: any[]) => any>(fn: T, delay: number
   };
 }
 
-export function generateDiceBearUrl(seed: string, style = 'avataaars'): string {
-  return `https://api.dicebear.com/9.x/${style}/svg?seed=${encodeURIComponent(seed)}`;
+export function generateDiceBearUrl(seed?: string, style = 'avataaars'): string {
+  return `https://api.dicebear.com/9.x/${style}/svg?seed=${encodeURIComponent(seed || 'user')}`;
 }
