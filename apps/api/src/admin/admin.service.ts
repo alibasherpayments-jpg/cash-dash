@@ -29,6 +29,7 @@ import {
   CreateWithdrawalRequirementDto,
   UpdateWithdrawalStatusDto,
   ListWithdrawalsQueryDto,
+  BatchUpdateWithdrawalStatusDto,
 } from '../withdrawals/dto/withdrawals.dto';
 import { getPaginationParams, paginate } from '../common/dto/pagination.dto';
 
@@ -425,6 +426,10 @@ export class AdminService {
 
   async updateWithdrawalStatus(id: string, dto: UpdateWithdrawalStatusDto, adminId: string, ipAddress?: string) {
     return this.withdrawalsService.adminUpdateWithdrawalStatus(id, dto, adminId, ipAddress);
+  }
+
+  async batchUpdateWithdrawalStatus(dto: BatchUpdateWithdrawalStatusDto, adminId: string, ipAddress?: string) {
+    return this.withdrawalsService.adminBatchUpdateWithdrawalStatus(dto, adminId, ipAddress);
   }
 
   // ─── Withdrawal Methods ──────────────────────────────────────────────────

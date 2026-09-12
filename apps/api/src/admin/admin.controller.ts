@@ -33,6 +33,7 @@ import {
   CreateWithdrawalMethodDto,
   CreateWithdrawalRequirementDto,
   UpdateWithdrawalStatusDto,
+  BatchUpdateWithdrawalStatusDto,
 } from '../withdrawals/dto/withdrawals.dto';
 
 @ApiTags('admin')
@@ -253,6 +254,17 @@ export class AdminController {
     @Req() req: Request,
   ) {
     const data = await this.adminService.updateWithdrawalStatus(id, dto, adminId, req.ip);
+    return { success: true, data };
+  }
+
+  @Post('withdrawals/batch-status')
+  @ApiOperation({ summary: 'Batch update withdrawal statuses (e.g. approve all for same wallet)' })
+  async batchUpdateWithdrawalStatus(
+    @Body() dto: BatchUpdateWithdrawalStatusDto,
+    @CurrentUser('id') adminId: string,
+    @Req() req: Request,
+  ) {
+    const data = await this.adminService.batchUpdateWithdrawalStatus(dto, adminId, req.ip);
     return { success: true, data };
   }
 

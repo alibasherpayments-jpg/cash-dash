@@ -180,3 +180,24 @@ export class ListWithdrawalsQueryDto {
   @Min(1)
   limit?: number;
 }
+
+export class BatchUpdateWithdrawalStatusDto {
+  @ApiProperty({ type: [String], description: 'List of withdrawal IDs to update' })
+  @IsArray()
+  @IsString({ each: true })
+  withdrawalIds: string[];
+
+  @ApiProperty({ description: 'New status for the withdrawals' })
+  @IsString()
+  status: string;
+
+  @ApiPropertyOptional({ description: 'Admin audit note or rejection reason' })
+  @IsOptional()
+  @IsString()
+  note?: string;
+
+  @ApiPropertyOptional({ description: 'Optional gateway external transaction ID' })
+  @IsOptional()
+  @IsString()
+  externalTxId?: string;
+}

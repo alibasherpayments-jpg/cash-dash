@@ -17,6 +17,7 @@ import {
   CreateWithdrawalRequirementDto,
   UpdateWithdrawalStatusDto,
   ListWithdrawalsQueryDto,
+  BatchUpdateWithdrawalStatusDto,
 } from './dto/withdrawals.dto';
 import { getPaginationParams, paginate } from '../common/dto/pagination.dto';
 
@@ -386,6 +387,40 @@ export class WithdrawalsService {
     });
 
     return this.getWithdrawalById(withdrawalId);
+  }
+
+  async adminBatchUpdateWithdrawalStatus(
+    dto: BatchUpdateWithdrawalStatusDto,
+    adminId: string,
+    ipAddress?: string,
+  ) {
+    const results: Array<{ id: string; success: boolean; error?: string }> = [];
+
+    for (const withdrawalId of dto.withdrawalIds) {
+      try {
+        await this.adminUpdateWithdrawalStatus(
+          withdrawalId,
+          {
+            status: dto.status,
+            note: dto.note,
+            externalTxId: dto.externalTxId,
+          },
+          adminId,
+          ipAddress,
+        );
+        results.push({ id: withdrawalId, success: true });
+      } catch (err: any) {
+        results.push({ id: withdrawalId, success: false, error: err.message });
+      }
+    }
+
+    const succeeded = results.filter((r) => r.success).length;
+    return {
+      total: dto.withdrawalIds.length,
+      succeeded,
+      failed: dto.withdrawalIds.length - succeeded,
+      results,
+    };
   }
 
   async listWithdrawals(query: ListWithdrawalsQueryDto) {
