@@ -487,7 +487,7 @@ export default function WithdrawPage() {
 
       {/* ─── Confirmation Modal with Centered Alignment ─────────── */}
       <Dialog open={confirmModalOpen} onOpenChange={setConfirmModalOpen}>
-        <DialogContent className="max-w-md">
+        <DialogContent className="w-[95vw] max-w-md p-4 sm:p-6 rounded-2xl">
           <DialogHeader>
             <DialogTitle className="text-lg font-bold">{t.withdraw.confirmTitle}</DialogTitle>
             <DialogDescription className="text-xs">

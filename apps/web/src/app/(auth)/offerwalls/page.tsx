@@ -120,39 +120,39 @@ export default function OfferwallsPage() {
 
       {/* ─── Offerwall Viewer Modal Dialog ──────────────────────── */}
       <Dialog open={!!selectedWall} onOpenChange={(open) => !open && setSelectedWall(null)}>
-        <DialogContent className="max-w-4xl h-[85vh] p-0 flex flex-col overflow-hidden border-border bg-card">
+        <DialogContent className="w-[96vw] max-w-4xl h-[92dvh] sm:h-[85vh] p-0 flex flex-col overflow-hidden border-border bg-card rounded-2xl">
           {selectedWall && (
             <>
               {/* Modal Header */}
-              <DialogHeader className="px-6 py-4 border-b border-border flex flex-row items-center justify-between space-y-0 bg-card shrink-0">
-                <div className="flex items-center gap-3">
-                  <div className="h-9 w-9 rounded-xl bg-[#0c0f17] border border-border/60 p-1 flex items-center justify-center">
+              <DialogHeader className="px-3.5 sm:px-6 py-3 sm:py-4 border-b border-border flex flex-row items-center justify-between space-y-0 bg-card shrink-0">
+                <div className="flex items-center gap-2.5 sm:gap-3 min-w-0">
+                  <div className="h-8 w-8 sm:h-9 sm:w-9 rounded-xl bg-[#0c0f17] border border-border/60 p-1 flex items-center justify-center shrink-0">
                     <img
                       src={selectedWall.logo}
                       alt={selectedWall.name}
                       className="h-full w-full object-contain"
                     />
                   </div>
-                  <div>
-                    <DialogTitle className="text-base font-bold flex items-center gap-2">
+                  <div className="min-w-0">
+                    <DialogTitle className="text-sm sm:text-base font-bold flex items-center gap-2 truncate">
                       {selectedWall.name}
                     </DialogTitle>
-                    <p className="text-[11px] text-muted-foreground flex items-center gap-1.5">
-                      <ShieldCheck className="h-3.5 w-3.5 text-emerald-500" />
+                    <p className="text-[10px] sm:text-[11px] text-muted-foreground flex items-center gap-1.5 truncate">
+                      <ShieldCheck className="h-3.5 w-3.5 text-emerald-500 shrink-0" />
                       {user?.username ? `@${user.username}` : "Member"}
                     </p>
                   </div>
                 </div>
 
-                <div className="flex items-center gap-2 pr-6">
+                <div className="flex items-center gap-2 pr-6 sm:pr-8 shrink-0">
                   <Button
                     size="sm"
                     variant="outline"
                     onClick={() => handleOpenExternal(selectedWall)}
-                    className="text-xs font-semibold gap-1.5"
+                    className="text-xs font-semibold gap-1.5 h-8"
                   >
                     <ExternalLink className="h-3.5 w-3.5" />
-                    <span>{t.offerwalls.openNewWindow}</span>
+                    <span className="hidden sm:inline">{t.offerwalls.openNewWindow}</span>
                   </Button>
                 </div>
               </DialogHeader>

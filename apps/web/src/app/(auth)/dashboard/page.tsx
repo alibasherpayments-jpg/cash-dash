@@ -64,16 +64,16 @@ export default function DashboardPage() {
           </div>
 
           <div>
-            <div className="text-4xl sm:text-5xl font-black text-foreground flex items-baseline gap-2">
+            <div className="text-3xl sm:text-5xl font-black text-foreground flex items-baseline gap-2 flex-wrap">
               <span>{formatPoints(wallet?.availablePoints || 0)}</span>
-              <span className="text-base font-bold text-accent">{t.common.points}</span>
+              <span className="text-sm sm:text-base font-bold text-accent">{t.common.points}</span>
             </div>
-            <p className="text-lg font-bold text-emerald-500 mt-1">
+            <p className="text-base sm:text-lg font-bold text-emerald-500 mt-1">
               ≈ {formatPointsAsCash(wallet?.availablePoints || 0)} USD
             </p>
           </div>
 
-          <div className="flex flex-wrap items-center gap-6 pt-2 text-xs text-muted-foreground">
+          <div className="flex flex-wrap items-center gap-x-6 gap-y-2 pt-2 text-xs text-muted-foreground">
             <div>
               <span>Pending Points: </span>
               <strong className="text-foreground">{formatPoints(wallet?.pendingPoints || 0)}</strong>
@@ -89,15 +89,15 @@ export default function DashboardPage() {
           </div>
         </div>
 
-        <div className="flex flex-wrap items-center gap-3 pt-6 border-t border-border/60">
-          <Button asChild size="lg" className="font-bold shadow-lg shadow-primary/20">
+        <div className="grid grid-cols-2 sm:flex sm:flex-wrap items-center gap-2.5 sm:gap-3 pt-5 sm:pt-6 border-t border-border/60">
+          <Button asChild size="lg" className="w-full sm:w-auto font-bold shadow-lg shadow-primary/20 h-11 text-xs sm:text-sm">
             <Link href="/withdraw">
-              <ArrowUpRight className="mr-2 h-4 w-4" /> {t.common.withdraw}
+              <ArrowUpRight className="mr-1.5 sm:mr-2 h-4 w-4" /> {t.common.withdraw}
             </Link>
           </Button>
-          <Button asChild variant="outline" size="lg" className="font-semibold">
+          <Button asChild variant="outline" size="lg" className="w-full sm:w-auto font-semibold h-11 text-xs sm:text-sm">
             <Link href="/offerwalls">
-              <Layers className="mr-2 h-4 w-4 text-primary" /> {t.common.offerwalls}
+              <Layers className="mr-1.5 sm:mr-2 h-4 w-4 text-primary" /> {t.common.offerwalls}
             </Link>
           </Button>
         </div>

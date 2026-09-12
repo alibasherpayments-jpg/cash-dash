@@ -183,7 +183,7 @@ export default function LandingPage() {
             {/* Interactive Style Mock Balance Card */}
             <div className="w-full max-w-md p-6 rounded-2xl bg-card/90 border border-border shadow-2xl backdrop-blur-2xl relative space-y-6">
               {/* Floating notification badge 1 */}
-              <div className="absolute -top-5 -right-4 bg-emerald-500 text-white text-xs font-bold px-3.5 py-1.5 rounded-full shadow-lg flex items-center gap-1.5 border-2 border-background animate-bounce">
+              <div className="absolute -top-3 sm:-top-5 right-2 sm:-right-4 bg-emerald-500 text-white text-xs font-bold px-3 py-1 sm:px-3.5 sm:py-1.5 rounded-full shadow-lg flex items-center gap-1.5 border-2 border-background animate-bounce">
                 <Zap className="h-3.5 w-3.5 fill-white" />
                 <span>+5,000 Points Credited!</span>
               </div>

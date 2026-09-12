@@ -62,35 +62,51 @@ export function PublicNavbar() {
           )}
         </div>
 
-        <div className="flex items-center gap-2 md:hidden">
+        <div className="flex items-center gap-1.5 sm:gap-2 md:hidden">
           <LanguageSwitcher showLabel={false} />
           <ThemeSwitcher />
-          <button onClick={() => setMobileOpen(!mobileOpen)} className="p-1 rounded-md text-foreground">
-            {mobileOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
+          <button
+            onClick={() => setMobileOpen(!mobileOpen)}
+            className="p-2 rounded-xl text-foreground hover:bg-accent/10 active:scale-95 transition-transform"
+            aria-label="Toggle navigation"
+          >
+            {mobileOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
           </button>
         </div>
       </div>
 
       {mobileOpen && (
-        <div className="border-t bg-background px-4 py-4 md:hidden">
-          <nav className="flex flex-col gap-3">
+        <div className="border-t border-border/60 bg-background/95 backdrop-blur-xl px-4 py-5 md:hidden animate-fade-in shadow-xl">
+          <nav className="flex flex-col gap-1">
             {navLinks.map((link) => (
-              <Link key={link.href} href={link.href} className="py-2 text-sm hover:text-primary" onClick={() => setMobileOpen(false)}>
+              <Link
+                key={link.href}
+                href={link.href}
+                className="flex items-center min-h-[44px] px-3 rounded-xl text-sm font-medium text-foreground/80 hover:text-foreground hover:bg-accent/10 active:scale-98 transition-all"
+                onClick={() => setMobileOpen(false)}
+              >
                 {link.label}
               </Link>
             ))}
-            <div className="mt-2 flex flex-col gap-2 border-t pt-3">
+
+            <div className="mt-3 flex flex-col gap-2.5 border-t border-border/60 pt-4">
               {isAuthenticated ? (
-                <Button asChild className="w-full">
-                  <Link href="/dashboard">{t.common.dashboard}</Link>
+                <Button asChild className="w-full h-11 font-bold rounded-xl shadow-md">
+                  <Link href="/dashboard" onClick={() => setMobileOpen(false)}>
+                    {t.common.dashboard}
+                  </Link>
                 </Button>
               ) : (
                 <>
-                  <Button variant="outline" asChild className="w-full">
-                    <Link href="/login">{t.nav.signIn}</Link>
+                  <Button variant="outline" asChild className="w-full h-11 font-semibold rounded-xl">
+                    <Link href="/login" onClick={() => setMobileOpen(false)}>
+                      {t.nav.signIn}
+                    </Link>
                   </Button>
-                  <Button asChild className="w-full">
-                    <Link href="/register">{t.nav.getStarted}</Link>
+                  <Button asChild className="w-full h-11 font-bold rounded-xl shadow-md">
+                    <Link href="/register" onClick={() => setMobileOpen(false)}>
+                      {t.nav.getStarted}
+                    </Link>
                   </Button>
                 </>
               )}

@@ -54,7 +54,7 @@ export function TransactionItem(props: TransactionItemProps) {
   const localizedType = t.transactions.types[type] || type;
 
   return (
-    <div className={cn("flex items-center gap-4 py-3", className)}>
+    <div className={cn("flex items-center gap-3 sm:gap-4 py-2.5 sm:py-3", className)}>
       <div
         className={cn(
           "flex h-9 w-9 shrink-0 items-center justify-center rounded-full",
@@ -64,13 +64,13 @@ export function TransactionItem(props: TransactionItemProps) {
         {isCredit ? <ArrowDownLeft className="h-4 w-4" /> : <ArrowUpRight className="h-4 w-4" />}
       </div>
       <div className="min-w-0 flex-1">
-        <p className="text-sm font-medium text-foreground">
+        <p className="text-xs sm:text-sm font-medium text-foreground line-clamp-2 break-words">
           {description || localizedType}
         </p>
-        <p className="text-xs text-muted-foreground">{formatRelativeTime(createdAt, locale)}</p>
+        <p className="text-[10px] sm:text-xs text-muted-foreground">{formatRelativeTime(createdAt, locale)}</p>
       </div>
-      <div className="text-end">
-        <p className={cn("text-sm font-bold", isCredit ? "text-emerald-500" : "text-red-500")}>
+      <div className="text-end shrink-0 pl-2">
+        <p className={cn("text-xs sm:text-sm font-bold font-mono", isCredit ? "text-emerald-500" : "text-red-500")}>
           {isCredit ? "+" : "-"}{formatPoints(points)}
         </p>
       </div>

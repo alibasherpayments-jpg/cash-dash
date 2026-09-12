@@ -163,23 +163,23 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
       </aside>
 
       {/* ─── Main Content Area ─────────────────────────────────── */}
-      <div className="flex-1 flex flex-col min-w-0 pb-16 md:pb-0">
+      <div className="flex-1 flex flex-col min-w-0 pb-[calc(5rem+env(safe-area-inset-bottom,0px))] md:pb-0">
         {/* Top Header */}
-        <header className="sticky top-0 z-20 border-b border-border/60 bg-background/80 backdrop-blur-xl px-4 md:px-8 h-16 flex items-center justify-between">
+        <header className="sticky top-0 z-20 border-b border-border/60 bg-background/80 backdrop-blur-xl px-3 sm:px-4 md:px-8 h-16 flex items-center justify-between">
           {/* Mobile Header Brand & Menu */}
-          <div className="flex items-center gap-3 md:hidden">
+          <div className="flex items-center gap-2 sm:gap-3 md:hidden">
             <button
               onClick={() => setMobileMenuOpen(true)}
-              className="p-1.5 rounded-lg border border-border text-foreground hover:bg-accent/10"
+              className="p-2 rounded-xl border border-border/80 text-foreground hover:bg-accent/10 active:scale-95 transition-transform"
               aria-label="Open menu"
             >
               <Menu className="h-5 w-5" />
             </button>
             <Link href="/dashboard" className="flex items-center gap-2">
-              <div className="flex h-7 w-7 items-center justify-center rounded-lg bg-primary">
+              <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-primary shadow-sm shadow-primary/25 shrink-0">
                 <Coins className="h-4 w-4 text-white" />
               </div>
-              <span className="font-black text-foreground">Cash Dash</span>
+              <span className="font-black text-foreground text-base tracking-tight truncate">Cash Dash</span>
             </Link>
           </div>
 
@@ -190,35 +190,40 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
           </div>
 
           {/* Right actions: Balance badge, language switcher, theme switcher, alerts toggle, notifications, user menu */}
-          <div className="flex items-center gap-2 md:gap-3">
-
+          <div className="flex items-center gap-1.5 sm:gap-2 md:gap-3">
             {/* Quick Points Pill */}
             <Link
               href="/wallet"
-              className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-card border border-border/80 hover:border-primary/50 transition-colors shadow-sm"
+              className="flex items-center gap-1.5 sm:gap-2 px-2.5 sm:px-3 py-1 sm:py-1.5 rounded-xl bg-card border border-border/80 hover:border-primary/50 transition-colors shadow-sm shrink-0 active:scale-95"
             >
-              <div className="h-5 w-5 rounded-full bg-accent/20 flex items-center justify-center text-accent">
+              <div className="h-5 w-5 rounded-full bg-accent/20 flex items-center justify-center text-accent shrink-0">
                 <Coins className="h-3 w-3" />
               </div>
-              <div className="text-start sm:text-right">
-                <span className="text-xs font-black text-foreground">{formatPoints(wallet?.availablePoints || 0)}</span>
-                <span className="text-[10px] text-muted-foreground block -mt-1 font-medium">
+              <div className="text-start sm:text-right leading-none">
+                <span className="text-xs font-black text-foreground block">{formatPoints(wallet?.availablePoints || 0)}</span>
+                <span className="text-[9px] sm:text-[10px] text-muted-foreground block font-medium mt-0.5">
                   {formatCash((wallet?.availablePoints || 0) / 1000)}
                 </span>
               </div>
             </Link>
 
-            {/* Language Switcher */}
-            <LanguageSwitcher />
+            {/* Language Switcher - visible on tablet & desktop */}
+            <div className="hidden sm:block">
+              <LanguageSwitcher />
+            </div>
 
-            {/* Theme Switcher */}
-            <ThemeSwitcher />
+            {/* Theme Switcher - visible on tablet & desktop */}
+            <div className="hidden sm:block">
+              <ThemeSwitcher />
+            </div>
 
-            {/* Live Offer Alerts Button (Beside Notification) */}
-            <OfferAlertsToggle />
+            {/* Live Offer Alerts Button - visible on desktop */}
+            <div className="hidden md:block">
+              <OfferAlertsToggle />
+            </div>
 
             {/* Notification Bell */}
-            <Button variant="ghost" size="icon" className="relative h-9 w-9 rounded-lg" asChild>
+            <Button variant="ghost" size="icon" className="relative h-9 w-9 rounded-xl shrink-0" asChild>
               <Link href="/notifications">
                 <Bell className="h-4 w-4 text-muted-foreground hover:text-foreground" />
                 {unreadCount > 0 && (
@@ -230,7 +235,7 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
             {/* User Dropdown */}
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <button className="flex items-center gap-2 rounded-lg p-1 hover:bg-accent/10 transition-colors">
+                <button className="flex items-center gap-1.5 rounded-xl p-1 hover:bg-accent/10 transition-colors shrink-0">
                   <AvatarWithFallback username={user?.username || "user"} avatarUrl={user?.profile?.avatarUrl} size="sm" />
                   <ChevronDown className="h-3.5 w-3.5 text-muted-foreground hidden md:block" />
                 </button>
@@ -278,7 +283,7 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
         </header>
 
         {/* Page Content */}
-        <main className="flex-1 p-4 md:p-8 max-w-7xl w-full mx-auto animate-fade-in">
+        <main className="flex-1 p-3.5 sm:p-6 md:p-8 max-w-7xl w-full mx-auto animate-fade-in">
           {children}
         </main>
       </div>
@@ -286,41 +291,83 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
       {/* ─── Mobile Slide-out Drawer ────────────────────────────── */}
       {mobileMenuOpen && (
         <div className="fixed inset-0 z-50 md:hidden flex">
-          <div className="fixed inset-0 bg-background/80 backdrop-blur-sm" onClick={() => setMobileMenuOpen(false)} />
-          <div className="relative flex flex-col w-72 max-w-[85vw] bg-card border-r border-border h-full p-6 z-10 shadow-2xl">
+          <div
+            className="fixed inset-0 bg-background/80 backdrop-blur-sm animate-fade-in"
+            onClick={() => setMobileMenuOpen(false)}
+          />
+          <div className="relative flex flex-col w-80 max-w-[85vw] bg-card border-r border-border h-full p-5 z-10 shadow-2xl overflow-y-auto">
+            {/* Drawer Header */}
             <div className="flex items-center justify-between pb-4 border-b border-border">
-              <Link href="/dashboard" className="flex items-center gap-2" onClick={() => setMobileMenuOpen(false)}>
-                <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary">
-                  <Coins className="h-5 w-5 text-white" />
+              <Link href="/dashboard" className="flex items-center gap-2.5" onClick={() => setMobileMenuOpen(false)}>
+                <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-primary shadow-sm shadow-primary/25">
+                  <Coins className="h-4 w-4 text-white" />
                 </div>
-                <span className="text-lg font-black">Cash Dash</span>
+                <div>
+                  <span className="text-base font-black text-foreground block leading-tight">Cash Dash</span>
+                  <span className="text-[10px] font-bold text-accent uppercase tracking-wider block">Rewards</span>
+                </div>
               </Link>
-              <button onClick={() => setMobileMenuOpen(false)} className="p-1 text-muted-foreground hover:text-foreground">
+              <button
+                onClick={() => setMobileMenuOpen(false)}
+                className="p-1.5 rounded-lg text-muted-foreground hover:text-foreground hover:bg-accent/10"
+                aria-label="Close menu"
+              >
                 <X className="h-5 w-5" />
               </button>
             </div>
 
-            <div className="py-3 flex items-center justify-between border-b border-border/50">
-              <LanguageSwitcher />
-              <ThemeSwitcher />
+            {/* User Quick Info Card */}
+            <div className="p-3 my-3 rounded-xl bg-accent/5 border border-border/60 flex items-center gap-3">
+              <AvatarWithFallback username={user?.username || "user"} avatarUrl={user?.profile?.avatarUrl} size="sm" />
+              <div className="min-w-0 flex-1">
+                <p className="text-xs font-bold truncate text-foreground">{user?.username || "Member"}</p>
+                <p className="text-[10px] text-emerald-500 font-semibold truncate">
+                  {formatPoints(wallet?.availablePoints || 0)} pts ({formatCash((wallet?.availablePoints || 0) / 1000)})
+                </p>
+              </div>
             </div>
 
-            <nav className="flex-1 py-4 space-y-1 overflow-y-auto">
+            {/* Settings Card: Language, Theme, and Live Alerts */}
+            <div className="p-3 rounded-xl bg-muted/30 border border-border/50 space-y-3 mb-3">
+              <div className="flex items-center justify-between">
+                <span className="text-xs font-semibold text-muted-foreground">{t.profile.tabs.language}</span>
+                <LanguageSwitcher />
+              </div>
+              <div className="flex items-center justify-between pt-2 border-t border-border/40">
+                <span className="text-xs font-semibold text-muted-foreground">Theme</span>
+                <ThemeSwitcher />
+              </div>
+              <div className="flex items-center justify-between pt-2 border-t border-border/40">
+                <span className="text-xs font-semibold text-muted-foreground">Live Offer Alerts</span>
+                <OfferAlertsToggle />
+              </div>
+            </div>
+
+            {/* Navigation links with min-h 44px for comfortable touch targets */}
+            <nav className="flex-1 py-1 space-y-1 overflow-y-auto">
               {navigationItems.map((item) => {
-                const isActive = pathname === item.href;
+                const isActive = pathname === item.href || (item.href !== "/dashboard" && pathname.startsWith(item.href));
                 const Icon = item.icon;
+                const isNotifs = item.href === "/notifications";
                 return (
                   <Link
                     key={item.href}
                     href={item.href}
                     onClick={() => setMobileMenuOpen(false)}
                     className={cn(
-                      "flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium",
-                      isActive ? "bg-primary text-white font-semibold" : "text-muted-foreground hover:bg-accent/10"
+                      "flex items-center gap-3 px-3 min-h-[44px] rounded-xl text-sm font-medium transition-colors active:scale-98",
+                      isActive
+                        ? "bg-primary text-primary-foreground font-semibold shadow-sm shadow-primary/20"
+                        : "text-muted-foreground hover:bg-accent/10 hover:text-foreground"
                     )}
                   >
-                    <Icon className="h-4 w-4" />
-                    <span>{item.name}</span>
+                    <Icon className="h-4 w-4 shrink-0" />
+                    <span className="flex-1">{item.name}</span>
+                    {isNotifs && unreadCount > 0 && (
+                      <Badge variant="destructive" className="px-1.5 py-0.2 text-[10px] h-4 min-w-4 flex items-center justify-center">
+                        {unreadCount}
+                      </Badge>
+                    )}
                   </Link>
                 );
               })}
@@ -329,16 +376,24 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
                 <Link
                   href="/admin"
                   onClick={() => setMobileMenuOpen(false)}
-                  className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-bold text-amber-500"
+                  className="flex items-center gap-3 px-3 min-h-[44px] rounded-xl text-sm font-bold text-amber-500 hover:bg-amber-500/10 transition-colors"
                 >
-                  <Shield className="h-4 w-4" />
+                  <Shield className="h-4 w-4 shrink-0" />
                   <span>{t.nav.adminConsole}</span>
                 </Link>
               )}
             </nav>
 
-            <div className="pt-4 border-t border-border">
-              <Button variant="outline" className="w-full text-destructive" onClick={handleLogout}>
+            {/* Logout button */}
+            <div className="pt-3 mt-auto border-t border-border">
+              <Button
+                variant="outline"
+                className="w-full h-11 text-destructive hover:text-destructive hover:bg-destructive/10 font-semibold rounded-xl"
+                onClick={() => {
+                  setMobileMenuOpen(false);
+                  handleLogout();
+                }}
+              >
                 <LogOut className="h-4 w-4 mr-2" />
                 {t.common.logout}
               </Button>
@@ -348,7 +403,13 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
       )}
 
       {/* ─── Mobile Bottom Navigation ──────────────────────────── */}
-      <nav className="fixed bottom-0 left-0 right-0 z-30 md:hidden bg-card/95 backdrop-blur-lg border-t border-border flex items-center justify-around h-16 px-2">
+      <nav
+        className="fixed bottom-0 left-0 right-0 z-30 md:hidden bg-card/95 backdrop-blur-xl border-t border-border flex items-center justify-around px-2 shadow-2xl"
+        style={{
+          paddingBottom: "env(safe-area-inset-bottom, 0px)",
+          height: "calc(3.85rem + env(safe-area-inset-bottom, 0px))",
+        }}
+      >
         {[
           { name: t.common.dashboard, href: "/dashboard", icon: LayoutDashboard },
           { name: t.common.offers, href: "/offers", icon: Gift },
@@ -356,19 +417,26 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
           { name: t.common.withdraw, href: "/withdraw", icon: ArrowUpRight },
           { name: t.common.leaderboard, href: "/leaderboard", icon: Trophy },
         ].map((item) => {
-          const isActive = pathname === item.href;
+          const isActive = pathname === item.href || (item.href !== "/dashboard" && pathname.startsWith(item.href));
           const Icon = item.icon;
           return (
             <Link
               key={item.href}
               href={item.href}
               className={cn(
-                "flex flex-col items-center justify-center w-14 h-12 rounded-lg text-[10px] font-medium transition-colors",
+                "flex flex-col items-center justify-center flex-1 h-full py-1 text-[10px] font-medium transition-colors select-none active:scale-95",
                 isActive ? "text-primary font-bold" : "text-muted-foreground hover:text-foreground"
               )}
             >
-              <Icon className="h-4 w-4 mb-1" />
-              <span className="truncate max-w-[56px] text-center">{item.name}</span>
+              <div
+                className={cn(
+                  "flex items-center justify-center w-8 h-7 rounded-lg mb-0.5 transition-all",
+                  isActive && "bg-primary/15 text-primary"
+                )}
+              >
+                <Icon className="h-4 w-4" />
+              </div>
+              <span className="truncate max-w-[64px] text-center">{item.name}</span>
             </Link>
           );
         })}
