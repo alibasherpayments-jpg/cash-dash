@@ -59,53 +59,9 @@ interface OfferwallItem {
   completionsCount: number;
 }
 
-const INITIAL_OFFERWALLS: OfferwallItem[] = [
-  {
-    id: "ow-taskwall",
-    name: "Taskwall.io",
-    slug: "taskwall",
-    type: "TASKS",
-    badge: "Instant Clearance",
-    rating: 4.9,
-    avgPayout: "$1.00 - $25.00",
-    devices: ["Web", "Android", "iOS"],
-    postbackUrl: "https://api-production-8237.up.railway.app/api/v1/webhooks/providers/taskwall?userid={userid}&offer_id={offer_id}&offer_name={offer_name}&payout={payout}&tx_id={tx_id}",
-    webhookSecret: "taskwall-secret-cashdash",
-    isActive: true,
-    completionsCount: 2450,
-  },
-  {
-    id: "ow-cpalead",
-    name: "CPALead",
-    slug: "cpalead",
-    type: "CPI_OFFERS",
-    badge: "Fastest Approval",
-    rating: 4.8,
-    avgPayout: "$0.50 - $12.00",
-    devices: ["Multi-Device", "Android", "iOS"],
-    postbackUrl: "https://api-production-8237.up.railway.app/api/v1/webhooks/providers/cpalead?subid={subid}&payout={payout}&lead_id={lead_id}&campaign_name={campaign_name}",
-    webhookSecret: "cpalead-secret-cashdash",
-    isActive: true,
-    completionsCount: 3840,
-  },
-  {
-    id: "ow-clickwall",
-    name: "ClickWall.io",
-    slug: "clickwall",
-    type: "PTC_CLICKS",
-    badge: "Instant Clicks",
-    rating: 4.9,
-    avgPayout: "$0.10 - $5.00",
-    devices: ["Desktop", "Android", "iOS"],
-    postbackUrl: "https://api-production-8237.up.railway.app/api/v1/webhooks/providers/clickwall?user_id={user_id}&points={points}&trans_id={trans_id}",
-    webhookSecret: "clickwall-secret-cashdash",
-    isActive: true,
-    completionsCount: 5120,
-  },
-];
-
 export default function AdminOfferwallsPage() {
-  const [offerwalls, setOfferwalls] = useState<OfferwallItem[]>(INITIAL_OFFERWALLS);
+  const [offerwalls, setOfferwalls] = useState<OfferwallItem[]>([]);
+  const [loading, setLoading] = useState(true);
   const [copiedId, setCopiedId] = useState<string | null>(null);
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
   const [testModalWall, setTestModalWall] = useState<OfferwallItem | null>(null);
@@ -114,29 +70,50 @@ export default function AdminOfferwallsPage() {
   const [isTesting, setIsTesting] = useState(false);
   const [testResult, setTestResult] = useState<string | null>(null);
 
-  useEffect(() => {
-    apiClient
-      .get("/admin/providers")
-      .then((res) => {
-        if (res.data?.data && Array.isArray(res.data.data) && res.data.data.length > 0) {
-          const mapped: OfferwallItem[] = res.data.data.map((p: any) => ({
-            id: p.id,
-            name: p.name,
-            slug: p.slug,
-            type: (p.type || "TASKS").toUpperCase(),
-            badge: p.slug === "taskwall" ? "Instant Clearance" : p.slug === "cpalead" ? "Fastest Approval" : "Instant Clicks",
-            rating: 4.9,
-            avgPayout: "$1.00 - $25.00",
-            devices: ["Web", "Android", "iOS"],
-            postbackUrl: p.postbackUrl || `http://localhost:3001/api/v1/webhooks/providers/${p.slug}?user_id={user_id}&points={points}&tx_id={tx_id}`,
-            webhookSecret: p.webhookSecret || `${p.slug}-secret-cashdash`,
-            isActive: p.isActive,
-            completionsCount: p.offersCount || 10,
-          }));
-          setOfferwalls(mapped);
+  const fetchProviders = async () => {
+    setLoading(true);
+    try {
+      const res = await apiClient.get("/admin/providers");
+      const list = res.data?.data || (Array.isArray(res.data) ? res.data : []);
+      const apiHost = "https://api-production-8237.up.railway.app";
+      const mapped: OfferwallItem[] = list.map((p: any) => {
+        let postback = "";
+        if (p.slug === "taskwall") {
+          postback = `${apiHost}/api/v1/webhooks/providers/taskwall?userid={userid}&offer_id={offer_id}&offer_name={offer_name}&payout={payout}&tx_id={tx_id}`;
+        } else if (p.slug === "cpalead") {
+          postback = `${apiHost}/api/v1/webhooks/providers/cpalead?subid={subid}&payout={payout}&lead_id={lead_id}&campaign_name={campaign_name}`;
+        } else if (p.slug === "clickwall") {
+          postback = `${apiHost}/api/v1/webhooks/providers/clickwall?user_id={user_id}&points={points}&trans_id={trans_id}`;
+        } else {
+          postback = `${apiHost}/api/v1/webhooks/providers/${p.slug}?user_id={user_id}&points={points}&tx_id={tx_id}`;
         }
-      })
-      .catch(() => {});
+
+        return {
+          id: p.id,
+          name: p.name,
+          slug: p.slug,
+          type: (p.type || "TASKS").toUpperCase(),
+          badge: p.slug === "taskwall" ? "Instant Clearance" : p.slug === "cpalead" ? "Fastest Approval" : "Instant Clicks",
+          rating: 4.9,
+          avgPayout: "$1.00 - $25.00",
+          devices: ["Web", "Android", "iOS"],
+          postbackUrl: postback,
+          webhookSecret: p.webhookSecret || `${p.slug}-secret-cashdash`,
+          isActive: p.isActive,
+          completionsCount: p.offersCount || 0,
+        };
+      });
+      setOfferwalls(mapped);
+    } catch (err) {
+      console.error("Failed to load providers:", err);
+      setOfferwalls([]);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchProviders();
   }, []);
 
   // New Wall Form State
@@ -157,50 +134,55 @@ export default function AdminOfferwallsPage() {
     setTimeout(() => setCopiedId(null), 2000);
   };
 
-  const handleToggleActive = (id: string) => {
-    setOfferwalls((prev) =>
-      prev.map((w) => (w.id === id ? { ...w, isActive: !w.isActive } : w))
-    );
-  };
-
-  const handleDeleteWall = (id: string) => {
-    if (confirm("Are you sure you want to deactivate and remove this offerwall provider?")) {
-      setOfferwalls((prev) => prev.filter((w) => w.id !== id));
+  const handleToggleActive = async (id: string, current: boolean) => {
+    try {
+      await apiClient.patch(`/admin/providers/${id}`, { isActive: !current });
+      setOfferwalls((prev) =>
+        prev.map((w) => (w.id === id ? { ...w, isActive: !current } : w))
+      );
+    } catch (err: any) {
+      alert(err.response?.data?.message || "Failed to update offerwall status");
     }
   };
 
-  const handleCreateWall = (e: React.FormEvent) => {
+  const handleDeleteWall = async (id: string) => {
+    if (!confirm("Are you sure you want to deactivate and remove this offerwall provider?")) return;
+    try {
+      await apiClient.delete(`/admin/providers/${id}`);
+      setOfferwalls((prev) => prev.filter((w) => w.id !== id));
+    } catch (err: any) {
+      alert(err.response?.data?.message || "Failed to delete offerwall provider");
+    }
+  };
+
+  const handleCreateWall = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!newWall.name || !newWall.slug) return;
 
     const slugFormatted = newWall.slug.toLowerCase().replace(/\s+/g, "-");
-    const item: OfferwallItem = {
-      id: `ow-${Date.now()}`,
-      name: newWall.name,
-      slug: slugFormatted,
-      type: newWall.type,
-      badge: newWall.badge,
-      rating: 4.8,
-      avgPayout: newWall.avgPayout,
-      devices: newWall.devices.split(",").map((s) => s.trim()),
-      postbackUrl: `http://localhost:3001/api/v1/webhooks/providers/${slugFormatted}?user_id={user_id}&points={points}&tx_id={tx_id}`,
-      webhookSecret: newWall.webhookSecret,
-      isActive: newWall.isActive,
-      completionsCount: 0,
-    };
-
-    setOfferwalls((prev) => [item, ...prev]);
-    setIsAddModalOpen(false);
-    setNewWall({
-      name: "",
-      slug: "",
-      type: "OFFERWALL",
-      badge: "+10% Boost",
-      avgPayout: "$1.00 - $20.00",
-      devices: "Desktop, Android, iOS",
-      webhookSecret: `sec_${Math.random().toString(36).substring(2, 10)}`,
-      isActive: true,
-    });
+    try {
+      await apiClient.post("/admin/providers", {
+        name: newWall.name,
+        slug: slugFormatted,
+        type: newWall.type,
+        webhookSecret: newWall.webhookSecret,
+        isActive: newWall.isActive,
+      });
+      await fetchProviders();
+      setIsAddModalOpen(false);
+      setNewWall({
+        name: "",
+        slug: "",
+        type: "OFFERWALL",
+        badge: "+10% Boost",
+        avgPayout: "$1.00 - $20.00",
+        devices: "Desktop, Android, iOS",
+        webhookSecret: `sec_${Math.random().toString(36).substring(2, 10)}`,
+        isActive: true,
+      });
+    } catch (err: any) {
+      alert(err.response?.data?.message || "Failed to create offerwall provider");
+    }
   };
 
   const handleRunTestPostback = async () => {
@@ -337,7 +319,21 @@ export default function AdminOfferwallsPage() {
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-800/60">
-                {offerwalls.map((wall) => (
+                {loading ? (
+                  <tr>
+                    <td colSpan={7} className="py-12 text-center text-slate-400">
+                      <Loader2 className="h-5 w-5 animate-spin text-amber-500 mx-auto mb-2" />
+                      Loading offerwalls from database...
+                    </td>
+                  </tr>
+                ) : offerwalls.length === 0 ? (
+                  <tr>
+                    <td colSpan={7} className="py-12 text-center text-slate-500">
+                      No offerwall networks found. Add your first network above.
+                    </td>
+                  </tr>
+                ) : (
+                  offerwalls.map((wall) => (
                   <tr key={wall.id} className="hover:bg-slate-800/30 transition-colors">
                     <td className="py-4 px-5">
                       <div className="flex items-center gap-2.5">
@@ -360,20 +356,23 @@ export default function AdminOfferwallsPage() {
                       </div>
                     </td>
 
-                    <td className="py-4 px-5 max-w-xs">
-                      <div className="flex items-center gap-1.5 bg-slate-900 p-1.5 rounded-lg border border-slate-800 font-mono text-[10px]">
-                        <span className="truncate text-slate-400 flex-1">{wall.postbackUrl}</span>
-                        <button
+                    <td className="py-4 px-5">
+                      <div className="flex items-center gap-1.5 max-w-sm">
+                        <code className="text-[11px] font-mono text-amber-300/90 bg-slate-900/90 px-2 py-1 rounded border border-slate-800 truncate block">
+                          {wall.postbackUrl}
+                        </code>
+                        <Button
+                          size="sm"
+                          variant="ghost"
                           onClick={() => handleCopy(wall.postbackUrl, wall.id)}
-                          className="p-1 text-slate-400 hover:text-white shrink-0"
-                          title="Copy Postback URL"
+                          className="h-7 w-7 p-0 shrink-0 text-slate-400 hover:text-white"
                         >
                           {copiedId === wall.id ? (
-                            <Check className="h-3 w-3 text-emerald-400" />
+                            <Check className="h-3.5 w-3.5 text-emerald-400" />
                           ) : (
-                            <Copy className="h-3 w-3" />
+                            <Copy className="h-3.5 w-3.5" />
                           )}
-                        </button>
+                        </Button>
                       </div>
                     </td>
 
@@ -387,7 +386,7 @@ export default function AdminOfferwallsPage() {
 
                     <td className="py-4 px-5">
                       <button
-                        onClick={() => handleToggleActive(wall.id)}
+                        onClick={() => handleToggleActive(wall.id, wall.isActive)}
                         className={`px-2.5 py-1 rounded text-[10px] font-bold transition-colors cursor-pointer ${
                           wall.isActive
                             ? "bg-emerald-500/15 text-emerald-400 border border-emerald-500/30"
@@ -419,7 +418,8 @@ export default function AdminOfferwallsPage() {
                       </div>
                     </td>
                   </tr>
-                ))}
+                  ))
+                )}
               </tbody>
             </table>
           </div>

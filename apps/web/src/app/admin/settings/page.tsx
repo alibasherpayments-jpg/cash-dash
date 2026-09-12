@@ -1,12 +1,13 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
-import { Settings, Save, CheckCircle2, Shield, DollarSign, Trophy } from "lucide-react";
+import { Settings, Save, CheckCircle2, Shield, DollarSign, Trophy, Loader2 } from "lucide-react";
+import apiClient from "@/lib/api-client";
 
 export default function AdminSettingsPage() {
   const [siteName, setSiteName] = useState("Cash Dash");
@@ -16,12 +17,51 @@ export default function AdminSettingsPage() {
   const [referralPercent, setReferralPercent] = useState("10");
   const [leaderboardEnabled, setLeaderboardEnabled] = useState(true);
   const [maintenanceMode, setMaintenanceMode] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
+  const [isSaving, setIsSaving] = useState(false);
   const [saved, setSaved] = useState(false);
 
-  const handleSave = (e: React.FormEvent) => {
+  useEffect(() => {
+    apiClient
+      .get("/admin/settings")
+      .then((res) => {
+        const data = res.data?.data;
+        if (Array.isArray(data)) {
+          data.forEach((s: any) => {
+            if (s.key === "site_name") setSiteName(s.value);
+            if (s.key === "support_email") setSupportEmail(s.value);
+            if (s.key === "points_conversion_rate") setConversionRate(s.value);
+            if (s.key === "min_withdrawal_points") setMinWithdrawal(s.value);
+            if (s.key === "referral_percentage") setReferralPercent(s.value);
+            if (s.key === "leaderboard_enabled") setLeaderboardEnabled(s.value === "true");
+            if (s.key === "maintenance_mode") setMaintenanceMode(s.value === "true");
+          });
+        }
+      })
+      .catch(() => {})
+      .finally(() => setIsLoading(false));
+  }, []);
+
+  const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
-    setSaved(true);
-    setTimeout(() => setSaved(false), 2500);
+    setIsSaving(true);
+    try {
+      await Promise.all([
+        apiClient.put("/admin/settings/site_name", { value: siteName }),
+        apiClient.put("/admin/settings/support_email", { value: supportEmail }),
+        apiClient.put("/admin/settings/points_conversion_rate", { value: conversionRate }),
+        apiClient.put("/admin/settings/min_withdrawal_points", { value: minWithdrawal }),
+        apiClient.put("/admin/settings/referral_percentage", { value: referralPercent }),
+        apiClient.put("/admin/settings/leaderboard_enabled", { value: String(leaderboardEnabled) }),
+        apiClient.put("/admin/settings/maintenance_mode", { value: String(maintenanceMode) }),
+      ]);
+      setSaved(true);
+      setTimeout(() => setSaved(false), 3000);
+    } catch (err: any) {
+      alert(err.response?.data?.message || "Failed to save settings");
+    } finally {
+      setIsSaving(false);
+    }
   };
 
   return (
@@ -147,8 +187,14 @@ export default function AdminSettingsPage() {
               <CheckCircle2 className="h-4 w-4" /> System settings updated in database!
             </span>
           )}
-          <Button type="submit" size="lg" className="ml-auto bg-amber-500 hover:bg-amber-600 text-slate-950 font-bold">
-            <Save className="h-4 w-4 mr-1.5" /> Save Configuration
+          <Button
+            type="submit"
+            disabled={isSaving || isLoading}
+            size="lg"
+            className="ml-auto bg-amber-500 hover:bg-amber-600 text-slate-950 font-bold"
+          >
+            {isSaving ? <Loader2 className="h-4 w-4 mr-1.5 animate-spin" /> : <Save className="h-4 w-4 mr-1.5" />}
+            Save Configuration
           </Button>
         </div>
       </form>

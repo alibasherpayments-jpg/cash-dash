@@ -27,15 +27,18 @@ import {
   Eye,
   PlusCircle,
   AlertTriangle,
+  Loader2,
+  RefreshCw,
 } from "lucide-react";
 import { formatPoints, formatCash, formatPointsAsCash, formatDateTime } from "@/lib/formatters";
+import apiClient from "@/lib/api-client";
 
 interface AdminUserRow {
   id: string;
   username: string;
   email: string;
   role: string;
-  status: "ACTIVE" | "SUSPENDED" | "PENDING_VERIFICATION";
+  status: "ACTIVE" | "SUSPENDED" | "BANNED" | "PENDING_VERIFICATION";
   country: string;
   availablePoints: number;
   totalWithdrawn: number;
@@ -43,63 +46,84 @@ interface AdminUserRow {
   createdAt: string;
 }
 
-const INITIAL_USERS: AdminUserRow[] = [
-  { id: "usr-1", username: "alex_dash", email: "alex@example.com", role: "USER", status: "ACTIVE", country: "US", availablePoints: 482000, totalWithdrawn: 482000, riskScore: 5, createdAt: "2026-08-01" },
-  { id: "usr-2", username: "mia_rewards", email: "mia@example.com", role: "USER", status: "ACTIVE", country: "UK", availablePoints: 451000, totalWithdrawn: 451000, riskScore: 8, createdAt: "2026-08-03" },
-  { id: "usr-3", username: "sam_earner", email: "sam@example.com", role: "USER", status: "ACTIVE", country: "CA", availablePoints: 412000, totalWithdrawn: 412000, riskScore: 12, createdAt: "2026-08-05" },
-  { id: "usr-4", username: "ryan_hustle", email: "ryan@example.com", role: "USER", status: "ACTIVE", country: "US", availablePoints: 12450, totalWithdrawn: 85000, riskScore: 10, createdAt: "2026-08-10" },
-  { id: "usr-5", username: "emma_quest", email: "emma@example.com", role: "USER", status: "ACTIVE", country: "CA", availablePoints: 45200, totalWithdrawn: 60000, riskScore: 15, createdAt: "2026-08-12" },
-  { id: "usr-6", username: "noah_cash", email: "noah@example.com", role: "USER", status: "ACTIVE", country: "UK", availablePoints: 18900, totalWithdrawn: 40000, riskScore: 22, createdAt: "2026-08-15" },
-  { id: "usr-7", username: "suspicious_bot", email: "bot99@tempmail.com", role: "USER", status: "SUSPENDED", country: "RO", availablePoints: 150000, totalWithdrawn: 0, riskScore: 88, createdAt: "2026-08-20" },
-];
-
 export default function AdminUsersPage() {
-  const [users, setUsers] = useState<AdminUserRow[]>(INITIAL_USERS);
+  const [users, setUsers] = useState<AdminUserRow[]>([]);
+  const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
   const [adjustModalUser, setAdjustModalUser] = useState<AdminUserRow | null>(null);
   const [adjustAmount, setAdjustAmount] = useState("1000");
   const [adjustDirection, setAdjustDirection] = useState<"ADD" | "DEDUCT">("ADD");
   const [adjustReason, setAdjustReason] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const filtered = users.filter(
-    (u) =>
-      u.username.toLowerCase().includes(search.toLowerCase()) ||
-      u.email.toLowerCase().includes(search.toLowerCase())
-  );
-
-  const handleToggleSuspend = (id: string) => {
-    setUsers((prev) =>
-      prev.map((u) => {
-        if (u.id === id) {
-          return {
-            ...u,
-            status: u.status === "ACTIVE" ? "SUSPENDED" : "ACTIVE",
-          };
-        }
-        return u;
-      })
-    );
+  const fetchUsers = async () => {
+    setLoading(true);
+    try {
+      const res = await apiClient.get<any>("/admin/users", {
+        params: { search: search.trim() || undefined, limit: 50 },
+      });
+      const list = res.data?.data || res.data || [];
+      if (Array.isArray(list)) {
+        const mapped: AdminUserRow[] = list.map((u: any) => ({
+          id: u.id,
+          username: u.username || "Anonymous",
+          email: u.email || "No email",
+          role: u.role || "USER",
+          status: u.status || "ACTIVE",
+          country: u.profile?.country || "US",
+          availablePoints: u.wallet?.availablePoints || 0,
+          totalWithdrawn: u.wallet?.totalWithdrawn || 0,
+          riskScore: u.riskAssessment?.overallScore || 5,
+          createdAt: u.createdAt || new Date().toISOString(),
+        }));
+        setUsers(mapped);
+      }
+    } catch (err) {
+      console.error("Failed to load admin users", err);
+    } finally {
+      setLoading(false);
+    }
   };
 
-  const handleConfirmAdjustment = () => {
+  React.useEffect(() => {
+    fetchUsers();
+  }, [search]);
+
+  const handleToggleSuspend = async (id: string, currentStatus: string) => {
+    const nextStatus = currentStatus === "ACTIVE" ? "SUSPENDED" : "ACTIVE";
+    try {
+      await apiClient.patch(`/admin/users/${id}/status`, {
+        status: nextStatus,
+        reason: `Status changed to ${nextStatus} by admin`,
+      });
+      setUsers((prev) =>
+        prev.map((u) => (u.id === id ? { ...u, status: nextStatus as any } : u))
+      );
+    } catch (err) {
+      alert("Failed to update user status on server");
+    }
+  };
+
+  const handleConfirmAdjustment = async () => {
     if (!adjustModalUser) return;
-    const delta = parseInt(adjustAmount, 10) || 0;
-    const finalDelta = adjustDirection === "ADD" ? delta : -delta;
+    const amount = parseInt(adjustAmount, 10) || 0;
+    if (amount <= 0) return;
 
-    setUsers((prev) =>
-      prev.map((u) => {
-        if (u.id === adjustModalUser.id) {
-          return {
-            ...u,
-            availablePoints: Math.max(0, u.availablePoints + finalDelta),
-          };
-        }
-        return u;
-      })
-    );
-
-    setAdjustModalUser(null);
-    setAdjustReason("");
+    setIsSubmitting(true);
+    try {
+      await apiClient.post(`/admin/users/${adjustModalUser.id}/adjust-balance`, {
+        amount,
+        direction: adjustDirection === "ADD" ? "CREDIT" : "DEBIT",
+        reason: adjustReason.trim() || "Administrative manual adjustment",
+      });
+      await fetchUsers();
+      setAdjustModalUser(null);
+      setAdjustReason("");
+    } catch (err: any) {
+      alert(err.response?.data?.message || "Failed to adjust balance");
+    } finally {
+      setIsSubmitting(false);
+    }
   };
 
   return (
@@ -137,97 +161,109 @@ export default function AdminUsersPage() {
       <Card className="bg-[#12141d] border-slate-800">
         <CardContent className="p-0">
           <div className="overflow-x-auto">
-            <table className="w-full text-left text-xs text-slate-300">
-              <thead className="border-b border-slate-800 text-slate-400 text-[10px] uppercase tracking-wider bg-slate-900/40">
-                <tr>
-                  <th className="py-3.5 px-5 font-semibold">User</th>
-                  <th className="py-3.5 px-5 font-semibold">Available Points</th>
-                  <th className="py-3.5 px-5 font-semibold">Total Withdrawn</th>
-                  <th className="py-3.5 px-5 font-semibold">Risk Score</th>
-                  <th className="py-3.5 px-5 font-semibold">Status</th>
-                  <th className="py-3.5 px-5 font-semibold text-right">Actions</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-slate-800/60">
-                {filtered.map((u) => (
-                  <tr key={u.id} className="hover:bg-slate-800/30 transition-colors">
-                    <td className="py-3.5 px-5">
-                      <div className="flex items-center gap-3">
-                        <AvatarWithFallback username={u.username} size="sm" />
-                        <div>
-                          <Link href={`/admin/users/${u.id}`} className="font-bold text-white hover:text-amber-400">
-                            {u.username}
-                          </Link>
-                          <p className="text-[10px] text-slate-400">{u.email} • {u.country}</p>
-                        </div>
-                      </div>
-                    </td>
-
-                    <td className="py-3.5 px-5">
-                      <span className="font-bold text-white">{formatPoints(u.availablePoints)}</span>
-                      <span className="text-[10px] text-emerald-400 block">
-                        ≈ {formatPointsAsCash(u.availablePoints)}
-                      </span>
-                    </td>
-
-                    <td className="py-3.5 px-5 font-bold text-emerald-400">
-                      {formatPointsAsCash(u.totalWithdrawn)}
-                    </td>
-
-                    <td className="py-3.5 px-5">
-                      <Badge
-                        className={`text-[10px] font-bold ${
-                          u.riskScore > 50
-                            ? "bg-rose-500/10 text-rose-400 border-rose-500/20"
-                            : u.riskScore > 20
-                            ? "bg-amber-500/10 text-amber-400 border-amber-500/20"
-                            : "bg-emerald-500/10 text-emerald-400 border-emerald-500/20"
-                        }`}
-                      >
-                        Score: {u.riskScore}
-                      </Badge>
-                    </td>
-
-                    <td className="py-3.5 px-5">
-                      <span
-                        className={`px-2 py-0.5 rounded text-[10px] font-bold ${
-                          u.status === "ACTIVE"
-                            ? "bg-emerald-500/10 text-emerald-400 border border-emerald-500/20"
-                            : "bg-rose-500/10 text-rose-400 border border-rose-500/20"
-                        }`}
-                      >
-                        {u.status}
-                      </span>
-                    </td>
-
-                    <td className="py-3.5 px-5 text-right space-x-1.5">
-                      <Button
-                        size="sm"
-                        variant="ghost"
-                        onClick={() => setAdjustModalUser(u)}
-                        className="h-7 px-2 text-xs text-amber-400 hover:text-amber-300"
-                        title="Adjust balance"
-                      >
-                        <Coins className="h-3.5 w-3.5 mr-1" /> Adjust
-                      </Button>
-
-                      <Button
-                        size="sm"
-                        variant="ghost"
-                        onClick={() => handleToggleSuspend(u.id)}
-                        className={`h-7 px-2 text-xs ${
-                          u.status === "ACTIVE"
-                            ? "text-rose-400 hover:text-rose-300"
-                            : "text-emerald-400 hover:text-emerald-300"
-                        }`}
-                      >
-                        {u.status === "ACTIVE" ? "Suspend" : "Activate"}
-                      </Button>
-                    </td>
+            {loading ? (
+              <div className="p-12 text-center text-slate-400 flex items-center justify-center gap-2">
+                <Loader2 className="h-5 w-5 animate-spin text-amber-500" /> Loading users directory...
+              </div>
+            ) : users.length === 0 ? (
+              <div className="p-12 text-center text-slate-400 space-y-2">
+                <Users className="h-8 w-8 mx-auto text-slate-600 mb-2" />
+                <p className="font-semibold text-white">No Users Found</p>
+                <p className="text-xs text-slate-500">No user accounts matching the search query exist in the database.</p>
+              </div>
+            ) : (
+              <table className="w-full text-left text-xs text-slate-300">
+                <thead className="border-b border-slate-800 text-slate-400 text-[10px] uppercase tracking-wider bg-slate-900/40">
+                  <tr>
+                    <th className="py-3.5 px-5 font-semibold">User</th>
+                    <th className="py-3.5 px-5 font-semibold">Available Points</th>
+                    <th className="py-3.5 px-5 font-semibold">Total Withdrawn</th>
+                    <th className="py-3.5 px-5 font-semibold">Risk Score</th>
+                    <th className="py-3.5 px-5 font-semibold">Status</th>
+                    <th className="py-3.5 px-5 font-semibold text-right">Actions</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
+                </thead>
+                <tbody className="divide-y divide-slate-800/60">
+                  {users.map((u) => (
+                    <tr key={u.id} className="hover:bg-slate-800/30 transition-colors">
+                      <td className="py-3.5 px-5">
+                        <div className="flex items-center gap-3">
+                          <AvatarWithFallback username={u.username} size="sm" />
+                          <div>
+                            <Link href={`/admin/users/${u.id}`} className="font-bold text-white hover:text-amber-400">
+                              {u.username}
+                            </Link>
+                            <p className="text-[10px] text-slate-400">{u.email} • {u.country}</p>
+                          </div>
+                        </div>
+                      </td>
+
+                      <td className="py-3.5 px-5">
+                        <span className="font-bold text-white">{formatPoints(u.availablePoints)}</span>
+                        <span className="text-[10px] text-emerald-400 block">
+                          ≈ {formatPointsAsCash(u.availablePoints)}
+                        </span>
+                      </td>
+
+                      <td className="py-3.5 px-5 font-bold text-emerald-400">
+                        {formatPointsAsCash(u.totalWithdrawn)}
+                      </td>
+
+                      <td className="py-3.5 px-5">
+                        <Badge
+                          className={`text-[10px] font-bold ${
+                            u.riskScore > 50
+                              ? "bg-rose-500/10 text-rose-400 border-rose-500/20"
+                              : u.riskScore > 20
+                              ? "bg-amber-500/10 text-amber-400 border-amber-500/20"
+                              : "bg-emerald-500/10 text-emerald-400 border-emerald-500/20"
+                          }`}
+                        >
+                          Score: {u.riskScore}
+                        </Badge>
+                      </td>
+
+                      <td className="py-3.5 px-5">
+                        <span
+                          className={`px-2 py-0.5 rounded text-[10px] font-bold ${
+                            u.status === "ACTIVE"
+                              ? "bg-emerald-500/10 text-emerald-400 border border-emerald-500/20"
+                              : "bg-rose-500/10 text-rose-400 border border-rose-500/20"
+                          }`}
+                        >
+                          {u.status}
+                        </span>
+                      </td>
+
+                      <td className="py-3.5 px-5 text-right space-x-1.5">
+                        <Button
+                          size="sm"
+                          variant="ghost"
+                          onClick={() => setAdjustModalUser(u)}
+                          className="h-7 px-2 text-xs text-amber-400 hover:text-amber-300"
+                          title="Adjust balance"
+                        >
+                          <Coins className="h-3.5 w-3.5 mr-1" /> Adjust
+                        </Button>
+
+                        <Button
+                          size="sm"
+                          variant="ghost"
+                          onClick={() => handleToggleSuspend(u.id, u.status)}
+                          className={`h-7 px-2 text-xs ${
+                            u.status === "ACTIVE"
+                              ? "text-rose-400 hover:text-rose-300"
+                              : "text-emerald-400 hover:text-emerald-300"
+                          }`}
+                        >
+                          {u.status === "ACTIVE" ? "Suspend" : "Activate"}
+                        </Button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            )}
           </div>
         </CardContent>
       </Card>

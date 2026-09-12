@@ -34,64 +34,71 @@ import apiClient from "@/lib/api-client";
 export default function AdminWithdrawalDetailPage() {
   const params = useParams();
   const router = useRouter();
-  const withdrawalId = (params.id as string) || "WDR-81005";
+  const withdrawalId = params.id as string;
 
-  const [data, setData] = useState({
-    id: withdrawalId,
-    user: "ahmed_earner",
-    email: "ahmed@example.com",
-    method: "Vodafone Cash",
-    points: 1000,
-    cashValue: 1.0,
-    fee: 0,
-    status: "PENDING" as "PENDING" | "PROCESSING" | "PAID" | "REJECTED",
-    destination: {
-      walletNumber: "01012345678",
-      accountHolderName: "Ahmed Hassan",
-    },
-    riskScore: 10,
-    submittedAt: "Today at 2:30 PM",
-    externalTxId: "",
-    adminNote: "",
-  });
+  const [data, setData] = useState<{
+    id: string;
+    user: string;
+    email: string;
+    method: string;
+    points: number;
+    cashValue: number;
+    fee: number;
+    status: "PENDING" | "PROCESSING" | "PAID" | "REJECTED";
+    destination: any;
+    riskScore: number;
+    submittedAt: string;
+    externalTxId: string;
+    adminNote: string;
+  } | null>(null);
 
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [modalAction, setModalAction] = useState<"APPROVE" | "MARK_PAID" | "REJECT" | null>(null);
   const [adminNoteInput, setAdminNoteInput] = useState("");
   const [txIdInput, setTxIdInput] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [successMsg, setSuccessMsg] = useState<string | null>(null);
 
+  const fetchWithdrawal = async () => {
+    if (!withdrawalId) return;
+    setLoading(true);
+    setError(null);
+    try {
+      const res = await apiClient.get(`/admin/withdrawals/${withdrawalId}`);
+      if (res.data?.data) {
+        const w = res.data.data;
+        setData({
+          id: w.id,
+          user: w.user?.username || "User",
+          email: w.user?.email || "user@cashdash.io",
+          method: w.method?.name || "Payment",
+          points: w.points,
+          cashValue: w.cashValue || w.points / 1000,
+          fee: w.fee || 0,
+          status: w.status,
+          destination: typeof w.destination === "object" ? w.destination : { info: String(w.destination) },
+          riskScore: w.user?.riskAssessment?.riskScore ?? 10,
+          submittedAt: new Date(w.createdAt).toLocaleString(),
+          externalTxId: w.externalTxId || "",
+          adminNote: w.adminNote || "",
+        });
+      } else {
+        setError("Withdrawal request not found");
+      }
+    } catch (err: any) {
+      setError(err.response?.data?.message || "Failed to load withdrawal request");
+    } finally {
+      setLoading(false);
+    }
+  };
+
   useEffect(() => {
-    // Try to fetch real withdrawal from API
-    apiClient
-      .get(`/admin/withdrawals/${withdrawalId}`)
-      .then((res) => {
-        if (res.data?.data) {
-          const w = res.data.data;
-          setData({
-            id: w.id,
-            user: w.user?.username || "User",
-            email: w.user?.email || "user@cashdash.io",
-            method: w.method?.name || "Payment",
-            points: w.points,
-            cashValue: w.cashValue || w.points / 1000,
-            fee: w.fee || 0,
-            status: w.status,
-            destination: typeof w.destination === "object" ? w.destination : { info: String(w.destination) },
-            riskScore: 10,
-            submittedAt: new Date(w.createdAt).toLocaleString(),
-            externalTxId: w.externalTxId || "",
-            adminNote: w.adminNote || "",
-          });
-        }
-      })
-      .catch(() => {
-        // Use default sample data
-      });
+    fetchWithdrawal();
   }, [withdrawalId]);
 
   const handleExecuteStatusChange = async () => {
-    if (!modalAction) return;
+    if (!modalAction || !data) return;
 
     let nextStatus: "PENDING" | "PROCESSING" | "PAID" | "REJECTED" = data.status;
     if (modalAction === "APPROVE") nextStatus = "PROCESSING";
@@ -105,22 +112,52 @@ export default function AdminWithdrawalDetailPage() {
         note: adminNoteInput || (modalAction === "REJECT" ? "Rejected by admin" : "Approved"),
         ...(modalAction === "MARK_PAID" && txIdInput ? { externalTxId: txIdInput } : {}),
       });
-    } catch {
-      // Offline/demo fallback
+
+      setData((prev) =>
+        prev
+          ? {
+              ...prev,
+              status: nextStatus,
+              externalTxId: modalAction === "MARK_PAID" ? txIdInput || prev.externalTxId : prev.externalTxId,
+              adminNote: adminNoteInput || prev.adminNote,
+            }
+          : null
+      );
+
+      setSuccessMsg(`Withdrawal status transitioned to ${nextStatus}!`);
+      setTimeout(() => setSuccessMsg(null), 4000);
+    } catch (err: any) {
+      alert(err.response?.data?.message || "Failed to update withdrawal status");
+    } finally {
+      setIsSubmitting(false);
+      setModalAction(null);
     }
-
-    setData((prev) => ({
-      ...prev,
-      status: nextStatus,
-      externalTxId: modalAction === "MARK_PAID" ? txIdInput || prev.externalTxId : prev.externalTxId,
-      adminNote: adminNoteInput || prev.adminNote,
-    }));
-
-    setIsSubmitting(false);
-    setModalAction(null);
-    setSuccessMsg(`Withdrawal status transitioned to ${nextStatus}!`);
-    setTimeout(() => setSuccessMsg(null), 4000);
   };
+
+  if (loading) {
+    return (
+      <div className="max-w-4xl mx-auto py-16 flex flex-col items-center justify-center gap-3 text-slate-400">
+        <Loader2 className="h-8 w-8 animate-spin text-amber-500" />
+        <p className="text-sm">Loading withdrawal details from database...</p>
+      </div>
+    );
+  }
+
+  if (error || !data) {
+    return (
+      <div className="max-w-4xl mx-auto py-16 text-center space-y-4">
+        <div className="h-12 w-12 rounded-full bg-red-500/10 text-red-400 flex items-center justify-center mx-auto border border-red-500/20">
+          <AlertTriangle className="h-6 w-6" />
+        </div>
+        <h2 className="text-lg font-bold text-white">{error || "Withdrawal Not Found"}</h2>
+        <Button variant="outline" asChild className="border-slate-800 text-slate-300">
+          <Link href="/admin/withdrawals">
+            <ArrowLeft className="mr-2 h-4 w-4" /> Back to Withdrawals Queue
+          </Link>
+        </Button>
+      </div>
+    );
+  }
 
   return (
     <div className="max-w-4xl mx-auto space-y-6">

@@ -44,8 +44,22 @@ const adminNavItems = [
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const router = useRouter();
-  const { user, logout, isLoading } = useAuthStore();
+  const { user, logout, isLoading, setUser } = useAuthStore();
   const [mobileOpen, setMobileOpen] = useState(false);
+
+  useEffect(() => {
+    // Refresh user role from database in case role was updated recently
+    import("@/lib/api-client").then(({ default: apiClient }) => {
+      apiClient
+        .get("/auth/me")
+        .then((res) => {
+          if (res.data?.data) {
+            setUser(res.data.data);
+          }
+        })
+        .catch(() => {});
+    });
+  }, [setUser]);
 
   useEffect(() => {
     if (!isLoading) {

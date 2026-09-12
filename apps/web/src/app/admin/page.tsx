@@ -11,45 +11,82 @@ import {
   ArrowUpRight,
   Gift,
   ShieldAlert,
-  TrendingUp,
-  Activity,
-  DollarSign,
   Clock,
-  CheckCircle2,
   ArrowRight,
   Layers,
   CreditCard,
-  Settings,
-  Sparkles,
+  CheckCircle2,
+  Inbox,
+  Loader2,
 } from "lucide-react";
 import { formatPoints, formatCash } from "@/lib/formatters";
 import apiClient from "@/lib/api-client";
 
+interface StatData {
+  usersCount: number;
+  activeUsersCount: number;
+  pointsInCirculation: number;
+  pendingWithdrawalsCount: number;
+  pendingWithdrawalsCash: number;
+  completedWithdrawalsCash: number;
+  activeOfferwallsCount: number;
+}
+
 export default function AdminOverviewPage() {
-  const [stats, setStats] = useState({
-    usersCount: 1, // Admin account
-    pointsDistributed: 0,
-    pendingWithdrawalsCount: 2,
-    pendingWithdrawalsCash: 3.50,
-    completedWithdrawalsCash: 93.00,
-    activeOfferwalls: 7,
+  const [stats, setStats] = useState<StatData>({
+    usersCount: 0,
+    activeUsersCount: 0,
+    pointsInCirculation: 0,
+    pendingWithdrawalsCount: 0,
+    pendingWithdrawalsCash: 0,
+    completedWithdrawalsCash: 0,
+    activeOfferwallsCount: 3,
   });
+  const [recentWithdrawals, setRecentWithdrawals] = useState<any[]>([]);
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    apiClient
-      .get("/admin/stats")
-      .then((res) => {
-        if (res.data?.data) {
-          const s = res.data.data;
-          setStats((prev) => ({
-            ...prev,
-            usersCount: s.usersCount ?? prev.usersCount,
-            pointsDistributed: s.pointsDistributed ?? prev.pointsDistributed,
-            pendingWithdrawalsCount: s.pendingWithdrawalsCount ?? prev.pendingWithdrawalsCount,
-          }));
+    async function loadData() {
+      setLoading(true);
+      try {
+        const [statsRes, providersRes, withdrawalsRes] = await Promise.allSettled([
+          apiClient.get("/admin/stats"),
+          apiClient.get("/admin/providers"),
+          apiClient.get("/admin/withdrawals?limit=5"),
+        ]);
+
+        let activeProvidersCount = 3;
+        if (providersRes.status === "fulfilled" && providersRes.value.data?.data) {
+          activeProvidersCount = providersRes.value.data.data.filter((p: any) => p.isActive).length;
         }
-      })
-      .catch(() => {});
+
+        if (statsRes.status === "fulfilled" && statsRes.value.data?.data) {
+          const s = statsRes.value.data.data;
+          setStats({
+            usersCount: s.users?.total ?? 0,
+            activeUsersCount: s.users?.active ?? 0,
+            pointsInCirculation: s.points?.inCirculation ?? 0,
+            pendingWithdrawalsCount: s.withdrawals?.pending ?? 0,
+            pendingWithdrawalsCash: (s.withdrawals?.pendingCash ?? 0),
+            completedWithdrawalsCash: (s.points?.totalWithdrawn ?? 0) / 1000,
+            activeOfferwallsCount: activeProvidersCount,
+          });
+        }
+
+        if (withdrawalsRes.status === "fulfilled" && withdrawalsRes.value.data) {
+          const list = Array.isArray(withdrawalsRes.value.data.data)
+            ? withdrawalsRes.value.data.data
+            : [];
+          setRecentWithdrawals(list);
+        }
+      } catch (err) {
+        console.error("Failed to load admin stats", err);
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    loadData();
   }, []);
 
   return (
@@ -139,8 +176,12 @@ export default function AdminOverviewPage() {
             <span>Registered Users</span>
             <Users className="h-4 w-4 text-amber-500" />
           </div>
-          <div className="text-2xl sm:text-3xl font-black text-white">{stats.usersCount}</div>
-          <span className="text-[11px] text-emerald-400 mt-1 block font-medium">Clean real accounts</span>
+          <div className="text-2xl sm:text-3xl font-black text-white">
+            {loading ? <Loader2 className="h-6 w-6 animate-spin" /> : stats.usersCount}
+          </div>
+          <span className="text-[11px] text-emerald-400 mt-1 block font-medium">
+            {stats.activeUsersCount} active accounts
+          </span>
         </Card>
 
         <Card className="bg-[#12141d] border-slate-800 text-slate-100 p-5 rounded-2xl">
@@ -148,8 +189,10 @@ export default function AdminOverviewPage() {
             <span>Active Offerwalls</span>
             <Layers className="h-4 w-4 text-amber-400" />
           </div>
-          <div className="text-2xl sm:text-3xl font-black text-white">7 Networks</div>
-          <span className="text-[11px] text-slate-400 mt-1 block">BitLabs, AdGem, RevU...</span>
+          <div className="text-2xl sm:text-3xl font-black text-white">
+            {loading ? <Loader2 className="h-6 w-6 animate-spin" /> : `${stats.activeOfferwallsCount} Networks`}
+          </div>
+          <span className="text-[11px] text-slate-400 mt-1 block">Taskwall, CPALead, ClickWall</span>
         </Card>
 
         <Card className="bg-[#12141d] border-slate-800 text-slate-100 p-5 rounded-2xl">
@@ -157,48 +200,58 @@ export default function AdminOverviewPage() {
             <span>Pending Withdrawals</span>
             <Clock className="h-4 w-4 text-amber-500" />
           </div>
-          <div className="text-2xl sm:text-3xl font-black text-amber-400">{stats.pendingWithdrawalsCount} Requests</div>
-          <span className="text-[11px] text-amber-400/80 mt-1 block">${stats.pendingWithdrawalsCash.toFixed(2)} pending clearance</span>
+          <div className="text-2xl sm:text-3xl font-black text-amber-400">
+            {loading ? <Loader2 className="h-6 w-6 animate-spin" /> : `${stats.pendingWithdrawalsCount} Requests`}
+          </div>
+          <span className="text-[11px] text-amber-400/80 mt-1 block">
+            Awaiting admin clearance
+          </span>
         </Card>
 
         <Card className="bg-[#12141d] border-slate-800 text-slate-100 p-5 rounded-2xl">
           <div className="flex items-center justify-between text-xs text-slate-400 mb-2">
-            <span>Completed Payouts</span>
-            <ArrowUpRight className="h-4 w-4 text-emerald-500" />
+            <span>Points in Circulation</span>
+            <Coins className="h-4 w-4 text-emerald-500" />
           </div>
-          <div className="text-2xl sm:text-3xl font-black text-emerald-400">${stats.completedWithdrawalsCash.toFixed(2)}</div>
-          <span className="text-[11px] text-slate-400 mt-1 block">Cleared via Vodafone & Binance</span>
+          <div className="text-2xl sm:text-3xl font-black text-emerald-400">
+            {loading ? <Loader2 className="h-6 w-6 animate-spin" /> : formatPoints(stats.pointsInCirculation)}
+          </div>
+          <span className="text-[11px] text-slate-400 mt-1 block">
+            ≈ ${(stats.pointsInCirculation / 1000).toFixed(2)} USD Available
+          </span>
         </Card>
       </div>
 
       {/* ─── Risk & Pending Queue Alert Box ───────────────────────── */}
-      <div className="p-5 rounded-2xl bg-amber-500/10 border border-amber-500/25 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-        <div className="flex items-center gap-3">
-          <div className="h-10 w-10 rounded-xl bg-amber-500/20 text-amber-400 flex items-center justify-center font-bold">
-            <ShieldAlert className="h-5 w-5" />
+      {stats.pendingWithdrawalsCount > 0 && (
+        <div className="p-5 rounded-2xl bg-amber-500/10 border border-amber-500/25 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div className="flex items-center gap-3">
+            <div className="h-10 w-10 rounded-xl bg-amber-500/20 text-amber-400 flex items-center justify-center font-bold">
+              <ShieldAlert className="h-5 w-5" />
+            </div>
+            <div>
+              <h4 className="font-bold text-sm text-white">Withdrawals Awaiting Admin Clearance</h4>
+              <p className="text-xs text-slate-400">
+                {stats.pendingWithdrawalsCount} payout request(s) submitted and waiting for disbursement.
+              </p>
+            </div>
           </div>
-          <div>
-            <h4 className="font-bold text-sm text-white">Withdrawals Awaiting Admin Clearance</h4>
-            <p className="text-xs text-slate-400">
-              Vodafone Cash ($1.00 / 1,000 pts) and Binance USDT ($2.50 / 2,500 pts) submitted and waiting for disbursement.
-            </p>
-          </div>
+
+          <Button size="sm" className="bg-amber-500 hover:bg-amber-600 text-slate-950 font-bold shrink-0" asChild>
+            <Link href="/admin/withdrawals">
+              Review Queue <ArrowRight className="ml-1.5 h-4 w-4" />
+            </Link>
+          </Button>
         </div>
+      )}
 
-        <Button size="sm" className="bg-amber-500 hover:bg-amber-600 text-slate-950 font-bold shrink-0" asChild>
-          <Link href="/admin/withdrawals">
-            Review Queue <ArrowRight className="ml-1.5 h-4 w-4" />
-          </Link>
-        </Button>
-      </div>
-
-      {/* ─── Recent Withdrawals Quick Table ───────────────────────── */}
+      {/* ─── Recent Withdrawals Real Table ───────────────────────── */}
       <Card className="bg-[#12141d] border-slate-800">
         <CardHeader className="p-5 pb-3 flex flex-row items-center justify-between">
           <div>
             <CardTitle className="text-base font-bold text-white">Recent Payout Activity</CardTitle>
             <CardDescription className="text-xs text-slate-400">
-              Latest requested and processed cashouts (1,000 points = $1.00 USD)
+              Live requests and disbursements from the database (1,000 points = $1.00 USD)
             </CardDescription>
           </div>
           <Button variant="ghost" size="sm" asChild className="text-xs text-amber-400 hover:text-amber-300">
@@ -208,53 +261,62 @@ export default function AdminOverviewPage() {
 
         <CardContent className="p-0">
           <div className="overflow-x-auto">
-            <table className="w-full text-left text-xs text-slate-300">
-              <thead className="border-b border-slate-800 text-slate-400 text-[10px] uppercase tracking-wider bg-slate-900/40">
-                <tr>
-                  <th className="py-3 px-5 font-semibold">User</th>
-                  <th className="py-3 px-5 font-semibold">Method</th>
-                  <th className="py-3 px-5 font-semibold">Points</th>
-                  <th className="py-3 px-5 font-semibold">USD Value</th>
-                  <th className="py-3 px-5 font-semibold">Destination</th>
-                  <th className="py-3 px-5 font-semibold">Status</th>
-                  <th className="py-3 px-5 font-semibold text-right">Actions</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-slate-800/60">
-                {[
-                  { user: "ahmed_earner", method: "Vodafone Cash", pts: 1000, usd: "$1.00", dest: "01012345678", status: "PENDING", id: "WDR-81005" },
-                  { user: "crypto_trader", method: "Binance (USDT)", pts: 2500, usd: "$2.50", dest: "UID: 49218491", status: "PROCESSING", id: "WDR-80988" },
-                  { user: "alex_dash", method: "Vodafone Cash", pts: 48000, usd: "$48.00", dest: "01098765432", status: "PAID", id: "WDR-80921" },
-                  { user: "mia_rewards", method: "Binance (USDT)", pts: 45000, usd: "$45.00", dest: "mia@binance.com", status: "PAID", id: "WDR-80890" },
-                ].map((row) => (
-                  <tr key={row.id} className="hover:bg-slate-800/30 transition-colors">
-                    <td className="py-3.5 px-5 font-bold text-white">{row.user}</td>
-                    <td className="py-3.5 px-5">{row.method}</td>
-                    <td className="py-3.5 px-5 font-mono">{formatPoints(row.pts)}</td>
-                    <td className="py-3.5 px-5 font-bold text-emerald-400">{row.usd}</td>
-                    <td className="py-3.5 px-5 font-mono text-slate-400">{row.dest}</td>
-                    <td className="py-3.5 px-5">
-                      <span
-                        className={`px-2 py-0.5 rounded text-[10px] font-bold ${
-                          row.status === "PAID"
-                            ? "bg-emerald-500/10 text-emerald-400 border border-emerald-500/20"
-                            : row.status === "PROCESSING"
-                            ? "bg-amber-500/10 text-amber-400 border border-amber-500/20"
-                            : "bg-indigo-500/10 text-indigo-400 border border-indigo-500/20"
-                        }`}
-                      >
-                        {row.status}
-                      </span>
-                    </td>
-                    <td className="py-3.5 px-5 text-right">
-                      <Button size="sm" variant="ghost" className="h-7 text-xs text-amber-400" asChild>
-                        <Link href={`/admin/withdrawals`}>Manage</Link>
-                      </Button>
-                    </td>
+            {loading ? (
+              <div className="p-12 text-center text-slate-400 flex items-center justify-center gap-2">
+                <Loader2 className="h-5 w-5 animate-spin" /> Loading recent withdrawals...
+              </div>
+            ) : recentWithdrawals.length > 0 ? (
+              <table className="w-full text-left text-xs text-slate-300">
+                <thead className="border-b border-slate-800 text-slate-400 text-[10px] uppercase tracking-wider bg-slate-900/40">
+                  <tr>
+                    <th className="py-3 px-5 font-semibold">User</th>
+                    <th className="py-3 px-5 font-semibold">Method</th>
+                    <th className="py-3 px-5 font-semibold">Points</th>
+                    <th className="py-3 px-5 font-semibold">USD Value</th>
+                    <th className="py-3 px-5 font-semibold">Status</th>
+                    <th className="py-3 px-5 font-semibold text-right">Actions</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
+                </thead>
+                <tbody className="divide-y divide-slate-800/60">
+                  {recentWithdrawals.map((row: any) => (
+                    <tr key={row.id} className="hover:bg-slate-800/30 transition-colors">
+                      <td className="py-3.5 px-5 font-bold text-white">{row.user?.username || "User"}</td>
+                      <td className="py-3.5 px-5">{row.method?.name || "Payout"}</td>
+                      <td className="py-3.5 px-5 font-mono">{formatPoints(row.points || 0)}</td>
+                      <td className="py-3.5 px-5 font-bold text-emerald-400">
+                        ${((row.points || 0) / 1000).toFixed(2)}
+                      </td>
+                      <td className="py-3.5 px-5">
+                        <span
+                          className={`px-2 py-0.5 rounded text-[10px] font-bold ${
+                            row.status === "PAID"
+                              ? "bg-emerald-500/10 text-emerald-400 border border-emerald-500/20"
+                              : row.status === "PROCESSING"
+                              ? "bg-amber-500/10 text-amber-400 border border-amber-500/20"
+                              : "bg-indigo-500/10 text-indigo-400 border border-indigo-500/20"
+                          }`}
+                        >
+                          {row.status}
+                        </span>
+                      </td>
+                      <td className="py-3.5 px-5 text-right">
+                        <Button size="sm" variant="ghost" className="h-7 text-xs text-amber-400" asChild>
+                          <Link href={`/admin/withdrawals`}>Manage</Link>
+                        </Button>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            ) : (
+              <div className="p-12 text-center text-slate-400 space-y-2">
+                <Inbox className="h-8 w-8 mx-auto text-slate-600 mb-2" />
+                <p className="font-semibold text-white">No Payout Activity Yet</p>
+                <p className="text-xs text-slate-500">
+                  When users request withdrawals via Vodafone Cash or Binance, they will appear here live.
+                </p>
+              </div>
+            )}
           </div>
         </CardContent>
       </Card>

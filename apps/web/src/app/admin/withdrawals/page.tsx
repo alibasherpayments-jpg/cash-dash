@@ -45,69 +45,9 @@ interface AdminWithdrawalRow {
   externalTxId?: string;
 }
 
-const INITIAL_WITHDRAWALS: AdminWithdrawalRow[] = [
-  {
-    id: "WDR-81005",
-    user: "ahmed_earner",
-    method: "Vodafone Cash",
-    points: 1000,
-    cashValue: 1.0,
-    status: "PENDING",
-    riskScore: 10,
-    destination: "01012345678 (Ahmed Hassan)",
-    date: "Today at 2:30 PM",
-  },
-  {
-    id: "WDR-80988",
-    user: "crypto_trader",
-    method: "Binance (USDT)",
-    points: 2500,
-    cashValue: 2.5,
-    status: "PROCESSING",
-    riskScore: 8,
-    destination: "Binance UID: 49218491",
-    date: "Today at 9:00 AM",
-  },
-  {
-    id: "WDR-80921",
-    user: "alex_dash",
-    method: "Vodafone Cash",
-    points: 48000,
-    cashValue: 48.0,
-    status: "PAID",
-    riskScore: 5,
-    destination: "01098765432 (Alex K)",
-    date: "Sep 10, 2026",
-    externalTxId: "VOD-9821491823",
-  },
-  {
-    id: "WDR-80890",
-    user: "mia_rewards",
-    method: "Binance (USDT)",
-    points: 45000,
-    cashValue: 45.0,
-    status: "PAID",
-    riskScore: 6,
-    destination: "mia@binance.com",
-    date: "Sep 8, 2026",
-    externalTxId: "0x7b1c4e92a488f309a12c8b",
-  },
-  {
-    id: "WDR-80712",
-    user: "suspicious_bot",
-    method: "Vodafone Cash",
-    points: 8000,
-    cashValue: 8.0,
-    status: "REJECTED",
-    riskScore: 88,
-    destination: "01000000000 (Fake User)",
-    date: "Sep 2, 2026",
-  },
-];
-
 export default function AdminWithdrawalsPage() {
-  const [withdrawals, setWithdrawals] = useState<AdminWithdrawalRow[]>(INITIAL_WITHDRAWALS);
-  const [loading, setLoading] = useState(false);
+  const [withdrawals, setWithdrawals] = useState<AdminWithdrawalRow[]>([]);
+  const [loading, setLoading] = useState(true);
   const [filterStatus, setFilterStatus] = useState<string>("ALL");
   const [searchQuery, setSearchQuery] = useState("");
   const [actionItem, setActionItem] = useState<{ row: AdminWithdrawalRow; action: "APPROVE" | "MARK_PAID" | "REJECT" } | null>(null);
@@ -116,40 +56,42 @@ export default function AdminWithdrawalsPage() {
   const [isProcessing, setIsProcessing] = useState(false);
   const [successMsg, setSuccessMsg] = useState<string | null>(null);
 
-  // Fetch real withdrawals from API if available
+  // Fetch real withdrawals from API
   const fetchWithdrawals = async () => {
     setLoading(true);
     try {
-      const res = await apiClient.get("/admin/withdrawals");
-      if (res.data?.data && Array.isArray(res.data.data) && res.data.data.length > 0) {
-        const mapped: AdminWithdrawalRow[] = res.data.data.map((w: any) => {
-          let destStr = "";
-          if (typeof w.destination === "object" && w.destination !== null) {
-            destStr = Object.entries(w.destination)
-              .map(([k, v]) => `${k}: ${v}`)
-              .join(" | ");
-          } else {
-            destStr = String(w.destination || "N/A");
-          }
+      const params: any = {};
+      if (filterStatus !== "ALL") params.status = filterStatus;
+      const res = await apiClient.get("/admin/withdrawals", { params });
+      const rawList = res.data?.data || (Array.isArray(res.data) ? res.data : []);
+      const mapped: AdminWithdrawalRow[] = rawList.map((w: any) => {
+        let destStr = "";
+        if (typeof w.destination === "object" && w.destination !== null) {
+          destStr = Object.entries(w.destination)
+            .map(([k, v]) => `${k}: ${v}`)
+            .join(" | ");
+        } else {
+          destStr = String(w.destination || "N/A");
+        }
 
-          return {
-            id: w.id,
-            user: w.user?.username || w.userId || "User",
-            userId: w.userId,
-            method: w.method?.name || "Payment",
-            points: w.points,
-            cashValue: w.cashValue || w.points / 1000,
-            status: w.status,
-            riskScore: 10,
-            destination: destStr,
-            date: new Date(w.createdAt).toLocaleDateString(),
-            externalTxId: w.externalTxId,
-          };
-        });
-        setWithdrawals(mapped);
-      }
-    } catch {
-      // Fallback cleanly to INITIAL_WITHDRAWALS
+        return {
+          id: w.id,
+          user: w.user?.username || w.userId || "User",
+          userId: w.userId,
+          method: w.method?.name || "Payment",
+          points: w.points,
+          cashValue: w.cashValue || w.points / 1000,
+          status: w.status,
+          riskScore: w.user?.riskAssessment?.riskScore ?? 10,
+          destination: destStr,
+          date: new Date(w.createdAt).toLocaleString(),
+          externalTxId: w.externalTxId,
+        };
+      });
+      setWithdrawals(mapped);
+    } catch (err) {
+      console.error("Failed to load withdrawals:", err);
+      setWithdrawals([]);
     } finally {
       setLoading(false);
     }
@@ -157,7 +99,7 @@ export default function AdminWithdrawalsPage() {
 
   useEffect(() => {
     fetchWithdrawals();
-  }, []);
+  }, [filterStatus]);
 
   const filtered = withdrawals.filter((w) => {
     if (filterStatus !== "ALL" && w.status !== filterStatus) return false;
@@ -184,42 +126,31 @@ export default function AdminWithdrawalsPage() {
 
     setIsProcessing(true);
     try {
-      // Attempt API call
       await apiClient.patch(`/admin/withdrawals/${row.id}/status`, {
         status: nextStatus,
         note: adminNote || (action === "REJECT" ? "Request rejected by admin" : "Approved by administrator"),
         ...(action === "MARK_PAID" && externalTxId ? { externalTxId } : {}),
       });
-    } catch {
-      // If mock ID or offline, update in state
+
+      await fetchWithdrawals();
+
+      const msg =
+        action === "APPROVE"
+          ? `Withdrawal ${row.id} moved to Processing.`
+          : action === "MARK_PAID"
+          ? `Withdrawal ${row.id} marked as Paid (${externalTxId || "disbursed"}).`
+          : `Withdrawal ${row.id} rejected and points refunded to ${row.user}.`;
+
+      setSuccessMsg(msg);
+      setTimeout(() => setSuccessMsg(null), 4000);
+    } catch (err: any) {
+      alert(err.response?.data?.message || "Failed to update withdrawal status");
+    } finally {
+      setIsProcessing(false);
+      setActionItem(null);
+      setAdminNote("");
+      setExternalTxId("");
     }
-
-    setWithdrawals((prev) =>
-      prev.map((item) =>
-        item.id === row.id
-          ? {
-              ...item,
-              status: nextStatus,
-              externalTxId: action === "MARK_PAID" ? externalTxId || item.externalTxId : item.externalTxId,
-            }
-          : item
-      )
-    );
-
-    const msg =
-      action === "APPROVE"
-        ? `Withdrawal ${row.id} moved to Processing.`
-        : action === "MARK_PAID"
-        ? `Withdrawal ${row.id} marked as Paid (${externalTxId || "disbursed"}).`
-        : `Withdrawal ${row.id} rejected and points refunded to ${row.user}.`;
-
-    setSuccessMsg(msg);
-    setTimeout(() => setSuccessMsg(null), 4000);
-
-    setIsProcessing(false);
-    setActionItem(null);
-    setAdminNote("");
-    setExternalTxId("");
   };
 
   return (

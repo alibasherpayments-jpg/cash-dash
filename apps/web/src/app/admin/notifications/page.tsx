@@ -14,6 +14,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Bell, Send, CheckCircle2, Loader2, Users } from "lucide-react";
+import apiClient from "@/lib/api-client";
 
 export default function AdminBroadcastNotificationsPage() {
   const [title, setTitle] = useState("");
@@ -23,16 +24,25 @@ export default function AdminBroadcastNotificationsPage() {
   const [isSending, setIsSending] = useState(false);
   const [sent, setSent] = useState(false);
 
-  const handleSend = (e: React.FormEvent) => {
+  const handleSend = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSending(true);
-    setTimeout(() => {
-      setIsSending(false);
+    try {
+      const notifType = type === "ACHIEVEMENT" ? "ACHIEVEMENT_UNLOCKED" : type;
+      await apiClient.post("/admin/notifications/broadcast", {
+        title,
+        message,
+        type: notifType,
+      });
       setSent(true);
       setTitle("");
       setMessage("");
-      setTimeout(() => setSent(false), 3000);
-    }, 800);
+      setTimeout(() => setSent(false), 4000);
+    } catch (err: any) {
+      alert(err.response?.data?.message || "Failed to broadcast notification");
+    } finally {
+      setIsSending(false);
+    }
   };
 
   return (
@@ -64,10 +74,10 @@ export default function AdminBroadcastNotificationsPage() {
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent className="bg-slate-900 border-slate-800 text-slate-200 text-xs">
-                    <SelectItem value="ALL">All Registered Users (25)</SelectItem>
-                    <SelectItem value="ACTIVE">Active Users in Last 7 Days (18)</SelectItem>
-                    <SelectItem value="NEW">Users Registered Today (4)</SelectItem>
-                    <SelectItem value="WITHDRAWN">Users with ≥ 1 Paid Withdrawal (12)</SelectItem>
+                    <SelectItem value="ALL">All Registered Users</SelectItem>
+                    <SelectItem value="ACTIVE">Active Users</SelectItem>
+                    <SelectItem value="NEW">Newly Registered Members</SelectItem>
+                    <SelectItem value="WITHDRAWN">Users with Completed Withdrawals</SelectItem>
                   </SelectContent>
                 </Select>
               </div>

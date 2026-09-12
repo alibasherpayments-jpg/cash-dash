@@ -19,7 +19,7 @@ import { AdminService } from './admin.service';
 import { CurrentUser } from '../common/decorators/current-user.decorator';
 import { Roles } from '../common/decorators/roles.decorator';
 import { RolesGuard } from '../common/guards/roles.guard';
-import { UserRole, AuditAction, WithdrawalStatus } from '@prisma/client';
+import { UserRole, AuditAction, WithdrawalStatus, OfferStatus, OfferCategory } from '@prisma/client';
 import {
   AdminAdjustBalanceDto,
   AdminUpdateUserStatusDto,
@@ -124,6 +124,26 @@ export class AdminController {
   }
 
   // ─── Offers ────────────────────────────────────────────────────────────────
+
+  @Get('offers')
+  @ApiOperation({ summary: 'List all offers (admin)' })
+  async listOffers(
+    @Query('page') page?: number,
+    @Query('limit') limit?: number,
+    @Query('search') search?: string,
+    @Query('status') status?: OfferStatus,
+    @Query('category') category?: OfferCategory,
+  ) {
+    const result = await this.adminService.listOffers({ page, limit, search, status, category });
+    return { success: true, ...result };
+  }
+
+  @Get('offers/:id')
+  @ApiOperation({ summary: 'Get offer details' })
+  async getOffer(@Param('id') id: string) {
+    const data = await this.adminService.getOffer(id);
+    return { success: true, data };
+  }
 
   @Post('offers')
   @ApiOperation({ summary: 'Create a new offer' })

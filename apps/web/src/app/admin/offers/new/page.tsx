@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
@@ -17,13 +17,15 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { ArrowLeft, Save, Loader2, CheckCircle2 } from "lucide-react";
+import apiClient from "@/lib/api-client";
 
 export default function AdminNewOfferPage() {
   const router = useRouter();
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [category, setCategory] = useState("GAMES");
-  const [provider, setProvider] = useState("mock-provider-a");
+  const [provider, setProvider] = useState("");
+  const [providers, setProviders] = useState<{ id: string; name: string }[]>([]);
   const [rewardPoints, setRewardPoints] = useState("25000");
   const [estimatedMinutes, setEstimatedMinutes] = useState("30");
   const [difficulty, setDifficulty] = useState("MEDIUM");
@@ -34,14 +36,47 @@ export default function AdminNewOfferPage() {
   const [isSaving, setIsSaving] = useState(false);
   const [saved, setSaved] = useState(false);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  useEffect(() => {
+    apiClient
+      .get("/admin/providers")
+      .then((res) => {
+        const list = res.data?.data || (Array.isArray(res.data) ? res.data : []);
+        if (list.length > 0) {
+          setProviders(list);
+          setProvider(list[0].id);
+        }
+      })
+      .catch(() => {});
+  }, []);
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!provider) {
+      alert("Please select a provider network");
+      return;
+    }
     setIsSaving(true);
-    setTimeout(() => {
+    try {
+      await apiClient.post("/admin/offers", {
+        title,
+        description,
+        category,
+        providerId: provider,
+        rewardPoints: parseInt(rewardPoints, 10) || 1000,
+        estimatedMinutes: parseInt(estimatedMinutes, 10) || 15,
+        difficulty,
+        countries: countries.split(",").map((c) => c.trim()).filter(Boolean),
+        requirements: requirements.split("\n").map((r) => r.trim()).filter(Boolean),
+        isFeatured,
+        isRecommended,
+      });
       setIsSaving(false);
       setSaved(true);
-      setTimeout(() => router.push("/admin/offers"), 1000);
-    }, 600);
+      setTimeout(() => router.push("/admin/offers"), 900);
+    } catch (err: any) {
+      setIsSaving(false);
+      alert(err.response?.data?.message || "Failed to create offer");
+    }
   };
 
   return (
@@ -107,14 +142,14 @@ export default function AdminNewOfferPage() {
                 <Label className="text-xs font-semibold text-slate-200">Provider Network</Label>
                 <Select value={provider} onValueChange={setProvider}>
                   <SelectTrigger className="bg-slate-900 border-slate-800 h-9 text-xs text-slate-200">
-                    <SelectValue />
+                    <SelectValue placeholder="Select network provider" />
                   </SelectTrigger>
                   <SelectContent className="bg-slate-900 border-slate-800 text-slate-200">
-                    <SelectItem value="mock-provider-a">AdVenture Offerwall</SelectItem>
-                    <SelectItem value="mock-provider-b">RewardHub Media</SelectItem>
-                    <SelectItem value="mock-provider-c">TaskForce Digital</SelectItem>
-                    <SelectItem value="mock-survey-provider">InsightSurveys</SelectItem>
-                    <SelectItem value="mock-game-provider">PlayForge Gaming</SelectItem>
+                    {providers.map((p) => (
+                      <SelectItem key={p.id} value={p.id}>
+                        {p.name}
+                      </SelectItem>
+                    ))}
                   </SelectContent>
                 </Select>
               </div>

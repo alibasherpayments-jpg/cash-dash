@@ -20,53 +20,30 @@ interface MethodItem {
   fieldsCount: number;
 }
 
-const DEFAULT_METHODS: MethodItem[] = [
-  {
-    id: "cmtxpyvlb000niaczrj98azbs",
-    name: "Vodafone Cash (فودافون كاش)",
-    slug: "vodafone-cash",
-    minimumPoints: 100, // $0.10 USD
-    feePercent: 0,
-    processingTime: "Instant to 30 mins",
-    isActive: true,
-    fieldsCount: 2,
-  },
-  {
-    id: "cmtxpyvlg000qiacza0n827xn",
-    name: "Binance (USDT / Pay / UID)",
-    slug: "binance",
-    minimumPoints: 100, // $0.10 USD
-    feePercent: 0,
-    processingTime: "Instant to 2 hours",
-    isActive: true,
-    fieldsCount: 2,
-  },
-];
-
 export default function AdminWithdrawalMethodsPage() {
-  const [methods, setMethods] = useState<MethodItem[]>(DEFAULT_METHODS);
-  const [loading, setLoading] = useState(false);
+  const [methods, setMethods] = useState<MethodItem[]>([]);
+  const [loading, setLoading] = useState(true);
   const [successMsg, setSuccessMsg] = useState<string | null>(null);
 
   const fetchMethods = async () => {
     setLoading(true);
     try {
       const res = await apiClient.get("/admin/withdrawal-methods");
-      if (res.data?.data && Array.isArray(res.data.data) && res.data.data.length > 0) {
-        const mapped: MethodItem[] = res.data.data.map((m: any) => ({
-          id: m.id,
-          name: m.name,
-          slug: m.slug,
-          minimumPoints: m.minimumPoints,
-          feePercent: m.feePercent || 0,
-          processingTime: m.processingTime || "1-24 hours",
-          isActive: m.isActive,
-          fieldsCount: m.requirements?.length || 2,
-        }));
-        setMethods(mapped);
-      }
-    } catch {
-      // Clean fallback
+      const raw = res.data?.data || (Array.isArray(res.data) ? res.data : []);
+      const mapped: MethodItem[] = raw.map((m: any) => ({
+        id: m.id,
+        name: m.name,
+        slug: m.slug,
+        minimumPoints: m.minimumPoints,
+        feePercent: m.feePercent || 0,
+        processingTime: m.processingTime || "1-24 hours",
+        isActive: m.isActive,
+        fieldsCount: m.requirements?.length || 0,
+      }));
+      setMethods(mapped);
+    } catch (err) {
+      console.error("Failed to load methods:", err);
+      setMethods([]);
     } finally {
       setLoading(false);
     }
@@ -79,29 +56,26 @@ export default function AdminWithdrawalMethodsPage() {
   const handleToggleActive = async (id: string, current: boolean) => {
     try {
       await apiClient.put(`/admin/withdrawal-methods/${id}`, { isActive: !current });
-    } catch {
-      // local fallback
+      setMethods((prev) =>
+        prev.map((m) => (m.id === id ? { ...m, isActive: !current } : m))
+      );
+      setSuccessMsg(`Status updated successfully!`);
+      setTimeout(() => setSuccessMsg(null), 3000);
+    } catch (err: any) {
+      alert(err.response?.data?.message || "Failed to update method status");
     }
-
-    setMethods((prev) =>
-      prev.map((m) => (m.id === id ? { ...m, isActive: !current } : m))
-    );
-
-    setSuccessMsg(`Status updated successfully!`);
-    setTimeout(() => setSuccessMsg(null), 3000);
   };
 
   const handleDeleteMethod = async (id: string, name: string) => {
     if (!confirm(`Are you sure you want to deactivate ${name}?`)) return;
     try {
       await apiClient.delete(`/admin/withdrawal-methods/${id}`);
-    } catch {
-      // local fallback
+      setMethods((prev) => prev.filter((m) => m.id !== id));
+      setSuccessMsg(`${name} deactivated successfully!`);
+      setTimeout(() => setSuccessMsg(null), 3000);
+    } catch (err: any) {
+      alert(err.response?.data?.message || "Failed to deactivate method");
     }
-
-    setMethods((prev) => prev.filter((m) => m.id !== id));
-    setSuccessMsg(`${name} deactivated successfully!`);
-    setTimeout(() => setSuccessMsg(null), 3000);
   };
 
   return (
@@ -159,7 +133,21 @@ export default function AdminWithdrawalMethodsPage() {
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-800/60">
-                {methods.map((m) => (
+                {loading ? (
+                  <tr>
+                    <td colSpan={8} className="py-12 text-center text-slate-400">
+                      <Loader2 className="h-5 w-5 animate-spin text-amber-500 mx-auto mb-2" />
+                      Loading payment methods from database...
+                    </td>
+                  </tr>
+                ) : methods.length === 0 ? (
+                  <tr>
+                    <td colSpan={8} className="py-12 text-center text-slate-500">
+                      No payout methods configured yet. Click &quot;Add New Payment Method&quot; above to create one.
+                    </td>
+                  </tr>
+                ) : (
+                  methods.map((m) => (
                   <tr key={m.id} className="hover:bg-slate-800/30 transition-colors">
                     <td className="py-3.5 px-5 font-bold text-white">{m.name}</td>
                     <td className="py-3.5 px-5 font-mono text-slate-400 text-[11px]">{m.slug}</td>
@@ -204,7 +192,7 @@ export default function AdminWithdrawalMethodsPage() {
                       </Button>
                     </td>
                   </tr>
-                ))}
+                )))}
               </tbody>
             </table>
           </div>

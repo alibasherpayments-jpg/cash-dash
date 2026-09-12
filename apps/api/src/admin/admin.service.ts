@@ -12,6 +12,8 @@ import {
   TransactionType,
   TransactionDirection,
   UserStatus,
+  OfferStatus,
+  OfferCategory,
   Prisma,
 } from '@prisma/client';
 import {
@@ -279,6 +281,46 @@ export class AdminService {
       entityId: id,
       ipAddress,
     });
+  }
+
+  async listOffers(params: {
+    page?: number;
+    limit?: number;
+    search?: string;
+    status?: OfferStatus;
+    category?: OfferCategory;
+  }) {
+    const page = params.page ?? 1;
+    const limit = params.limit ?? 50;
+    const { take, skip } = getPaginationParams(page, limit);
+
+    const where: Prisma.OfferWhereInput = {
+      ...(params.status && { status: params.status }),
+      ...(params.category && { category: params.category }),
+      ...(params.search && {
+        OR: [
+          { title: { contains: params.search, mode: 'insensitive' } },
+          { description: { contains: params.search, mode: 'insensitive' } },
+        ],
+      }),
+    };
+
+    const [offers, total] = await Promise.all([
+      this.prisma.offer.findMany({
+        where,
+        orderBy: { createdAt: 'desc' },
+        take,
+        skip,
+        include: { provider: { select: { id: true, name: true, slug: true } } },
+      }),
+      this.prisma.offer.count({ where }),
+    ]);
+
+    return paginate(offers, total, page, take);
+  }
+
+  async getOffer(id: string) {
+    return this.offersService.getOfferById(id);
   }
 
   // ─── Providers ───────────────────────────────────────────────────────────
