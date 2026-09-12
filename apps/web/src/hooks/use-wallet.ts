@@ -21,7 +21,8 @@ export function useWallet() {
         };
       }
     },
-    staleTime: 15 * 1000,
+    staleTime: 5 * 1000,
+    refetchInterval: 5 * 1000,
   });
 
   const transactionsQuery = useQuery({
@@ -34,6 +35,8 @@ export function useWallet() {
         return [];
       }
     },
+    staleTime: 5 * 1000,
+    refetchInterval: 5 * 1000,
   });
 
   return {
