@@ -35,90 +35,85 @@ import { formatPoints, formatCash } from "@/lib/formatters";
 import apiClient from "@/lib/api-client";
 import { VodafoneCashLogo } from "@/components/illustrations/vodafone-cash-logo";
 import { BinanceLogo } from "@/components/illustrations/binance-logo";
-
-interface RequirementField {
-  fieldName: string;
-  label: string;
-  type: string;
-  placeholder?: string;
-  helpText?: string;
-  isRequired: boolean;
-  options?: string[];
-}
+import { FieldError } from "@/components/ui/field-error";
+import { isValidEmail } from "@/lib/validation";
 
 interface WithdrawalMethodItem {
   id: string;
   name: string;
   slug: string;
-  description: string;
+  icon?: string;
   logoUrl?: string;
   minimumPoints: number;
-  maximumPoints?: number;
   feePercent: number;
   processingTime: string;
-  requirements: RequirementField[];
+  description?: string;
+  badge?: string;
+  requirements?: {
+    fieldName: string;
+    label: string;
+    type: "TEXT" | "NUMBER" | "EMAIL" | "SELECT";
+    placeholder?: string;
+    helpText?: string;
+    options?: string[];
+    isRequired: boolean;
+  }[];
 }
 
 const DEFAULT_METHODS: WithdrawalMethodItem[] = [
   {
-    id: "cmtxpyvlb000niaczrj98azbs",
+    id: "vodafone-cash",
     name: "Vodafone Cash (فودافون كاش)",
     slug: "vodafone-cash",
-    logoUrl: "/images/methods/vodafone-cash.png",
-    description: "سحب فوري إلى محفظة فودافون كاش في مصر بالجنيه المصري (EGP). الحد الأدنى 10 سنت (100 نقطة) فقط.",
-    minimumPoints: 100, // $0.10 USD
-    maximumPoints: 500000, // $500.00 USD
+    icon: "https://upload.wikimedia.org/wikipedia/commons/thumb/a/a8/Vodafone_icon.svg/512px-Vodafone_icon.svg.png",
+    minimumPoints: 100, // $0.10
     feePercent: 0,
-    processingTime: "Instant to 30 mins",
+    processingTime: "Instant - 15 Mins",
+    description: "استلام فوري عبر المحفظة الإلكترونية لجميع أرقام فودافون مصر",
+    badge: "Most Popular (Egypt)",
     requirements: [
       {
         fieldName: "walletNumber",
-        label: "Vodafone Cash Number (رقم محفظة فودافون كاش)",
+        label: "Vodafone Cash Wallet Number (رقم محفظة فودافون كاش)",
         type: "TEXT",
-        placeholder: "010xxxxxxxx",
-        helpText: "رقم الهاتف المسجل عليه المحفظة (يبدأ بـ 010)",
+        placeholder: "010XXXXXXXX",
+        helpText: "يجب أن يبدأ بـ 010 ومفعل عليه خدمة فودافون كاش",
         isRequired: true,
       },
       {
-        fieldName: "accountHolderName",
+        fieldName: "accountHolder",
         label: "Account Holder Name (اسم صاحب المحفظة)",
         type: "TEXT",
-        placeholder: "Full legal name as registered",
-        helpText: "الاسم الكامل المسجل لدى فودافون",
+        placeholder: "Full name as registered on wallet",
+        helpText: "للتأكد من مطابقة بيانات التحويل",
         isRequired: true,
       },
     ],
   },
   {
-    id: "cmtxpyvlg000qiacza0n827xn",
-    name: "Binance (USDT / Pay / UID)",
+    id: "binance-pay",
+    name: "Binance Pay / Crypto USDT",
     slug: "binance",
-    logoUrl: "/images/methods/binance.png",
-    description: "سحب مباشر عبر منصة بينانس (Binance Pay ID / Binance UID أو شبكات USDT BEP20/TRC20 بدون أي عمولة). الحد الأدنى 10 سنت.",
-    minimumPoints: 100, // $0.10 USD
-    maximumPoints: 1000000, // $1,000.00 USD
-    feePercent: 0,
-    processingTime: "Instant to 2 hours",
+    icon: "https://cryptologos.cc/logos/binance-coin-bnb-logo.png",
+    minimumPoints: 1000, // $1.00
+    feePercent: 1.5,
+    processingTime: "1 - 2 Hours",
+    description: "Zero network fee payouts directly to your Binance account UID or BEP20 USDT address",
+    badge: "Crypto Global",
     requirements: [
       {
-        fieldName: "transferMethod",
-        label: "Transfer Method (طريقة التحويل)",
+        fieldName: "network",
+        label: "Crypto Network (الشبكة)",
         type: "SELECT",
-        placeholder: "Select transfer method",
-        options: [
-          "Binance Pay ID",
-          "Binance UID",
-          "USDT Address (BEP20)",
-          "USDT Address (TRC20)",
-        ],
+        options: ["Binance Pay (Instant, Zero Fee)", "USDT (BNB Smart Chain BEP20)", "USDT (TRC20)"],
         isRequired: true,
       },
       {
         fieldName: "recipientIdentifier",
         label: "Binance Pay ID / UID or USDT Address (معرف الحساب أو العنوان)",
         type: "TEXT",
-        placeholder: "Enter your Binance Pay ID, User ID, or USDT deposit address",
-        helpText: "يرجى التأكد من دقة العنوان أو المعرف",
+        placeholder: "Enter Pay ID, UID or USDT address",
+        helpText: "تأكد من اختيار الشبكة الصحيحة لتجنب فقدان الأموال",
         isRequired: true,
       },
     ],
@@ -133,6 +128,7 @@ export default function WithdrawPage() {
   const [selectedMethod, setSelectedMethod] = useState<WithdrawalMethodItem | null>(null);
   const [pointsInput, setPointsInput] = useState<string>("100");
   const [formData, setFormData] = useState<Record<string, string>>({});
+  const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
   const [confirmModalOpen, setConfirmModalOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -161,6 +157,7 @@ export default function WithdrawPage() {
   const handleSelectMethod = (m: WithdrawalMethodItem) => {
     setSelectedMethod(m);
     setFormData({});
+    setFieldErrors({});
     setError(null);
     if (points < m.minimumPoints) {
       setPointsInput(m.minimumPoints.toString());
@@ -169,6 +166,13 @@ export default function WithdrawPage() {
 
   const handleFieldChange = (name: string, val: string) => {
     setFormData((prev) => ({ ...prev, [name]: val }));
+    if (fieldErrors[name]) {
+      setFieldErrors((prev) => {
+        const next = { ...prev };
+        delete next[name];
+        return next;
+      });
+    }
   };
 
   const handleProceedToConfirm = (e: React.FormEvent) => {
@@ -177,26 +181,34 @@ export default function WithdrawPage() {
 
     if (!selectedMethod) return;
 
-    if (points > availablePoints) {
-      setError(`Insufficient points. You have ${formatPoints(availablePoints)} available.`);
-      return;
-    }
+    const errors: Record<string, string> = {};
 
-    if (points < selectedMethod.minimumPoints) {
-      setError(`Minimum withdrawal for ${selectedMethod.name} is ${formatPoints(selectedMethod.minimumPoints)}.`);
-      return;
+    if (!pointsInput || isNaN(points) || points <= 0) {
+      errors.points = "Please specify a valid point amount";
+    } else if (points > availablePoints) {
+      errors.points = `Insufficient points. You have ${formatPoints(availablePoints)} available.`;
+    } else if (points < selectedMethod.minimumPoints) {
+      errors.points = `Minimum withdrawal for ${selectedMethod.name} is ${formatPoints(selectedMethod.minimumPoints)} pts.`;
     }
 
     // Validate required fields
     if (selectedMethod.requirements && Array.isArray(selectedMethod.requirements)) {
       for (const req of selectedMethod.requirements) {
-        if (req.isRequired && !formData[req.fieldName]?.trim()) {
-          setError(`Please fill in '${req.label}'`);
-          return;
+        const val = formData[req.fieldName]?.trim();
+        if (req.isRequired && !val) {
+          errors[req.fieldName] = `Please provide '${req.label}'`;
+        } else if (req.type === "EMAIL" && val && !isValidEmail(val)) {
+          errors[req.fieldName] = "Please enter a valid email address";
         }
       }
     }
 
+    if (Object.keys(errors).length > 0) {
+      setFieldErrors(errors);
+      return;
+    }
+
+    setFieldErrors({});
     setConfirmModalOpen(true);
   };
 
@@ -358,7 +370,7 @@ export default function WithdrawPage() {
             </CardDescription>
           </CardHeader>
 
-          <form onSubmit={handleProceedToConfirm}>
+          <form onSubmit={handleProceedToConfirm} noValidate>
             <CardContent className="space-y-6">
               {error && (
                 <div className="p-3.5 rounded-xl bg-destructive/10 border border-destructive/20 text-destructive text-xs flex items-center gap-2.5">
@@ -378,12 +390,17 @@ export default function WithdrawPage() {
                       min={selectedMethod.minimumPoints}
                       max={availablePoints}
                       step={100}
+                      hasError={!!fieldErrors.points}
                       value={pointsInput}
-                      onChange={(e) => setPointsInput(e.target.value)}
+                      onChange={(e) => {
+                        setPointsInput(e.target.value);
+                        if (fieldErrors.points) setFieldErrors((prev) => ({ ...prev, points: "" }));
+                      }}
                       className="h-10 text-sm pl-8 font-mono"
                     />
                     <Coins className="h-4 w-4 text-muted-foreground absolute left-2.5 top-3" />
                   </div>
+                  <FieldError message={fieldErrors.points} />
                   <p className="text-[11px] text-muted-foreground">
                     Min: {formatPoints(selectedMethod.minimumPoints)} • Max: {formatPoints(availablePoints)}
                   </p>
@@ -413,10 +430,13 @@ export default function WithdrawPage() {
 
                     {req.type === "SELECT" && req.options ? (
                       <select
-                        required={req.isRequired}
                         value={formData[req.fieldName] || ""}
                         onChange={(e) => handleFieldChange(req.fieldName, e.target.value)}
-                        className="w-full h-10 px-3 rounded-md border border-input bg-background text-sm text-foreground focus:ring-2 focus:ring-primary focus:outline-none"
+                        className={`w-full h-10 px-3 rounded-md border text-sm text-foreground focus:ring-2 focus:outline-none transition-colors ${
+                          fieldErrors[req.fieldName]
+                            ? "border-rose-500/70 focus:border-rose-500 focus:ring-rose-500/20 bg-rose-500/[0.02]"
+                            : "border-input bg-background focus:ring-primary"
+                        }`}
                       >
                         <option value="">Select option...</option>
                         {req.options.map((opt) => (
@@ -427,14 +447,15 @@ export default function WithdrawPage() {
                       </select>
                     ) : (
                       <Input
-                        required={req.isRequired}
                         type={req.type === "NUMBER" ? "number" : req.type === "EMAIL" ? "email" : "text"}
                         placeholder={req.placeholder}
+                        hasError={!!fieldErrors[req.fieldName]}
                         value={formData[req.fieldName] || ""}
                         onChange={(e) => handleFieldChange(req.fieldName, e.target.value)}
                         className="h-10 text-sm font-mono"
                       />
                     )}
+                    <FieldError message={fieldErrors[req.fieldName]} />
 
                     {req.helpText && (
                       <p className="text-[11px] text-muted-foreground">{req.helpText}</p>

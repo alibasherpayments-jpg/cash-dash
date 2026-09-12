@@ -6,26 +6,30 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
-import { Settings, Save, CheckCircle2, Shield, DollarSign, Trophy, Loader2 } from "lucide-react";
+import { Settings, Save, CheckCircle2, Shield, DollarSign, Loader2 } from "lucide-react";
 import apiClient from "@/lib/api-client";
+import { FieldError } from "@/components/ui/field-error";
+import { validateEmail } from "@/lib/validation";
 
 export default function AdminSettingsPage() {
   const [siteName, setSiteName] = useState("Cash Dash");
-  const [supportEmail, setSupportEmail] = useState("support@cashdash.io");
-  const [conversionRate, setConversionRate] = useState("1000");
-  const [minWithdrawal, setMinWithdrawal] = useState("100");
+  const [supportEmail, setSupportEmail] = useState("support@cashdash.com");
+  const [conversionRate, setConversionRate] = useState("10000");
+  const [minWithdrawal, setMinWithdrawal] = useState("5000");
   const [referralPercent, setReferralPercent] = useState("10");
   const [leaderboardEnabled, setLeaderboardEnabled] = useState(true);
   const [maintenanceMode, setMaintenanceMode] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
   const [isSaving, setIsSaving] = useState(false);
   const [saved, setSaved] = useState(false);
+  const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
 
   useEffect(() => {
+    setIsLoading(true);
     apiClient
       .get("/admin/settings")
       .then((res) => {
-        const data = res.data?.data;
+        const data = res.data?.data || (Array.isArray(res.data) ? res.data : []);
         if (Array.isArray(data)) {
           data.forEach((s: any) => {
             if (s.key === "site_name") setSiteName(s.value);
@@ -44,6 +48,23 @@ export default function AdminSettingsPage() {
 
   const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    const errors: Record<string, string> = {};
+    const emailErr = validateEmail(supportEmail);
+    if (emailErr) errors.supportEmail = emailErr;
+
+    const rateNum = parseInt(conversionRate, 10);
+    if (isNaN(rateNum) || rateNum <= 0) errors.conversionRate = "Conversion rate must be greater than 0";
+
+    const minW = parseInt(minWithdrawal, 10);
+    if (isNaN(minW) || minW <= 0) errors.minWithdrawal = "Minimum withdrawal must be greater than 0";
+
+    if (Object.keys(errors).length > 0) {
+      setFieldErrors(errors);
+      return;
+    }
+
+    setFieldErrors({});
     setIsSaving(true);
     try {
       await Promise.all([
@@ -75,7 +96,7 @@ export default function AdminSettingsPage() {
         </p>
       </div>
 
-      <form onSubmit={handleSave} className="space-y-6">
+      <form onSubmit={handleSave} noValidate className="space-y-6">
         {/* ─── General Settings ────────────────────────────────────── */}
         <Card className="bg-[#12141d] border-slate-800 text-slate-100">
           <CardHeader>
@@ -94,10 +115,16 @@ export default function AdminSettingsPage() {
               <div className="space-y-1.5">
                 <Label className="text-xs font-semibold text-slate-200">Support Inquiries Email</Label>
                 <Input
+                  type="email"
+                  hasError={!!fieldErrors.supportEmail}
                   value={supportEmail}
-                  onChange={(e) => setSupportEmail(e.target.value)}
+                  onChange={(e) => {
+                    setSupportEmail(e.target.value);
+                    if (fieldErrors.supportEmail) setFieldErrors((p) => ({ ...p, supportEmail: "" }));
+                  }}
                   className="bg-slate-900 border-slate-800 text-xs h-9 text-slate-200"
                 />
+                <FieldError message={fieldErrors.supportEmail} />
               </div>
             </div>
           </CardContent>
@@ -119,10 +146,15 @@ export default function AdminSettingsPage() {
                 <Label className="text-xs font-semibold text-slate-200">Points per $1.00 USD</Label>
                 <Input
                   type="number"
+                  hasError={!!fieldErrors.conversionRate}
                   value={conversionRate}
-                  onChange={(e) => setConversionRate(e.target.value)}
+                  onChange={(e) => {
+                    setConversionRate(e.target.value);
+                    if (fieldErrors.conversionRate) setFieldErrors((p) => ({ ...p, conversionRate: "" }));
+                  }}
                   className="bg-slate-900 border-slate-800 text-xs h-9 font-mono text-slate-200"
                 />
+                <FieldError message={fieldErrors.conversionRate} />
                 <span className="text-[10px] text-slate-400">Default: 10,000 points = $1.00</span>
               </div>
 
@@ -130,10 +162,15 @@ export default function AdminSettingsPage() {
                 <Label className="text-xs font-semibold text-slate-200">Global Min. Withdrawal (Points)</Label>
                 <Input
                   type="number"
+                  hasError={!!fieldErrors.minWithdrawal}
                   value={minWithdrawal}
-                  onChange={(e) => setMinWithdrawal(e.target.value)}
+                  onChange={(e) => {
+                    setMinWithdrawal(e.target.value);
+                    if (fieldErrors.minWithdrawal) setFieldErrors((p) => ({ ...p, minWithdrawal: "" }));
+                  }}
                   className="bg-slate-900 border-slate-800 text-xs h-9 font-mono text-slate-200"
                 />
+                <FieldError message={fieldErrors.minWithdrawal} />
                 <span className="text-[10px] text-slate-400">5,000 pts = $0.50</span>
               </div>
 

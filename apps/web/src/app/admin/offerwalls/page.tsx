@@ -28,20 +28,27 @@ import {
   Layers,
   Plus,
   Edit,
-  Trash2,
-  Copy,
-  Check,
-  Zap,
-  ShieldCheck,
   ExternalLink,
+  Shield,
+  ShieldCheck,
+  Zap,
+  Globe,
+  Settings,
+  CheckCircle,
+  CheckCircle2,
+  Check,
+  Copy,
+  Terminal,
+  Activity,
+  Trash2,
+  Lock,
   Flame,
   Key,
-  Globe,
   Loader2,
   AlertCircle,
   Play,
-  CheckCircle2,
 } from "lucide-react";
+import { FieldError } from "@/components/ui/field-error";
 import { formatPoints } from "@/lib/formatters";
 
 interface OfferwallItem {
@@ -127,6 +134,7 @@ export default function AdminOfferwallsPage() {
     webhookSecret: `sec_${Math.random().toString(36).substring(2, 10)}`,
     isActive: true,
   });
+  const [addErrors, setAddErrors] = useState<Record<string, string>>({});
 
   const handleCopy = (url: string, id: string) => {
     navigator.clipboard.writeText(url);
@@ -157,8 +165,18 @@ export default function AdminOfferwallsPage() {
 
   const handleCreateWall = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!newWall.name || !newWall.slug) return;
 
+    const errors: Record<string, string> = {};
+    if (!newWall.name.trim()) errors.name = "Company / network name is required";
+    if (!newWall.slug.trim()) errors.slug = "Identifier slug is required";
+    if (!newWall.webhookSecret.trim()) errors.webhookSecret = "Webhook secret token is required";
+
+    if (Object.keys(errors).length > 0) {
+      setAddErrors(errors);
+      return;
+    }
+
+    setAddErrors({});
     const slugFormatted = newWall.slug.toLowerCase().replace(/\s+/g, "-");
     try {
       await apiClient.post("/admin/providers", {
@@ -438,13 +456,13 @@ export default function AdminOfferwallsPage() {
             </DialogDescription>
           </DialogHeader>
 
-          <form onSubmit={handleCreateWall} className="space-y-4 py-2 text-xs">
+          <form onSubmit={handleCreateWall} noValidate className="space-y-4 py-2 text-xs">
             <div className="grid grid-cols-2 gap-3">
               <div className="space-y-1.5">
                 <Label className="text-slate-300">Company / Network Name</Label>
                 <Input
-                  required
                   placeholder="e.g. Monlix, Lootably, Torox"
+                  hasError={!!addErrors.name}
                   value={newWall.name}
                   onChange={(e) => {
                     const name = e.target.value;
@@ -453,20 +471,26 @@ export default function AdminOfferwallsPage() {
                       name,
                       slug: prev.slug ? prev.slug : name.toLowerCase().replace(/[^a-z0-9]/g, "-"),
                     }));
+                    if (addErrors.name) setAddErrors((prev) => ({ ...prev, name: "" }));
                   }}
                   className="bg-slate-900 border-slate-800 text-white"
                 />
+                <FieldError message={addErrors.name} />
               </div>
 
               <div className="space-y-1.5">
                 <Label className="text-slate-300">Identifier Slug</Label>
                 <Input
-                  required
                   placeholder="e.g. monlix"
+                  hasError={!!addErrors.slug}
                   value={newWall.slug}
-                  onChange={(e) => setNewWall((prev) => ({ ...prev, slug: e.target.value }))}
+                  onChange={(e) => {
+                    setNewWall((prev) => ({ ...prev, slug: e.target.value }));
+                    if (addErrors.slug) setAddErrors((prev) => ({ ...prev, slug: "" }));
+                  }}
                   className="bg-slate-900 border-slate-800 text-white font-mono"
                 />
+                <FieldError message={addErrors.slug} />
               </div>
             </div>
 
@@ -527,9 +551,12 @@ export default function AdminOfferwallsPage() {
               <Label className="text-slate-300">Webhook Secret Token</Label>
               <div className="flex gap-2">
                 <Input
-                  required
+                  hasError={!!addErrors.webhookSecret}
                   value={newWall.webhookSecret}
-                  onChange={(e) => setNewWall((prev) => ({ ...prev, webhookSecret: e.target.value }))}
+                  onChange={(e) => {
+                    setNewWall((prev) => ({ ...prev, webhookSecret: e.target.value }));
+                    if (addErrors.webhookSecret) setAddErrors((prev) => ({ ...prev, webhookSecret: "" }));
+                  }}
                   className="bg-slate-900 border-slate-800 text-white font-mono text-xs"
                 />
                 <Button
@@ -547,6 +574,7 @@ export default function AdminOfferwallsPage() {
                   Regenerate
                 </Button>
               </div>
+              <FieldError message={addErrors.webhookSecret} />
             </div>
 
             <div className="flex items-center justify-between p-3 rounded-xl bg-slate-900/60 border border-slate-800">

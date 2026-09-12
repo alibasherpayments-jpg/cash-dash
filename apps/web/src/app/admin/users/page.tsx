@@ -32,6 +32,7 @@ import {
 } from "lucide-react";
 import { formatPoints, formatCash, formatPointsAsCash, formatDateTime } from "@/lib/formatters";
 import apiClient from "@/lib/api-client";
+import { FieldError } from "@/components/ui/field-error";
 
 interface AdminUserRow {
   id: string;
@@ -104,17 +105,32 @@ export default function AdminUsersPage() {
     }
   };
 
+  const [adjustErrors, setAdjustErrors] = useState<{ amount?: string; reason?: string }>({});
+
   const handleConfirmAdjustment = async () => {
     if (!adjustModalUser) return;
-    const amount = parseInt(adjustAmount, 10) || 0;
-    if (amount <= 0) return;
 
+    const errors: typeof adjustErrors = {};
+    const amount = parseInt(adjustAmount, 10) || 0;
+    if (amount <= 0) {
+      errors.amount = "Points amount must be greater than 0";
+    }
+    if (!adjustReason.trim()) {
+      errors.reason = "Administrative reason is required for audit logs";
+    }
+
+    if (Object.keys(errors).length > 0) {
+      setAdjustErrors(errors);
+      return;
+    }
+
+    setAdjustErrors({});
     setIsSubmitting(true);
     try {
       await apiClient.post(`/admin/users/${adjustModalUser.id}/adjust-balance`, {
         amount,
         direction: adjustDirection === "ADD" ? "CREDIT" : "DEBIT",
-        reason: adjustReason.trim() || "Administrative manual adjustment",
+        reason: adjustReason.trim(),
       });
       await fetchUsers();
       setAdjustModalUser(null);
@@ -309,21 +325,30 @@ export default function AdminUsersPage() {
               <Label className="text-xs font-semibold text-slate-200">Amount (Points)</Label>
               <Input
                 type="number"
+                hasError={!!adjustErrors.amount}
                 value={adjustAmount}
-                onChange={(e) => setAdjustAmount(e.target.value)}
+                onChange={(e) => {
+                  setAdjustAmount(e.target.value);
+                  if (adjustErrors.amount) setAdjustErrors((p) => ({ ...p, amount: undefined }));
+                }}
                 className="bg-slate-900 border-slate-800 font-mono text-xs"
               />
+              <FieldError message={adjustErrors.amount} />
             </div>
 
             <div className="space-y-1.5">
               <Label className="text-xs font-semibold text-slate-200">Administrative Reason (Audit Log)</Label>
               <Input
-                required
                 placeholder="e.g. Compensation for delayed offer postback"
+                hasError={!!adjustErrors.reason}
                 value={adjustReason}
-                onChange={(e) => setAdjustReason(e.target.value)}
+                onChange={(e) => {
+                  setAdjustReason(e.target.value);
+                  if (adjustErrors.reason) setAdjustErrors((p) => ({ ...p, reason: undefined }));
+                }}
                 className="bg-slate-900 border-slate-800 text-xs"
               />
+              <FieldError message={adjustErrors.reason} />
             </div>
           </div>
 

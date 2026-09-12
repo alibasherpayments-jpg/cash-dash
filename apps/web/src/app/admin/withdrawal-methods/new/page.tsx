@@ -30,6 +30,7 @@ import {
 } from "lucide-react";
 import { formatPoints, formatCash } from "@/lib/formatters";
 import apiClient from "@/lib/api-client";
+import { FieldError } from "@/components/ui/field-error";
 
 interface RequirementDraft {
   id: string;
@@ -149,33 +150,33 @@ const PRESETS = [
         placeholder: "e.g. 0x... or T...",
         helpText: "Double-check address correctness",
         isRequired: true,
-        options: "",
       },
     ],
   },
 ];
 
-export default function AdminNewWithdrawalMethodPage() {
+export default function NewWithdrawalMethodPage() {
   const router = useRouter();
 
-  // Basic Info
+  // Basic Details
   const [name, setName] = useState("");
   const [slug, setSlug] = useState("");
   const [description, setDescription] = useState("");
-  const [minimumPoints, setMinimumPoints] = useState("100"); // 100 points = $0.10 USD
+  const [minimumPoints, setMinimumPoints] = useState("100");
   const [feePercent, setFeePercent] = useState("0");
-  const [processingTime, setProcessingTime] = useState("Instant to 2 hours");
-  const [isActive, setIsActive] = useState(true);
+  const [processingTime, setProcessingTime] = useState("Instant to 30 mins");
+  const [instructions, setInstructions] = useState("");
+  const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
 
-  // Dynamic Requirements Builder
+  // Dynamic Requirements
   const [requirements, setRequirements] = useState<RequirementDraft[]>([
     {
       id: "req-1",
-      fieldName: "recipientIdentifier",
-      label: "Recipient Account / Identifier",
+      fieldName: "accountNumber",
+      label: "Account / Phone / Wallet Number",
       type: "TEXT",
-      placeholder: "e.g. Mobile number, UID, or Account ID",
-      helpText: "Primary identifier for this gateway disbursement",
+      placeholder: "Enter recipient destination",
+      helpText: "Ensure the account information is accurate",
       isRequired: true,
       options: "",
     },
@@ -183,7 +184,6 @@ export default function AdminNewWithdrawalMethodPage() {
 
   const [isSaving, setIsSaving] = useState(false);
   const [saved, setSaved] = useState(false);
-  const [error, setError] = useState<string | null>(null);
 
   const applyPreset = (preset: (typeof PRESETS)[0]) => {
     setName(preset.name);
@@ -192,6 +192,7 @@ export default function AdminNewWithdrawalMethodPage() {
     setMinimumPoints(preset.minPoints);
     setFeePercent(preset.feePercent);
     setProcessingTime(preset.speed);
+    setFieldErrors({});
     setRequirements(
       preset.requirements.map((r) => ({
         id: `req-${Date.now()}-${Math.random()}`,
@@ -201,7 +202,7 @@ export default function AdminNewWithdrawalMethodPage() {
         placeholder: r.placeholder,
         helpText: r.helpText,
         isRequired: r.isRequired,
-        options: r.options,
+        options: r.options || "",
       }))
     );
   };
@@ -233,10 +234,24 @@ export default function AdminNewWithdrawalMethodPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setIsSaving(true);
-    setError(null);
 
-    const minPts = parseInt(minimumPoints, 10) || 100;
+    const errors: Record<string, string> = {};
+    if (!name.trim()) errors.name = "Gateway name is required";
+    if (!slug.trim()) errors.slug = "System slug is required";
+    if (!description.trim()) errors.description = "Customer description is required";
+    const minPts = parseInt(minimumPoints, 10);
+    if (isNaN(minPts) || minPts <= 0) errors.minimumPoints = "Minimum points must be greater than 0";
+    if (isNaN(parseFloat(feePercent)) || parseFloat(feePercent) < 0) errors.feePercent = "Fee percent must be 0 or greater";
+    if (!processingTime.trim()) errors.processingTime = "Processing time is required";
+
+    if (Object.keys(errors).length > 0) {
+      setFieldErrors(errors);
+      return;
+    }
+
+    setFieldErrors({});
+    setIsSaving(true);
+
     const fee = parseFloat(feePercent) || 0;
 
     try {
@@ -247,7 +262,7 @@ export default function AdminNewWithdrawalMethodPage() {
         minimumPoints: minPts,
         feePercent: fee,
         processingTime,
-        isActive,
+        isActive: true,
       });
 
       const newMethod = res.data?.data;
@@ -263,7 +278,7 @@ export default function AdminNewWithdrawalMethodPage() {
               placeholder: req.placeholder || undefined,
               helpText: req.helpText || undefined,
               isRequired: req.isRequired,
-              options: req.type === "SELECT" && req.options ? req.options.split(",").map((s) => s.trim()) : undefined,
+              options: req.type === "SELECT" && req.options ? req.options.split(",").map((s: string) => s.trim()) : undefined,
               displayOrder: i + 1,
             });
           }
@@ -324,7 +339,7 @@ export default function AdminNewWithdrawalMethodPage() {
         </div>
       </div>
 
-      <form onSubmit={handleSubmit} className="space-y-6">
+      <form onSubmit={handleSubmit} noValidate className="space-y-6">
         {/* Gateway Configuration */}
         <Card className="bg-[#12141d] border-slate-800 text-slate-100">
           <CardHeader>
@@ -339,38 +354,48 @@ export default function AdminNewWithdrawalMethodPage() {
               <div className="space-y-1.5">
                 <Label className="text-xs font-semibold text-slate-200">Display Name</Label>
                 <Input
-                  required
                   placeholder="e.g. Vodafone Cash / InstaPay / Binance"
+                  hasError={!!fieldErrors.name}
                   value={name}
                   onChange={(e) => {
                     setName(e.target.value);
                     if (!slug) setSlug(e.target.value.toLowerCase().replace(/[^a-z0-9]+/g, "-"));
+                    if (fieldErrors.name) setFieldErrors((p) => ({ ...p, name: "" }));
                   }}
                   className="bg-slate-900 border-slate-800 text-xs h-9 text-slate-200"
                 />
+                <FieldError message={fieldErrors.name} />
               </div>
 
               <div className="space-y-1.5">
                 <Label className="text-xs font-semibold text-slate-200">System Slug (Unique Identifier)</Label>
                 <Input
-                  required
                   placeholder="e.g. vodafone-cash or binance"
+                  hasError={!!fieldErrors.slug}
                   value={slug}
-                  onChange={(e) => setSlug(e.target.value)}
+                  onChange={(e) => {
+                    setSlug(e.target.value);
+                    if (fieldErrors.slug) setFieldErrors((p) => ({ ...p, slug: "" }));
+                  }}
                   className="bg-slate-900 border-slate-800 text-xs h-9 font-mono text-slate-200"
                 />
+                <FieldError message={fieldErrors.slug} />
               </div>
             </div>
 
             <div className="space-y-1.5">
               <Label className="text-xs font-semibold text-slate-200">Customer Description</Label>
               <Input
-                required
                 placeholder="Short description shown to user on redemption page"
+                hasError={!!fieldErrors.description}
                 value={description}
-                onChange={(e) => setDescription(e.target.value)}
+                onChange={(e) => {
+                  setDescription(e.target.value);
+                  if (fieldErrors.description) setFieldErrors((p) => ({ ...p, description: "" }));
+                }}
                 className="bg-slate-900 border-slate-800 text-xs h-9 text-slate-200"
               />
+              <FieldError message={fieldErrors.description} />
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
@@ -381,12 +406,16 @@ export default function AdminNewWithdrawalMethodPage() {
                 </div>
                 <Input
                   type="number"
-                  required
                   min={100}
+                  hasError={!!fieldErrors.minimumPoints}
                   value={minimumPoints}
-                  onChange={(e) => setMinimumPoints(e.target.value)}
+                  onChange={(e) => {
+                    setMinimumPoints(e.target.value);
+                    if (fieldErrors.minimumPoints) setFieldErrors((p) => ({ ...p, minimumPoints: "" }));
+                  }}
                   className="bg-slate-900 border-slate-800 text-xs h-9 font-mono text-slate-200"
                 />
+                <FieldError message={fieldErrors.minimumPoints} />
               </div>
 
               <div className="space-y-1.5">
@@ -395,22 +424,30 @@ export default function AdminNewWithdrawalMethodPage() {
                   type="number"
                   step="0.1"
                   min={0}
-                  required
+                  hasError={!!fieldErrors.feePercent}
                   value={feePercent}
-                  onChange={(e) => setFeePercent(e.target.value)}
+                  onChange={(e) => {
+                    setFeePercent(e.target.value);
+                    if (fieldErrors.feePercent) setFieldErrors((p) => ({ ...p, feePercent: "" }));
+                  }}
                   className="bg-slate-900 border-slate-800 text-xs h-9 text-slate-200"
                 />
+                <FieldError message={fieldErrors.feePercent} />
               </div>
 
               <div className="space-y-1.5">
                 <Label className="text-xs font-semibold text-slate-200">Processing Speed Label</Label>
                 <Input
-                  required
                   placeholder="e.g. Instant to 30 mins"
+                  hasError={!!fieldErrors.processingTime}
                   value={processingTime}
-                  onChange={(e) => setProcessingTime(e.target.value)}
+                  onChange={(e) => {
+                    setProcessingTime(e.target.value);
+                    if (fieldErrors.processingTime) setFieldErrors((p) => ({ ...p, processingTime: "" }));
+                  }}
                   className="bg-slate-900 border-slate-800 text-xs h-9 text-slate-200"
                 />
+                <FieldError message={fieldErrors.processingTime} />
               </div>
             </div>
           </CardContent>

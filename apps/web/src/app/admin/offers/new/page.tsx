@@ -18,43 +18,69 @@ import {
 } from "@/components/ui/select";
 import { ArrowLeft, Save, Loader2, CheckCircle2 } from "lucide-react";
 import apiClient from "@/lib/api-client";
+import { FieldError } from "@/components/ui/field-error";
 
-export default function AdminNewOfferPage() {
+export default function NewOfferPage() {
   const router = useRouter();
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [category, setCategory] = useState("GAMES");
   const [provider, setProvider] = useState("");
-  const [providers, setProviders] = useState<{ id: string; name: string }[]>([]);
-  const [rewardPoints, setRewardPoints] = useState("25000");
-  const [estimatedMinutes, setEstimatedMinutes] = useState("30");
+  const [rewardPoints, setRewardPoints] = useState("1500");
+  const [estimatedMinutes, setEstimatedMinutes] = useState("20");
   const [difficulty, setDifficulty] = useState("MEDIUM");
-  const [countries, setCountries] = useState("US, CA, UK");
-  const [requirements, setRequirements] = useState("Reach player level 20\nNew users only");
+  const [countries, setCountries] = useState("ALL");
+  const [requirements, setRequirements] = useState("Install the game\nReach level 15 within 7 days\nReward credits automatically");
   const [isFeatured, setIsFeatured] = useState(false);
-  const [isRecommended, setIsRecommended] = useState(true);
+  const [isRecommended, setIsRecommended] = useState(false);
+  const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
+
   const [isSaving, setIsSaving] = useState(false);
   const [saved, setSaved] = useState(false);
+  const [providers, setProviders] = useState<{ id: string; name: string }[]>([]);
 
   useEffect(() => {
     apiClient
       .get("/admin/providers")
       .then((res) => {
-        const list = res.data?.data || (Array.isArray(res.data) ? res.data : []);
-        if (list.length > 0) {
-          setProviders(list);
-          setProvider(list[0].id);
+        if (res.data?.data && Array.isArray(res.data.data)) {
+          setProviders(res.data.data);
+          if (res.data.data.length > 0) {
+            setProvider(res.data.data[0].id);
+          }
         }
       })
-      .catch(() => {});
+      .catch((err) => console.error("Failed to load providers", err));
   }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    const errors: Record<string, string> = {};
+
+    if (!title.trim()) {
+      errors.title = "Offer title is required";
+    }
+    if (!description.trim()) {
+      errors.description = "Description is required";
+    }
     if (!provider) {
-      alert("Please select a provider network");
+      errors.provider = "Please select a provider network";
+    }
+    const pointsNum = parseInt(rewardPoints, 10);
+    if (isNaN(pointsNum) || pointsNum <= 0) {
+      errors.rewardPoints = "Points must be greater than 0";
+    }
+    const minNum = parseInt(estimatedMinutes, 10);
+    if (isNaN(minNum) || minNum <= 0) {
+      errors.estimatedMinutes = "Estimated minutes must be greater than 0";
+    }
+
+    if (Object.keys(errors).length > 0) {
+      setFieldErrors(errors);
       return;
     }
+
+    setFieldErrors({});
     setIsSaving(true);
     try {
       await apiClient.post("/admin/offers", {
@@ -62,8 +88,8 @@ export default function AdminNewOfferPage() {
         description,
         category,
         providerId: provider,
-        rewardPoints: parseInt(rewardPoints, 10) || 1000,
-        estimatedMinutes: parseInt(estimatedMinutes, 10) || 15,
+        rewardPoints: pointsNum || 1000,
+        estimatedMinutes: minNum || 15,
         difficulty,
         countries: countries.split(",").map((c) => c.trim()).filter(Boolean),
         requirements: requirements.split("\n").map((r) => r.trim()).filter(Boolean),
@@ -96,28 +122,36 @@ export default function AdminNewOfferPage() {
         </CardHeader>
 
         <CardContent>
-          <form onSubmit={handleSubmit} className="space-y-4 text-xs">
+          <form onSubmit={handleSubmit} noValidate className="space-y-4 text-xs">
             <div className="space-y-1.5">
               <Label className="text-xs font-semibold text-slate-200">Offer Title</Label>
               <Input
-                required
                 placeholder="e.g. Star Trek Fleet Command - Level 15"
+                hasError={!!fieldErrors.title}
                 value={title}
-                onChange={(e) => setTitle(e.target.value)}
+                onChange={(e) => {
+                  setTitle(e.target.value);
+                  if (fieldErrors.title) setFieldErrors((p) => ({ ...p, title: "" }));
+                }}
                 className="bg-slate-900 border-slate-800 text-xs h-9 text-slate-200"
               />
+              <FieldError message={fieldErrors.title} />
             </div>
 
             <div className="space-y-1.5">
               <Label className="text-xs font-semibold text-slate-200">Description</Label>
               <Textarea
-                required
                 rows={3}
                 placeholder="Short summary of the task conditions"
+                hasError={!!fieldErrors.description}
                 value={description}
-                onChange={(e) => setDescription(e.target.value)}
+                onChange={(e) => {
+                  setDescription(e.target.value);
+                  if (fieldErrors.description) setFieldErrors((p) => ({ ...p, description: "" }));
+                }}
                 className="bg-slate-900 border-slate-800 text-xs text-slate-200"
               />
+              <FieldError message={fieldErrors.description} />
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -140,8 +174,11 @@ export default function AdminNewOfferPage() {
 
               <div className="space-y-1.5">
                 <Label className="text-xs font-semibold text-slate-200">Provider Network</Label>
-                <Select value={provider} onValueChange={setProvider}>
-                  <SelectTrigger className="bg-slate-900 border-slate-800 h-9 text-xs text-slate-200">
+                <Select value={provider} onValueChange={(v) => {
+                  setProvider(v);
+                  if (fieldErrors.provider) setFieldErrors((p) => ({ ...p, provider: "" }));
+                }}>
+                  <SelectTrigger className={`bg-slate-900 border-slate-800 h-9 text-xs text-slate-200 ${fieldErrors.provider ? "border-rose-500/70" : ""}`}>
                     <SelectValue placeholder="Select network provider" />
                   </SelectTrigger>
                   <SelectContent className="bg-slate-900 border-slate-800 text-slate-200">
@@ -152,6 +189,7 @@ export default function AdminNewOfferPage() {
                     ))}
                   </SelectContent>
                 </Select>
+                <FieldError message={fieldErrors.provider} />
               </div>
             </div>
 
@@ -160,22 +198,30 @@ export default function AdminNewOfferPage() {
                 <Label className="text-xs font-semibold text-slate-200">Reward Points</Label>
                 <Input
                   type="number"
-                  required
+                  hasError={!!fieldErrors.rewardPoints}
                   value={rewardPoints}
-                  onChange={(e) => setRewardPoints(e.target.value)}
+                  onChange={(e) => {
+                    setRewardPoints(e.target.value);
+                    if (fieldErrors.rewardPoints) setFieldErrors((p) => ({ ...p, rewardPoints: "" }));
+                  }}
                   className="bg-slate-900 border-slate-800 text-xs h-9 font-mono text-slate-200"
                 />
+                <FieldError message={fieldErrors.rewardPoints} />
               </div>
 
               <div className="space-y-1.5">
                 <Label className="text-xs font-semibold text-slate-200">Est. Minutes</Label>
                 <Input
                   type="number"
-                  required
+                  hasError={!!fieldErrors.estimatedMinutes}
                   value={estimatedMinutes}
-                  onChange={(e) => setEstimatedMinutes(e.target.value)}
+                  onChange={(e) => {
+                    setEstimatedMinutes(e.target.value);
+                    if (fieldErrors.estimatedMinutes) setFieldErrors((p) => ({ ...p, estimatedMinutes: "" }));
+                  }}
                   className="bg-slate-900 border-slate-800 text-xs h-9 text-slate-200"
                 />
+                <FieldError message={fieldErrors.estimatedMinutes} />
               </div>
 
               <div className="space-y-1.5">

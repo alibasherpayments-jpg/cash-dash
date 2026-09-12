@@ -9,18 +9,34 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Coins, AlertCircle, Loader2, ArrowRight } from "lucide-react";
+import { FieldError } from "@/components/ui/field-error";
+import { validateEmail, validateRequired } from "@/lib/validation";
 
 export default function LoginPage() {
   const router = useRouter();
   const { login } = useAuthStore();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [fieldErrors, setFieldErrors] = useState<{ email?: string; password?: string }>({});
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
+
+    const emailErr = validateEmail(email);
+    const passErr = validateRequired(password, "Password");
+
+    if (emailErr || passErr) {
+      setFieldErrors({
+        email: emailErr || undefined,
+        password: passErr || undefined,
+      });
+      return;
+    }
+
+    setFieldErrors({});
     setIsLoading(true);
 
     try {
@@ -46,7 +62,7 @@ export default function LoginPage() {
           </CardDescription>
         </CardHeader>
 
-        <form onSubmit={handleSubmit}>
+        <form onSubmit={handleSubmit} noValidate>
           <CardContent className="space-y-4">
             {error && (
               <div className="p-3 rounded-lg bg-destructive/10 border border-destructive/20 text-destructive text-xs flex items-center gap-2">
@@ -60,12 +76,16 @@ export default function LoginPage() {
               <Input
                 id="email"
                 type="email"
-                required
+                hasError={!!fieldErrors.email}
                 value={email}
-                onChange={(e) => setEmail(e.target.value)}
+                onChange={(e) => {
+                  setEmail(e.target.value);
+                  if (fieldErrors.email) setFieldErrors((prev) => ({ ...prev, email: undefined }));
+                }}
                 placeholder="name@example.com"
                 className="h-10 text-sm"
               />
+              <FieldError message={fieldErrors.email} />
             </div>
 
             <div className="space-y-2">
@@ -78,12 +98,16 @@ export default function LoginPage() {
               <Input
                 id="password"
                 type="password"
-                required
+                hasError={!!fieldErrors.password}
                 value={password}
-                onChange={(e) => setPassword(e.target.value)}
+                onChange={(e) => {
+                  setPassword(e.target.value);
+                  if (fieldErrors.password) setFieldErrors((prev) => ({ ...prev, password: undefined }));
+                }}
                 placeholder="••••••••"
                 className="h-10 text-sm"
               />
+              <FieldError message={fieldErrors.password} />
             </div>
 
           </CardContent>

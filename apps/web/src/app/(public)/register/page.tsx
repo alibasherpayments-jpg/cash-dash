@@ -9,6 +9,8 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Coins, AlertCircle, Loader2, CheckCircle2 } from "lucide-react";
+import { FieldError } from "@/components/ui/field-error";
+import { validateEmail } from "@/lib/validation";
 
 export default function RegisterPage() {
   const router = useRouter();
@@ -17,6 +19,12 @@ export default function RegisterPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
+  const [fieldErrors, setFieldErrors] = useState<{
+    username?: string;
+    email?: string;
+    password?: string;
+    confirmPassword?: string;
+  }>({});
   const [error, setError] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
 
@@ -24,16 +32,38 @@ export default function RegisterPage() {
     e.preventDefault();
     setError(null);
 
-    if (password !== confirmPassword) {
-      setError("Passwords do not match");
+    const errors: typeof fieldErrors = {};
+
+    const trimmedUser = username.trim();
+    if (!trimmedUser) {
+      errors.username = "Please choose a username";
+    } else if (trimmedUser.length < 3) {
+      errors.username = "Username must be at least 3 characters long";
+    }
+
+    const emailErr = validateEmail(email);
+    if (emailErr) {
+      errors.email = emailErr;
+    }
+
+    if (!password) {
+      errors.password = "Please create a password";
+    } else if (password.length < 8) {
+      errors.password = "Password must be at least 8 characters long";
+    }
+
+    if (!confirmPassword) {
+      errors.confirmPassword = "Please confirm your password";
+    } else if (password !== confirmPassword) {
+      errors.confirmPassword = "Passwords do not match";
+    }
+
+    if (Object.keys(errors).length > 0) {
+      setFieldErrors(errors);
       return;
     }
 
-    if (password.length < 8) {
-      setError("Password must be at least 8 characters long");
-      return;
-    }
-
+    setFieldErrors({});
     setIsLoading(true);
 
     try {
@@ -59,7 +89,7 @@ export default function RegisterPage() {
           </CardDescription>
         </CardHeader>
 
-        <form onSubmit={handleSubmit}>
+        <form onSubmit={handleSubmit} noValidate>
           <CardContent className="space-y-4">
             {error && (
               <div className="p-3 rounded-lg bg-destructive/10 border border-destructive/20 text-destructive text-xs flex items-center gap-2">
@@ -73,12 +103,16 @@ export default function RegisterPage() {
               <Input
                 id="username"
                 type="text"
-                required
+                hasError={!!fieldErrors.username}
                 value={username}
-                onChange={(e) => setUsername(e.target.value)}
+                onChange={(e) => {
+                  setUsername(e.target.value);
+                  if (fieldErrors.username) setFieldErrors((prev) => ({ ...prev, username: undefined }));
+                }}
                 placeholder="your_earner_handle"
                 className="h-10 text-sm"
               />
+              <FieldError message={fieldErrors.username} />
             </div>
 
             <div className="space-y-2">
@@ -86,12 +120,16 @@ export default function RegisterPage() {
               <Input
                 id="email"
                 type="email"
-                required
+                hasError={!!fieldErrors.email}
                 value={email}
-                onChange={(e) => setEmail(e.target.value)}
+                onChange={(e) => {
+                  setEmail(e.target.value);
+                  if (fieldErrors.email) setFieldErrors((prev) => ({ ...prev, email: undefined }));
+                }}
                 placeholder="name@example.com"
                 className="h-10 text-sm"
               />
+              <FieldError message={fieldErrors.email} />
             </div>
 
             <div className="space-y-2">
@@ -99,12 +137,16 @@ export default function RegisterPage() {
               <Input
                 id="password"
                 type="password"
-                required
+                hasError={!!fieldErrors.password}
                 value={password}
-                onChange={(e) => setPassword(e.target.value)}
+                onChange={(e) => {
+                  setPassword(e.target.value);
+                  if (fieldErrors.password) setFieldErrors((prev) => ({ ...prev, password: undefined }));
+                }}
                 placeholder="Minimum 8 characters"
                 className="h-10 text-sm"
               />
+              <FieldError message={fieldErrors.password} />
             </div>
 
             <div className="space-y-2">
@@ -112,12 +154,16 @@ export default function RegisterPage() {
               <Input
                 id="confirmPassword"
                 type="password"
-                required
+                hasError={!!fieldErrors.confirmPassword}
                 value={confirmPassword}
-                onChange={(e) => setConfirmPassword(e.target.value)}
+                onChange={(e) => {
+                  setConfirmPassword(e.target.value);
+                  if (fieldErrors.confirmPassword) setFieldErrors((prev) => ({ ...prev, confirmPassword: undefined }));
+                }}
                 placeholder="Re-enter password"
                 className="h-10 text-sm"
               />
+              <FieldError message={fieldErrors.confirmPassword} />
             </div>
 
             <div className="text-[11px] text-muted-foreground space-y-1 pt-1">

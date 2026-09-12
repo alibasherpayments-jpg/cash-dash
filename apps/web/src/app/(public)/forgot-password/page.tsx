@@ -8,14 +8,25 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Coins, ArrowLeft, CheckCircle2, Loader2 } from "lucide-react";
 import apiClient from "@/lib/api-client";
+import { FieldError } from "@/components/ui/field-error";
+import { validateEmail } from "@/lib/validation";
 
 export default function ForgotPasswordPage() {
   const [email, setEmail] = useState("");
+  const [emailError, setEmailError] = useState<string | null>(null);
   const [submitted, setSubmitted] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    const err = validateEmail(email);
+    if (err) {
+      setEmailError(err);
+      return;
+    }
+
+    setEmailError(null);
     setIsLoading(true);
     try {
       await apiClient.post("/auth/forgot-password", { email });
@@ -55,19 +66,23 @@ export default function ForgotPasswordPage() {
             </Button>
           </CardContent>
         ) : (
-          <form onSubmit={handleSubmit}>
+          <form onSubmit={handleSubmit} noValidate>
             <CardContent className="space-y-4">
               <div className="space-y-2">
                 <Label htmlFor="email" className="text-xs font-semibold">Email Address</Label>
                 <Input
                   id="email"
                   type="email"
-                  required
+                  hasError={!!emailError}
                   value={email}
-                  onChange={(e) => setEmail(e.target.value)}
+                  onChange={(e) => {
+                    setEmail(e.target.value);
+                    if (emailError) setEmailError(null);
+                  }}
                   placeholder="name@example.com"
                   className="h-10 text-sm"
                 />
+                <FieldError message={emailError} />
               </div>
             </CardContent>
 

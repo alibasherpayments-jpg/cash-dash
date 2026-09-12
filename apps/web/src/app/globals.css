@@ -104,6 +104,15 @@
   h1, h2, h3, h4, h5, h6 {
     @apply font-semibold tracking-tight;
   }
+
+  /* Suppress default browser HTML5 validation bubbles */
+  ::-webkit-validation-bubble,
+  ::-webkit-validation-bubble-message,
+  ::-webkit-validation-bubble-arrow,
+  ::-webkit-validation-bubble-top-outer-arrow,
+  ::-webkit-validation-bubble-heading {
+    display: none !important;
+  }
 }
 
 @layer utilities {

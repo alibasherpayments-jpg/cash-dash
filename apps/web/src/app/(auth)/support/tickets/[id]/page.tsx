@@ -11,6 +11,7 @@ import { AvatarWithFallback } from "@/components/common/avatar-with-fallback";
 import { ArrowLeft, Send, Loader2, LifeBuoy, AlertCircle } from "lucide-react";
 import { formatDateTime } from "@/lib/formatters";
 import apiClient from "@/lib/api-client";
+import { FieldError } from "@/components/ui/field-error";
 
 export default function TicketThreadPage() {
   const params = useParams();
@@ -22,6 +23,7 @@ export default function TicketThreadPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [reply, setReply] = useState("");
+  const [replyError, setReplyError] = useState<string | null>(null);
   const [isSending, setIsSending] = useState(false);
 
   const fetchTicket = async () => {
@@ -47,8 +49,13 @@ export default function TicketThreadPage() {
 
   const handleSendReply = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!reply.trim() || isSending) return;
+    if (!reply.trim()) {
+      setReplyError("Please enter your reply before submitting");
+      return;
+    }
+    if (isSending) return;
 
+    setReplyError(null);
     setIsSending(true);
     try {
       const res = await apiClient.post(`/support/tickets/${ticketId}/messages`, {
@@ -174,15 +181,19 @@ export default function TicketThreadPage() {
           </CardDescription>
         </CardHeader>
         <CardContent className="p-5 pt-0">
-          <form onSubmit={handleSendReply} className="space-y-3">
+          <form onSubmit={handleSendReply} noValidate className="space-y-3">
             <Textarea
               rows={4}
-              required
+              hasError={!!replyError}
               placeholder="Type your reply here..."
               value={reply}
-              onChange={(e) => setReply(e.target.value)}
+              onChange={(e) => {
+                setReply(e.target.value);
+                if (replyError) setReplyError(null);
+              }}
               className="text-xs"
             />
+            <FieldError message={replyError} />
             <div className="flex justify-end">
               <Button type="submit" size="sm" className="font-bold">
                 <Send className="h-3.5 w-3.5 mr-1.5" /> Send Reply

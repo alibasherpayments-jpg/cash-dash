@@ -9,12 +9,18 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Coins, CheckCircle2, AlertCircle, Loader2 } from "lucide-react";
 import apiClient from "@/lib/api-client";
+import { FieldError } from "@/components/ui/field-error";
 
 export default function ResetPasswordPage() {
   const router = useRouter();
   const [token, setToken] = useState("mock-reset-token-123");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
+  const [fieldErrors, setFieldErrors] = useState<{
+    token?: string;
+    password?: string;
+    confirmPassword?: string;
+  }>({});
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
@@ -23,11 +29,30 @@ export default function ResetPasswordPage() {
     e.preventDefault();
     setError(null);
 
-    if (password !== confirmPassword) {
-      setError("Passwords do not match");
+    const errors: typeof fieldErrors = {};
+
+    if (!token.trim()) {
+      errors.token = "Security token is required";
+    }
+
+    if (!password) {
+      errors.password = "Please enter a new password";
+    } else if (password.length < 8) {
+      errors.password = "Password must be at least 8 characters long";
+    }
+
+    if (!confirmPassword) {
+      errors.confirmPassword = "Please confirm your new password";
+    } else if (password !== confirmPassword) {
+      errors.confirmPassword = "Passwords do not match";
+    }
+
+    if (Object.keys(errors).length > 0) {
+      setFieldErrors(errors);
       return;
     }
 
+    setFieldErrors({});
     setIsLoading(true);
     try {
       await apiClient.post("/auth/reset-password", { token, newPassword: password });
@@ -66,7 +91,7 @@ export default function ResetPasswordPage() {
             </Button>
           </CardContent>
         ) : (
-          <form onSubmit={handleSubmit}>
+          <form onSubmit={handleSubmit} noValidate>
             <CardContent className="space-y-4">
               {error && (
                 <div className="p-3 rounded-lg bg-destructive/10 border border-destructive/20 text-destructive text-xs flex items-center gap-2">
@@ -80,11 +105,15 @@ export default function ResetPasswordPage() {
                 <Input
                   id="token"
                   type="text"
-                  required
+                  hasError={!!fieldErrors.token}
                   value={token}
-                  onChange={(e) => setToken(e.target.value)}
+                  onChange={(e) => {
+                    setToken(e.target.value);
+                    if (fieldErrors.token) setFieldErrors((prev) => ({ ...prev, token: undefined }));
+                  }}
                   className="h-10 text-sm font-mono text-xs"
                 />
+                <FieldError message={fieldErrors.token} />
               </div>
 
               <div className="space-y-2">
@@ -92,12 +121,16 @@ export default function ResetPasswordPage() {
                 <Input
                   id="password"
                   type="password"
-                  required
+                  hasError={!!fieldErrors.password}
                   value={password}
-                  onChange={(e) => setPassword(e.target.value)}
+                  onChange={(e) => {
+                    setPassword(e.target.value);
+                    if (fieldErrors.password) setFieldErrors((prev) => ({ ...prev, password: undefined }));
+                  }}
                   placeholder="Minimum 8 characters"
                   className="h-10 text-sm"
                 />
+                <FieldError message={fieldErrors.password} />
               </div>
 
               <div className="space-y-2">
@@ -105,12 +138,16 @@ export default function ResetPasswordPage() {
                 <Input
                   id="confirmPassword"
                   type="password"
-                  required
+                  hasError={!!fieldErrors.confirmPassword}
                   value={confirmPassword}
-                  onChange={(e) => setConfirmPassword(e.target.value)}
+                  onChange={(e) => {
+                    setConfirmPassword(e.target.value);
+                    if (fieldErrors.confirmPassword) setFieldErrors((prev) => ({ ...prev, confirmPassword: undefined }));
+                  }}
                   placeholder="Re-enter new password"
                   className="h-10 text-sm"
                 />
+                <FieldError message={fieldErrors.confirmPassword} />
               </div>
             </CardContent>
 

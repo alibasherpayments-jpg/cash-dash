@@ -271,7 +271,7 @@ export default function AdminUserDetailPage() {
             )}
           </div>
 
-          <form onSubmit={handleAddNote} className="space-y-2 pt-2 border-t border-slate-800">
+          <form onSubmit={handleAddNote} noValidate className="space-y-2 pt-2 border-t border-slate-800">
             <Textarea
               rows={3}
               placeholder="Add staff observation or verification note..."

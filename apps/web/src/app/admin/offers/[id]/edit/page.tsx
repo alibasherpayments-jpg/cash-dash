@@ -11,29 +11,32 @@ import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { ArrowLeft, Save, Loader2, CheckCircle2, AlertTriangle } from "lucide-react";
 import apiClient from "@/lib/api-client";
+import { FieldError } from "@/components/ui/field-error";
 
 export default function AdminEditOfferPage() {
-  const params = useParams();
   const router = useRouter();
+  const params = useParams();
   const offerId = params.id as string;
+
+  const [loading, setLoading] = useState(true);
+  const [isSaving, setIsSaving] = useState(false);
+  const [saved, setSaved] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
 
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [rewardPoints, setRewardPoints] = useState("1000");
   const [isFeatured, setIsFeatured] = useState(false);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const [isSaving, setIsSaving] = useState(false);
-  const [saved, setSaved] = useState(false);
 
   useEffect(() => {
-    if (!offerId) return;
     setLoading(true);
     apiClient
-      .get(`/admin/offers/${offerId}`)
+      .get(`/offers`)
       .then((res) => {
-        if (res.data?.data) {
-          const o = res.data.data;
+        const list = res.data?.data || (Array.isArray(res.data) ? res.data : []);
+        const o = list.find((item: any) => item.id === offerId);
+        if (o) {
           setTitle(o.title || "");
           setDescription(o.description || "");
           setRewardPoints(String(o.rewardPoints || 1000));
@@ -52,12 +55,28 @@ export default function AdminEditOfferPage() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    const errors: Record<string, string> = {};
+    if (!title.trim()) {
+      errors.title = "Offer title is required";
+    }
+    const pointsNum = parseInt(rewardPoints, 10);
+    if (isNaN(pointsNum) || pointsNum <= 0) {
+      errors.rewardPoints = "Points must be greater than 0";
+    }
+
+    if (Object.keys(errors).length > 0) {
+      setFieldErrors(errors);
+      return;
+    }
+
+    setFieldErrors({});
     setIsSaving(true);
     try {
       await apiClient.put(`/admin/offers/${offerId}`, {
         title,
         description,
-        rewardPoints: parseInt(rewardPoints, 10) || 1000,
+        rewardPoints: pointsNum || 1000,
         isFeatured,
       });
       setIsSaving(false);
@@ -111,15 +130,19 @@ export default function AdminEditOfferPage() {
         </CardHeader>
 
         <CardContent>
-          <form onSubmit={handleSubmit} className="space-y-4 text-xs">
+          <form onSubmit={handleSubmit} noValidate className="space-y-4 text-xs">
             <div className="space-y-1.5">
               <Label className="text-xs font-semibold text-slate-200">Title</Label>
               <Input
-                required
+                hasError={!!fieldErrors.title}
                 value={title}
-                onChange={(e) => setTitle(e.target.value)}
+                onChange={(e) => {
+                  setTitle(e.target.value);
+                  if (fieldErrors.title) setFieldErrors((p) => ({ ...p, title: "" }));
+                }}
                 className="bg-slate-900 border-slate-800 text-xs h-9 text-slate-200"
               />
+              <FieldError message={fieldErrors.title} />
             </div>
 
             <div className="space-y-1.5">
@@ -136,11 +159,15 @@ export default function AdminEditOfferPage() {
               <Label className="text-xs font-semibold text-slate-200">Reward Points</Label>
               <Input
                 type="number"
-                required
+                hasError={!!fieldErrors.rewardPoints}
                 value={rewardPoints}
-                onChange={(e) => setRewardPoints(e.target.value)}
+                onChange={(e) => {
+                  setRewardPoints(e.target.value);
+                  if (fieldErrors.rewardPoints) setFieldErrors((p) => ({ ...p, rewardPoints: "" }));
+                }}
                 className="bg-slate-900 border-slate-800 text-xs h-9 font-mono text-slate-200"
               />
+              <FieldError message={fieldErrors.rewardPoints} />
             </div>
 
             <div className="flex items-center justify-between p-3 rounded-xl bg-slate-900/60 border border-slate-800">

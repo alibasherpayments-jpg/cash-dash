@@ -13,19 +13,32 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { Bell, Send, CheckCircle2, Loader2, Users } from "lucide-react";
+import { Bell, Send, CheckCircle2, Loader2 } from "lucide-react";
 import apiClient from "@/lib/api-client";
+import { FieldError } from "@/components/ui/field-error";
 
 export default function AdminBroadcastNotificationsPage() {
   const [title, setTitle] = useState("");
   const [message, setMessage] = useState("");
-  const [audience, setAudience] = useState("ALL");
   const [type, setType] = useState("PROMOTIONAL");
+  const [audience, setAudience] = useState("ALL");
   const [isSending, setIsSending] = useState(false);
   const [sent, setSent] = useState(false);
+  const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
 
   const handleSend = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    const errors: Record<string, string> = {};
+    if (!title.trim()) errors.title = "Headline title is required";
+    if (!message.trim()) errors.message = "Message body is required";
+
+    if (Object.keys(errors).length > 0) {
+      setFieldErrors(errors);
+      return;
+    }
+
+    setFieldErrors({});
     setIsSending(true);
     try {
       const notifType = type === "ACHIEVEMENT" ? "ACHIEVEMENT_UNLOCKED" : type;
@@ -65,7 +78,7 @@ export default function AdminBroadcastNotificationsPage() {
         </CardHeader>
 
         <CardContent>
-          <form onSubmit={handleSend} className="space-y-4 text-xs">
+          <form onSubmit={handleSend} noValidate className="space-y-4 text-xs">
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div className="space-y-1.5">
                 <Label className="text-xs font-semibold text-slate-200">Target Audience</Label>
@@ -100,24 +113,32 @@ export default function AdminBroadcastNotificationsPage() {
             <div className="space-y-1.5">
               <Label className="text-xs font-semibold text-slate-200">Headline Title</Label>
               <Input
-                required
                 placeholder="e.g. 2x Points Weekend Active!"
+                hasError={!!fieldErrors.title}
                 value={title}
-                onChange={(e) => setTitle(e.target.value)}
+                onChange={(e) => {
+                  setTitle(e.target.value);
+                  if (fieldErrors.title) setFieldErrors((p) => ({ ...p, title: "" }));
+                }}
                 className="bg-slate-900 border-slate-800 text-xs h-9 text-slate-200"
               />
+              <FieldError message={fieldErrors.title} />
             </div>
 
             <div className="space-y-1.5">
               <Label className="text-xs font-semibold text-slate-200">Message Body</Label>
               <Textarea
-                required
                 rows={4}
                 placeholder="Enter the full notification message shown to members..."
+                hasError={!!fieldErrors.message}
                 value={message}
-                onChange={(e) => setMessage(e.target.value)}
+                onChange={(e) => {
+                  setMessage(e.target.value);
+                  if (fieldErrors.message) setFieldErrors((p) => ({ ...p, message: "" }));
+                }}
                 className="bg-slate-900 border-slate-800 text-xs text-slate-200"
               />
+              <FieldError message={fieldErrors.message} />
             </div>
 
             <div className="pt-4 flex justify-between items-center border-t border-slate-800">

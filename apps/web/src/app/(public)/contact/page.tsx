@@ -9,15 +9,44 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Mail, CheckCircle2, MessageSquare, HelpCircle } from "lucide-react";
+import { FieldError } from "@/components/ui/field-error";
+import { validateEmail } from "@/lib/validation";
 
 export default function ContactPage() {
   const [submitted, setSubmitted] = useState(false);
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [message, setMessage] = useState("");
+  const [fieldErrors, setFieldErrors] = useState<{
+    name?: string;
+    email?: string;
+    message?: string;
+  }>({});
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+
+    const errors: typeof fieldErrors = {};
+
+    if (!name.trim()) {
+      errors.name = "Please enter your name";
+    }
+
+    const emailErr = validateEmail(email);
+    if (emailErr) {
+      errors.email = emailErr;
+    }
+
+    if (!message.trim()) {
+      errors.message = "Please enter your message";
+    }
+
+    if (Object.keys(errors).length > 0) {
+      setFieldErrors(errors);
+      return;
+    }
+
+    setFieldErrors({});
     setSubmitted(true);
   };
 
@@ -56,30 +85,38 @@ export default function ContactPage() {
               </Button>
             </div>
           ) : (
-            <form onSubmit={handleSubmit} className="space-y-4">
+            <form onSubmit={handleSubmit} noValidate className="space-y-4">
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Label htmlFor="name" className="text-xs font-semibold">Your Name</Label>
                   <Input
                     id="name"
-                    required
+                    hasError={!!fieldErrors.name}
                     value={name}
-                    onChange={(e) => setName(e.target.value)}
+                    onChange={(e) => {
+                      setName(e.target.value);
+                      if (fieldErrors.name) setFieldErrors((prev) => ({ ...prev, name: undefined }));
+                    }}
                     placeholder="Alex Smith"
                     className="h-10 text-sm"
                   />
+                  <FieldError message={fieldErrors.name} />
                 </div>
                 <div className="space-y-2">
                   <Label htmlFor="email" className="text-xs font-semibold">Email Address</Label>
                   <Input
                     id="email"
                     type="email"
-                    required
+                    hasError={!!fieldErrors.email}
                     value={email}
-                    onChange={(e) => setEmail(e.target.value)}
+                    onChange={(e) => {
+                      setEmail(e.target.value);
+                      if (fieldErrors.email) setFieldErrors((prev) => ({ ...prev, email: undefined }));
+                    }}
                     placeholder="alex@example.com"
                     className="h-10 text-sm"
                   />
+                  <FieldError message={fieldErrors.email} />
                 </div>
               </div>
 
@@ -87,13 +124,17 @@ export default function ContactPage() {
                 <Label htmlFor="message" className="text-xs font-semibold">Message</Label>
                 <Textarea
                   id="message"
-                  required
+                  hasError={!!fieldErrors.message}
                   rows={5}
                   value={message}
-                  onChange={(e) => setMessage(e.target.value)}
+                  onChange={(e) => {
+                    setMessage(e.target.value);
+                    if (fieldErrors.message) setFieldErrors((prev) => ({ ...prev, message: undefined }));
+                  }}
                   placeholder="How can our rewards team assist you today?"
                   className="text-sm"
                 />
+                <FieldError message={fieldErrors.message} />
               </div>
 
               <Button type="submit" className="w-full font-bold">

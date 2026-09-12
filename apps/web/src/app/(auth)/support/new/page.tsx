@@ -17,17 +17,34 @@ import {
 } from "@/components/ui/select";
 import { ArrowLeft, Loader2, CheckCircle2 } from "lucide-react";
 import apiClient from "@/lib/api-client";
+import { FieldError } from "@/components/ui/field-error";
 
 export default function NewSupportTicketPage() {
   const router = useRouter();
   const [subject, setSubject] = useState("");
   const [category, setCategory] = useState("OFFER_ISSUE");
   const [message, setMessage] = useState("");
+  const [fieldErrors, setFieldErrors] = useState<{ subject?: string; message?: string }>({});
   const [isLoading, setIsLoading] = useState(false);
   const [submitted, setSubmitted] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    const errors: typeof fieldErrors = {};
+    if (!subject.trim()) {
+      errors.subject = "Please enter a subject line for your request";
+    }
+    if (!message.trim()) {
+      errors.message = "Please provide detailed description of your issue";
+    }
+
+    if (Object.keys(errors).length > 0) {
+      setFieldErrors(errors);
+      return;
+    }
+
+    setFieldErrors({});
     setIsLoading(true);
 
     try {
@@ -72,7 +89,7 @@ export default function NewSupportTicketPage() {
               </Button>
             </div>
           ) : (
-            <form onSubmit={handleSubmit} className="space-y-4">
+            <form onSubmit={handleSubmit} noValidate className="space-y-4">
               <div className="space-y-2">
                 <Label htmlFor="category" className="text-xs font-semibold">Issue Category</Label>
                 <Select value={category} onValueChange={setCategory}>
@@ -94,25 +111,33 @@ export default function NewSupportTicketPage() {
                 <Label htmlFor="subject" className="text-xs font-semibold">Subject</Label>
                 <Input
                   id="subject"
-                  required
+                  hasError={!!fieldErrors.subject}
                   placeholder="e.g. Points missing after reaching level 40"
                   value={subject}
-                  onChange={(e) => setSubject(e.target.value)}
+                  onChange={(e) => {
+                    setSubject(e.target.value);
+                    if (fieldErrors.subject) setFieldErrors((prev) => ({ ...prev, subject: undefined }));
+                  }}
                   className="h-10 text-sm"
                 />
+                <FieldError message={fieldErrors.subject} />
               </div>
 
               <div className="space-y-2">
                 <Label htmlFor="message" className="text-xs font-semibold">Detailed Description</Label>
                 <Textarea
                   id="message"
-                  required
+                  hasError={!!fieldErrors.message}
                   rows={6}
                   placeholder="Please include: Offer name, date of completion, user ID in the game, and any relevant details."
                   value={message}
-                  onChange={(e) => setMessage(e.target.value)}
+                  onChange={(e) => {
+                    setMessage(e.target.value);
+                    if (fieldErrors.message) setFieldErrors((prev) => ({ ...prev, message: undefined }));
+                  }}
                   className="text-sm"
                 />
+                <FieldError message={fieldErrors.message} />
               </div>
 
               <div className="pt-2">

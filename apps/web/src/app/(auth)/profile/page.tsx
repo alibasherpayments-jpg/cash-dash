@@ -88,7 +88,7 @@ export default function ProfilePage() {
       {/* ─── Tab 1: Personal Info ─────────────────────────────────── */}
       {activeTab === "PERSONAL" && (
         <Card className="border-border shadow-md">
-          <form onSubmit={handleSave}>
+          <form onSubmit={handleSave} noValidate>
             <CardHeader>
               <CardTitle className="text-base font-bold">Personal Information</CardTitle>
               <CardDescription className="text-xs">
