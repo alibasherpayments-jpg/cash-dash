@@ -61,7 +61,9 @@ describe('WithdrawalsService', () => {
       getConversionRate: vi.fn().mockResolvedValue(1000),
       getPointsConversionRate: vi.fn().mockResolvedValue(1000),
       getMinWithdrawalPoints: vi.fn().mockResolvedValue(100),
+      isMaintenanceMode: vi.fn().mockResolvedValue(false),
     };
+
 
     service = new WithdrawalsService(
       mockPrisma,

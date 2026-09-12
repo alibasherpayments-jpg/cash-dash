@@ -207,6 +207,7 @@ export interface WalletSummary {
   totalEarned: number;
   totalWithdrawn: number;
   cashValue: number; // USD equivalent
+  conversionRate?: number;
 }
 
 export interface OfferPublic {

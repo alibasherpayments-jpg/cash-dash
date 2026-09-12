@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import React, { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
@@ -10,6 +10,8 @@ import { AvatarWithFallback } from "@/components/common/avatar-with-fallback";
 import { Trophy, Crown, Wallet } from "lucide-react";
 import { formatPointsAsCash, formatPoints } from "@/lib/formatters";
 import { useLeaderboard, type LeaderboardEntry } from "@/hooks/use-leaderboard";
+import { usePlatformSettings } from "@/hooks/use-platform-settings";
+
 
 // ─── Skeleton loaders ───────────────────────────────────────────────────────
 
@@ -153,6 +155,36 @@ export default function LeaderboardPage() {
   const { t } = useTranslation();
   const [activeTab, setActiveTab] = useState<"WITHDRAWALS" | "EARNERS">("WITHDRAWALS");
   const { withdrawers, earners, isLoading } = useLeaderboard();
+  const { settings } = usePlatformSettings();
+
+  const isLeaderboardDisabled = settings?.leaderboardEnabled === false;
+
+  if (isLeaderboardDisabled) {
+    return (
+      <div className="max-w-5xl mx-auto space-y-8">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+          <div>
+            <h1 className="text-2xl sm:text-3xl font-black tracking-tight flex items-center gap-2.5">
+              <Trophy className="h-7 w-7 text-amber-500" /> {t.leaderboard.title}
+            </h1>
+            <p className="text-xs sm:text-sm text-muted-foreground mt-0.5">
+              {t.leaderboard.subtitle}
+            </p>
+          </div>
+        </div>
+
+        <Card className="border-border">
+          <CardContent className="py-20 flex flex-col items-center justify-center text-center gap-3">
+            <Trophy className="h-12 w-12 text-muted-foreground/30" />
+            <h3 className="font-bold text-base text-foreground">Leaderboard Currently Disabled</h3>
+            <p className="text-xs text-muted-foreground max-w-sm">
+              The public platform leaderboard is temporarily paused by administrator. Please check back later!
+            </p>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
 
   const users = activeTab === "WITHDRAWALS" ? withdrawers : earners;
   const top3 = users.slice(0, 3);
@@ -160,6 +192,7 @@ export default function LeaderboardPage() {
 
   return (
     <div className="max-w-5xl mx-auto space-y-8">
+
       {/* ─── Header ─────────────────────────────────────────────── */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>

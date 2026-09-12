@@ -8,6 +8,8 @@ import { PrismaService } from '../prisma/prisma.service';
 import { TransactionType, TransactionDirection, TransactionStatus, Prisma } from '@prisma/client';
 import { getPaginationParams, paginate } from '../common/dto/pagination.dto';
 
+import { SettingsService } from '../settings/settings.service';
+
 interface CreditOptions {
   userId: string;
   amount: number; // points
@@ -33,7 +35,10 @@ interface DebitOptions {
 export class WalletService {
   private readonly logger = new Logger(WalletService.name);
 
-  constructor(private prisma: PrismaService) {}
+  constructor(
+    private prisma: PrismaService,
+    private settingsService: SettingsService,
+  ) {}
 
   async getWallet(userId: string) {
     const wallet = await this.prisma.wallet.findUnique({
@@ -43,16 +48,19 @@ export class WalletService {
     return wallet;
   }
 
-  async getWalletSummary(userId: string, conversionRate = 1000) {
+  async getWalletSummary(userId: string, customRate?: number) {
+    const conversionRate = customRate ?? (await this.settingsService.getConversionRate());
     const wallet = await this.getWallet(userId);
     return {
       availablePoints: wallet.availablePoints,
       pendingPoints: wallet.pendingPoints,
       totalEarned: wallet.totalEarned,
       totalWithdrawn: wallet.totalWithdrawn,
-      cashValue: wallet.availablePoints / conversionRate,
+      cashValue: Number((wallet.availablePoints / conversionRate).toFixed(2)),
+      conversionRate,
     };
   }
+
 
   /**
    * Atomically credit a user's wallet and create a ledger entry.

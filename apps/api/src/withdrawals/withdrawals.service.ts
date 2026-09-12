@@ -132,15 +132,24 @@ export class WithdrawalsService {
     if (!method.isActive) throw new BadRequestException('This withdrawal method is not available');
     if (method.isMaintenanceMode) throw new BadRequestException('This withdrawal method is under maintenance');
 
-    const conversionRate = await this.settingsService.getConversionRate();
+    // Check platform-wide maintenance mode
+    const isMaintenance = await this.settingsService.isMaintenanceMode();
+    if (isMaintenance) {
+      throw new BadRequestException('Platform withdrawals are temporarily paused for maintenance. Please try again shortly.');
+    }
 
-    // Check minimum
-    if (dto.points < method.minimumPoints) {
-      const minDollar = (method.minimumPoints / conversionRate).toFixed(2);
+    const conversionRate = await this.settingsService.getConversionRate();
+    const globalMin = await this.settingsService.getMinWithdrawalPoints();
+    const effectiveMin = Math.max(method.minimumPoints, globalMin);
+
+    // Check minimum against both method and global setting
+    if (dto.points < effectiveMin) {
+      const minDollar = (effectiveMin / conversionRate).toFixed(2);
       throw new BadRequestException(
-        `Minimum withdrawal is ${method.minimumPoints} points ($${minDollar})`,
+        `Minimum withdrawal is ${effectiveMin} points ($${minDollar})`,
       );
     }
+
 
     // Check maximum
     if (method.maximumPoints && dto.points > method.maximumPoints) {

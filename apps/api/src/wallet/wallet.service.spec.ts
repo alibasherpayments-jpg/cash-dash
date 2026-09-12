@@ -21,7 +21,11 @@ describe('WalletService', () => {
       $transaction: vi.fn((cb) => cb(mockPrisma)),
     };
 
-    service = new WalletService(mockPrisma);
+    const mockSettingsService: any = {
+      getConversionRate: vi.fn().mockResolvedValue(1000),
+    };
+
+    service = new WalletService(mockPrisma, mockSettingsService);
   });
 
   it('should get wallet summary with correct conversion rate', async () => {
@@ -42,7 +46,9 @@ describe('WalletService', () => {
       totalEarned: 50000,
       totalWithdrawn: 30000,
       cashValue: 2.0, // 20000 / 10000
+      conversionRate: 10000,
     });
+
   });
 
   it('should credit wallet points and create ledger transaction atomically', async () => {

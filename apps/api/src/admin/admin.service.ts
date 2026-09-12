@@ -530,6 +530,15 @@ export class AdminService {
     });
   }
 
+  async batchUpdateSettings(settings: Record<string, any>, adminId: string, ipAddress?: string) {
+    for (const [key, value] of Object.entries(settings)) {
+      if (value !== undefined && value !== null) {
+        await this.updateSetting(key, String(value), adminId, ipAddress);
+      }
+    }
+  }
+
+
   // ─── Audit Logs ──────────────────────────────────────────────────────────
 
   async getAuditLogs(params: {

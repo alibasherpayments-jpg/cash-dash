@@ -6,6 +6,8 @@ import { QueryProvider } from "@/providers/query-provider";
 import { AuthProvider } from "@/providers/auth-provider";
 import { I18nProvider } from "@/providers/i18n-provider";
 import { Toaster } from "sonner";
+import { MaintenanceBanner } from "@/components/common/maintenance-banner";
+
 
 const inter = Inter({
   subsets: ["latin"],
@@ -121,12 +123,14 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         >
           <I18nProvider>
             <QueryProvider>
+              <MaintenanceBanner />
               <AuthProvider>
                 {children}
                 <Toaster richColors position="top-right" />
               </AuthProvider>
             </QueryProvider>
           </I18nProvider>
+
         </ThemeProvider>
       </body>
     </html>

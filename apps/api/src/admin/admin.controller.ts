@@ -325,6 +325,17 @@ export class AdminController {
     return { success: true, data };
   }
 
+  @Put('settings')
+  @ApiOperation({ summary: 'Batch update system settings' })
+  async batchUpdateSettings(
+    @Body() body: Record<string, string>,
+    @CurrentUser('id') adminId: string,
+    @Req() req: Request,
+  ) {
+    await this.adminService.batchUpdateSettings(body, adminId, req.ip);
+    return { success: true, message: 'Settings updated' };
+  }
+
   @Put('settings/:key')
   @ApiOperation({ summary: 'Update a system setting' })
   async updateSetting(
@@ -336,6 +347,7 @@ export class AdminController {
     await this.adminService.updateSetting(key, dto.value, adminId, req.ip);
     return { success: true, message: 'Setting updated' };
   }
+
 
   // ─── Audit Logs ────────────────────────────────────────────────────────────
 

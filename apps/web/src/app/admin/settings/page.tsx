@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import React, { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
@@ -6,16 +6,30 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
-import { Settings, Save, CheckCircle2, Shield, DollarSign, Loader2 } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
+import {
+  Settings,
+  Save,
+  CheckCircle2,
+  Shield,
+  DollarSign,
+  Loader2,
+  AlertTriangle,
+  Mail,
+  Globe,
+  Coins,
+  Trophy,
+} from "lucide-react";
 import apiClient from "@/lib/api-client";
 import { FieldError } from "@/components/ui/field-error";
 import { validateEmail } from "@/lib/validation";
+import { toast } from "sonner";
 
 export default function AdminSettingsPage() {
   const [siteName, setSiteName] = useState("Cash Dash");
   const [supportEmail, setSupportEmail] = useState("support@cashdash.com");
-  const [conversionRate, setConversionRate] = useState("10000");
-  const [minWithdrawal, setMinWithdrawal] = useState("5000");
+  const [conversionRate, setConversionRate] = useState("1000");
+  const [minWithdrawal, setMinWithdrawal] = useState("100");
   const [referralPercent, setReferralPercent] = useState("10");
   const [leaderboardEnabled, setLeaderboardEnabled] = useState(true);
   const [maintenanceMode, setMaintenanceMode] = useState(false);
@@ -34,15 +48,17 @@ export default function AdminSettingsPage() {
           data.forEach((s: any) => {
             if (s.key === "site_name") setSiteName(s.value);
             if (s.key === "support_email") setSupportEmail(s.value);
-            if (s.key === "points_conversion_rate") setConversionRate(s.value);
+            if (s.key === "conversion_rate" || s.key === "points_conversion_rate") setConversionRate(s.value);
             if (s.key === "min_withdrawal_points") setMinWithdrawal(s.value);
-            if (s.key === "referral_percentage") setReferralPercent(s.value);
+            if (s.key === "referral_reward_percent" || s.key === "referral_percentage") setReferralPercent(s.value);
             if (s.key === "leaderboard_enabled") setLeaderboardEnabled(s.value === "true");
             if (s.key === "maintenance_mode") setMaintenanceMode(s.value === "true");
           });
         }
       })
-      .catch(() => {})
+      .catch(() => {
+        toast.error("Failed to load settings from server, showing defaults");
+      })
       .finally(() => setIsLoading(false));
   }, []);
 
@@ -61,46 +77,83 @@ export default function AdminSettingsPage() {
 
     if (Object.keys(errors).length > 0) {
       setFieldErrors(errors);
+      toast.error("Please resolve validation errors before saving");
       return;
     }
 
     setFieldErrors({});
     setIsSaving(true);
+
+    const payload = {
+      site_name: siteName.trim(),
+      support_email: supportEmail.trim(),
+      conversion_rate: conversionRate.trim(),
+      points_conversion_rate: conversionRate.trim(),
+      min_withdrawal_points: minWithdrawal.trim(),
+      referral_reward_percent: referralPercent.trim(),
+      referral_percentage: referralPercent.trim(),
+      leaderboard_enabled: String(leaderboardEnabled),
+      maintenance_mode: String(maintenanceMode),
+    };
+
     try {
-      await Promise.all([
-        apiClient.put("/admin/settings/site_name", { value: siteName }),
-        apiClient.put("/admin/settings/support_email", { value: supportEmail }),
-        apiClient.put("/admin/settings/points_conversion_rate", { value: conversionRate }),
-        apiClient.put("/admin/settings/min_withdrawal_points", { value: minWithdrawal }),
-        apiClient.put("/admin/settings/referral_percentage", { value: referralPercent }),
-        apiClient.put("/admin/settings/leaderboard_enabled", { value: String(leaderboardEnabled) }),
-        apiClient.put("/admin/settings/maintenance_mode", { value: String(maintenanceMode) }),
-      ]);
+      // Send batch update
+      await apiClient.put("/admin/settings", payload);
       setSaved(true);
-      setTimeout(() => setSaved(false), 3000);
+      toast.success("Platform settings successfully saved and applied in real-time!");
+      setTimeout(() => setSaved(false), 4000);
     } catch (err: any) {
-      alert(err.response?.data?.message || "Failed to save settings");
+      // Fallback to individual updates if batch is unsupported
+      try {
+        await Promise.all(
+          Object.entries(payload).map(([k, v]) =>
+            apiClient.put(`/admin/settings/${k}`, { value: v }),
+          ),
+        );
+        setSaved(true);
+        toast.success("Platform settings updated successfully!");
+        setTimeout(() => setSaved(false), 4000);
+      } catch (innerErr: any) {
+        toast.error(innerErr.response?.data?.message || "Failed to save settings");
+      }
     } finally {
       setIsSaving(false);
     }
   };
 
+  const rateNum = parseInt(conversionRate, 10) || 1000;
+  const minWNum = parseInt(minWithdrawal, 10) || 100;
+  const minCashValue = (minWNum / rateNum).toFixed(2);
+
   return (
     <div className="max-w-4xl mx-auto space-y-6">
-      <div>
-        <h1 className="text-2xl sm:text-3xl font-black tracking-tight text-white flex items-center gap-2.5">
-          <Settings className="h-7 w-7 text-amber-500" /> Platform Configuration
-        </h1>
-        <p className="text-xs sm:text-sm text-slate-400 mt-0.5">
-          Global business rules stored in database. Changes apply platform-wide in real-time.
-        </p>
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div>
+          <h1 className="text-2xl sm:text-3xl font-black tracking-tight text-white flex items-center gap-2.5">
+            <Settings className="h-7 w-7 text-amber-500" /> Platform Configuration
+          </h1>
+          <p className="text-xs sm:text-sm text-slate-400 mt-0.5">
+            Global business rules stored in database. Changes apply platform-wide in real-time.
+          </p>
+        </div>
+
+        {maintenanceMode && (
+          <Badge variant="destructive" className="flex items-center gap-1.5 self-start sm:self-auto py-1 px-3">
+            <AlertTriangle className="h-3.5 w-3.5" /> Maintenance Mode Active
+          </Badge>
+        )}
       </div>
 
       <form onSubmit={handleSave} noValidate className="space-y-6">
         {/* ─── General Settings ────────────────────────────────────── */}
-        <Card className="bg-[#12141d] border-slate-800 text-slate-100">
+        <Card className="bg-[#12141d] border-slate-800 text-slate-100 shadow-xl">
           <CardHeader>
-            <CardTitle className="text-sm font-bold text-white">General Platform Settings</CardTitle>
+            <CardTitle className="text-sm font-bold text-white flex items-center gap-2">
+              <Globe className="h-4 w-4 text-primary" /> General Platform Identity
+            </CardTitle>
+            <CardDescription className="text-xs text-slate-400">
+              Platform public brand name and official communication address
+            </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4 text-xs">
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -110,6 +163,7 @@ export default function AdminSettingsPage() {
                   value={siteName}
                   onChange={(e) => setSiteName(e.target.value)}
                   className="bg-slate-900 border-slate-800 text-xs h-9 text-slate-200"
+                  placeholder="Cash Dash"
                 />
               </div>
               <div className="space-y-1.5">
@@ -123,6 +177,7 @@ export default function AdminSettingsPage() {
                     if (fieldErrors.supportEmail) setFieldErrors((p) => ({ ...p, supportEmail: "" }));
                   }}
                   className="bg-slate-900 border-slate-800 text-xs h-9 text-slate-200"
+                  placeholder="support@cashdash.com"
                 />
                 <FieldError message={fieldErrors.supportEmail} />
               </div>
@@ -131,19 +186,22 @@ export default function AdminSettingsPage() {
         </Card>
 
         {/* ─── Earning & Financial Rules ───────────────────────────── */}
-        <Card className="bg-[#12141d] border-slate-800 text-slate-100">
+        <Card className="bg-[#12141d] border-slate-800 text-slate-100 shadow-xl">
           <CardHeader>
             <CardTitle className="text-sm font-bold text-white flex items-center gap-2">
               <DollarSign className="h-4 w-4 text-emerald-400" /> Earning & Points Conversion Rules
             </CardTitle>
             <CardDescription className="text-xs text-slate-400">
-              Crucial: Controls point value across all wallets and cashout options
+              Crucial: Controls point values across all wallets, payout calculation, and minimum cashout thresholds
             </CardDescription>
           </CardHeader>
-          <CardContent className="space-y-4 text-xs">
+          <CardContent className="space-y-5 text-xs">
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
               <div className="space-y-1.5">
-                <Label className="text-xs font-semibold text-slate-200">Points per $1.00 USD</Label>
+                <Label className="text-xs font-semibold text-slate-200 flex items-center justify-between">
+                  <span>Points per $1.00 USD</span>
+                  <Coins className="h-3.5 w-3.5 text-accent" />
+                </Label>
                 <Input
                   type="number"
                   hasError={!!fieldErrors.conversionRate}
@@ -155,7 +213,9 @@ export default function AdminSettingsPage() {
                   className="bg-slate-900 border-slate-800 text-xs h-9 font-mono text-slate-200"
                 />
                 <FieldError message={fieldErrors.conversionRate} />
-                <span className="text-[10px] text-slate-400">Default: 10,000 points = $1.00</span>
+                <span className="text-[10px] text-emerald-400 font-mono block">
+                  {rateNum.toLocaleString()} pts = $1.00 USD
+                </span>
               </div>
 
               <div className="space-y-1.5">
@@ -171,7 +231,9 @@ export default function AdminSettingsPage() {
                   className="bg-slate-900 border-slate-800 text-xs h-9 font-mono text-slate-200"
                 />
                 <FieldError message={fieldErrors.minWithdrawal} />
-                <span className="text-[10px] text-slate-400">5,000 pts = $0.50</span>
+                <span className="text-[10px] text-amber-400 font-mono block">
+                  {minWNum.toLocaleString()} pts ≈ ${minCashValue} USD
+                </span>
               </div>
 
               <div className="space-y-1.5">
@@ -182,35 +244,64 @@ export default function AdminSettingsPage() {
                   onChange={(e) => setReferralPercent(e.target.value)}
                   className="bg-slate-900 border-slate-800 text-xs h-9 font-mono text-slate-200"
                 />
-                <span className="text-[10px] text-slate-400">Paid from platform margin</span>
+                <span className="text-[10px] text-slate-400 block">Calculated on referred user's cashout</span>
               </div>
+            </div>
+
+            {/* Live Formula Preview Box */}
+            <div className="p-3.5 rounded-xl bg-slate-900/80 border border-slate-800/80 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-2 text-[11px]">
+              <span className="text-slate-400">Live Formula Calculation:</span>
+              <span className="font-mono text-emerald-400 font-bold">
+                1 Point = ${(1 / rateNum).toFixed(6)} USD | Min Cashout = {minWNum.toLocaleString()} Points (${minCashValue})
+              </span>
             </div>
           </CardContent>
         </Card>
 
         {/* ─── Security & Public Features ──────────────────────────── */}
-        <Card className="bg-[#12141d] border-slate-800 text-slate-100">
+        <Card className="bg-[#12141d] border-slate-800 text-slate-100 shadow-xl">
           <CardHeader>
             <CardTitle className="text-sm font-bold text-white flex items-center gap-2">
-              <Shield className="h-4 w-4 text-amber-500" /> Security & Public Visibility
+              <Shield className="h-4 w-4 text-amber-500" /> Operational Modes & Public Visibility
             </CardTitle>
+            <CardDescription className="text-xs text-slate-400">
+              Live switches that immediately govern user visibility and transaction processing
+            </CardDescription>
           </CardHeader>
           <CardContent className="space-y-4 text-xs">
-            <div className="flex items-center justify-between p-3 rounded-xl bg-slate-900 border border-slate-800">
-              <div>
-                <span className="font-bold text-white block">Public Leaderboard</span>
-                <span className="text-slate-400 text-[11px]">
-                  Enable the Top 10 Most Withdrawn rankings for all members
+            <div className="flex items-center justify-between p-3.5 rounded-xl bg-slate-900 border border-slate-800">
+              <div className="space-y-0.5">
+                <div className="flex items-center gap-2">
+                  <Trophy className="h-4 w-4 text-amber-500" />
+                  <span className="font-bold text-white">Public Leaderboard</span>
+                  {leaderboardEnabled ? (
+                    <Badge variant="outline" className="text-[10px] text-emerald-400 border-emerald-500/30">Active</Badge>
+                  ) : (
+                    <Badge variant="outline" className="text-[10px] text-slate-400 border-slate-700">Disabled</Badge>
+                  )}
+                </div>
+                <span className="text-slate-400 text-[11px] block">
+                  When enabled, shows the Top 10 users by total withdrawals. When disabled, leaderboard content is hidden.
                 </span>
               </div>
               <Switch checked={leaderboardEnabled} onCheckedChange={setLeaderboardEnabled} />
             </div>
 
-            <div className="flex items-center justify-between p-3 rounded-xl bg-slate-900 border border-slate-800">
-              <div>
-                <span className="font-bold text-white block">Maintenance Mode</span>
-                <span className="text-slate-400 text-[11px]">
-                  Pause offer starts and withdrawals during server maintenance
+            <div className={`flex items-center justify-between p-3.5 rounded-xl border transition-colors ${
+              maintenanceMode ? "bg-red-500/10 border-red-500/30" : "bg-slate-900 border-slate-800"
+            }`}>
+              <div className="space-y-0.5">
+                <div className="flex items-center gap-2">
+                  <AlertTriangle className={`h-4 w-4 ${maintenanceMode ? "text-red-400" : "text-slate-400"}`} />
+                  <span className="font-bold text-white">Maintenance Mode</span>
+                  {maintenanceMode ? (
+                    <Badge variant="destructive" className="text-[10px]">PAUSED</Badge>
+                  ) : (
+                    <Badge variant="outline" className="text-[10px] text-emerald-400 border-emerald-500/30">Operational</Badge>
+                  )}
+                </div>
+                <span className="text-slate-400 text-[11px] block">
+                  When enabled, temporarily pauses all new withdrawals and offer starts with a clear system maintenance alert.
                 </span>
               </div>
               <Switch checked={maintenanceMode} onCheckedChange={setMaintenanceMode} />
@@ -220,15 +311,15 @@ export default function AdminSettingsPage() {
 
         <div className="flex justify-between items-center pt-2">
           {saved && (
-            <span className="text-emerald-400 font-bold flex items-center gap-1.5 text-xs">
-              <CheckCircle2 className="h-4 w-4" /> System settings updated in database!
+            <span className="text-emerald-400 font-bold flex items-center gap-1.5 text-xs animate-fade-in">
+              <CheckCircle2 className="h-4 w-4" /> System settings updated in database & active immediately!
             </span>
           )}
           <Button
             type="submit"
             disabled={isSaving || isLoading}
             size="lg"
-            className="ml-auto bg-amber-500 hover:bg-amber-600 text-slate-950 font-bold"
+            className="ml-auto bg-amber-500 hover:bg-amber-600 text-slate-950 font-bold shadow-lg shadow-amber-500/20"
           >
             {isSaving ? <Loader2 className="h-4 w-4 mr-1.5 animate-spin" /> : <Save className="h-4 w-4 mr-1.5" />}
             Save Configuration

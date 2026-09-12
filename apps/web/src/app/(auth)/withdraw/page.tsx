@@ -28,7 +28,9 @@ import {
   Clock,
   History,
   CreditCard,
+  AlertTriangle,
 } from "lucide-react";
+import { usePlatformSettings } from "@/hooks/use-platform-settings";
 import { formatPoints, formatCash } from "@/lib/formatters";
 import apiClient from "@/lib/api-client";
 import { VodafoneCashLogo } from "@/components/illustrations/vodafone-cash-logo";
@@ -140,12 +142,15 @@ export default function WithdrawPage() {
       });
   }, []);
 
+  const { settings } = usePlatformSettings();
+  const conversionRate = (wallet as any)?.conversionRate || settings?.conversionRate || 1000;
   const availablePoints = wallet?.availablePoints || 0;
   const points = parseInt(pointsInput, 10) || 0;
   const feePercent = selectedMethod?.feePercent || 0;
   const feePoints = Math.round((points * feePercent) / 100);
   const netPoints = Math.max(0, points - feePoints);
-  const cashValue = netPoints / 1000;
+  const cashValue = netPoints / conversionRate;
+
 
   const handleSelectMethod = (m: WithdrawalMethodItem) => {
     setSelectedMethod(m);
@@ -174,15 +179,22 @@ export default function WithdrawPage() {
 
     if (!selectedMethod) return;
 
+    if (settings?.maintenanceMode) {
+      setError("Withdrawals are temporarily paused for platform maintenance.");
+      return;
+    }
+
     const errors: Record<string, string> = {};
+    const effectiveMin = Math.max(selectedMethod.minimumPoints, settings?.minWithdrawalPoints || 0);
 
     if (!pointsInput || isNaN(points) || points <= 0) {
       errors.points = t.withdraw.enterAmount;
     } else if (points > availablePoints) {
       errors.points = `${t.withdraw.insufficientBalance} (${formatPoints(availablePoints)})`;
-    } else if (points < selectedMethod.minimumPoints) {
-      errors.points = `${t.withdraw.belowMinimum} (${formatPoints(selectedMethod.minimumPoints)})`;
+    } else if (points < effectiveMin) {
+      errors.points = `${t.withdraw.belowMinimum} (${formatPoints(effectiveMin)})`;
     }
+
 
     // Validate required fields
     if (selectedMethod.requirements && Array.isArray(selectedMethod.requirements)) {
@@ -267,9 +279,20 @@ export default function WithdrawPage() {
         </div>
 
         <div className="text-sm font-bold text-emerald-500">
-          ≈ {formatCash(availablePoints / 1000)} USD
+          ≈ {formatCash(availablePoints / conversionRate)} USD
         </div>
       </div>
+
+      {/* ─── Maintenance Mode Warning ────────────────────────────── */}
+      {settings?.maintenanceMode && (
+        <div className="p-4 rounded-2xl bg-amber-500/10 border border-amber-500/30 text-amber-500 flex items-center gap-3">
+          <AlertTriangle className="h-5 w-5 shrink-0" />
+          <span className="text-xs font-semibold">
+            System Notice: Withdrawals are temporarily paused while our team performs scheduled platform maintenance. Submissions will be re-enabled shortly.
+          </span>
+        </div>
+      )}
+
 
       {/* ─── Step 1: Select Withdrawal Method ─────────────────────── */}
       <div className="space-y-4">
@@ -550,7 +573,7 @@ export default function WithdrawPage() {
             </Button>
             <Button
               onClick={handleFinalSubmit}
-              disabled={isSubmitting}
+              disabled={isSubmitting || !!settings?.maintenanceMode}
               className="font-bold"
             >
               {isSubmitting ? (
