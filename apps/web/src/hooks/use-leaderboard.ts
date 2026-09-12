@@ -28,12 +28,13 @@ export function useLeaderboard() {
         const res = await apiGet<any>("/leaderboard/live/withdrawers");
         const list = res?.data || (Array.isArray(res) ? res : []);
         return Array.isArray(list) ? list : [];
-      } catch {
+      } catch (err) {
+        console.error("Leaderboard withdrawers fetch error:", err);
         return [];
       }
     },
-    staleTime: 10 * 1000,
-    refetchInterval: 15 * 1000,
+    staleTime: 5 * 1000,
+    refetchInterval: 10 * 1000,
   });
 
   const earnersQuery = useQuery({
@@ -43,12 +44,13 @@ export function useLeaderboard() {
         const res = await apiGet<any>("/leaderboard/live/earners");
         const list = res?.data || (Array.isArray(res) ? res : []);
         return Array.isArray(list) ? list : [];
-      } catch {
+      } catch (err) {
+        console.error("Leaderboard earners fetch error:", err);
         return [];
       }
     },
-    staleTime: 10 * 1000,
-    refetchInterval: 15 * 1000,
+    staleTime: 5 * 1000,
+    refetchInterval: 10 * 1000,
   });
 
   return {

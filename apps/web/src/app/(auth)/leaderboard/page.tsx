@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -172,6 +172,12 @@ export default function LeaderboardPage() {
     await refetch();
     setTimeout(() => setIsRefreshing(false), 500);
   };
+
+  useEffect(() => {
+    if (!isLoading && withdrawers.length === 0 && earners.length > 0 && activeTab === "WITHDRAWALS") {
+      setActiveTab("EARNERS");
+    }
+  }, [isLoading, withdrawers.length, earners.length, activeTab]);
 
   const isLeaderboardDisabled = settings?.leaderboardEnabled === false;
 

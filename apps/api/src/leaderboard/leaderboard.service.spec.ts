@@ -122,27 +122,27 @@ describe('LeaderboardService', () => {
 
   describe('getLiveTopWithdrawers', () => {
     it('should return live top withdrawers with masked wallet destination', async () => {
-      mockPrisma.wallet = {
+      mockPrisma.user = {
         findMany: vi.fn().mockResolvedValue([
           {
-            userId: 'user-1',
-            totalWithdrawn: 50000,
-            totalEarned: 80000,
-            availablePoints: 30000,
-            user: {
-              id: 'user-1',
-              username: 'super_earner',
-              profile: { avatarUrl: null, country: 'EG', isLeaderboardVisible: true },
-              withdrawalRequests: [
-                {
-                  points: 50000,
-                  destination: { walletNumber: '010123456789' },
-                  status: 'PAID',
-                  createdAt: new Date(),
-                  method: { name: 'Vodafone Cash', slug: 'vodafone-cash' },
-                },
-              ],
+            id: 'user-1',
+            username: 'super_earner',
+            createdAt: new Date(),
+            profile: { avatarUrl: null, country: 'EG', isLeaderboardVisible: true },
+            wallet: {
+              totalWithdrawn: 50000,
+              totalEarned: 80000,
+              availablePoints: 30000,
             },
+            withdrawalRequests: [
+              {
+                points: 50000,
+                destination: { walletNumber: '010123456789' },
+                status: 'PAID',
+                createdAt: new Date(),
+                method: { name: 'Vodafone Cash', slug: 'vodafone-cash' },
+              },
+            ],
           },
         ]),
       };
@@ -158,19 +158,19 @@ describe('LeaderboardService', () => {
 
   describe('getLiveTopEarners', () => {
     it('should fallback to availablePoints when totalEarned is zero', async () => {
-      mockPrisma.wallet = {
+      mockPrisma.user = {
         findMany: vi.fn().mockResolvedValue([
           {
-            userId: 'user-2',
-            totalWithdrawn: 0,
-            totalEarned: 0,
-            availablePoints: 15000,
-            user: {
-              id: 'user-2',
-              username: 'new_earner',
-              profile: { avatarUrl: null, country: 'US', isLeaderboardVisible: true },
-              withdrawalRequests: [],
+            id: 'user-2',
+            username: 'new_earner',
+            createdAt: new Date(),
+            profile: { avatarUrl: null, country: 'US', isLeaderboardVisible: true },
+            wallet: {
+              totalWithdrawn: 0,
+              totalEarned: 0,
+              availablePoints: 15000,
             },
+            withdrawalRequests: [],
           },
         ]),
       };
