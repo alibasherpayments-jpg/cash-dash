@@ -207,12 +207,13 @@ export class OffersService {
   }
 
   async getFeaturedOffers(limit = 6) {
+    const safeLimit = !limit || isNaN(Number(limit)) || Number(limit) < 1 ? 6 : Math.min(Math.floor(Number(limit)), 50);
     return this.prisma.offer.findMany({
       where: {
         status: { in: [OfferStatus.FEATURED, OfferStatus.ACTIVE] },
         isFeatured: true,
       },
-      take: limit,
+      take: safeLimit,
       orderBy: { rewardPoints: 'desc' },
       include: { provider: { select: { name: true, logoUrl: true } } },
     });

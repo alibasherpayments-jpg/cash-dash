@@ -10,6 +10,16 @@ import { NotificationType } from '@prisma/client';
 export class NotificationsController {
   constructor(private notificationsService: NotificationsService) {}
 
+  private parsePage(page?: unknown): number {
+    const num = Number(page);
+    return typeof num === 'number' && !isNaN(num) && num >= 1 ? Math.floor(num) : 1;
+  }
+
+  private parseLimit(limit?: unknown, defaultLimit = 20): number {
+    const num = Number(limit);
+    return typeof num === 'number' && !isNaN(num) && num >= 1 ? Math.min(Math.floor(num), 100) : defaultLimit;
+  }
+
   @Get()
   @ApiOperation({ summary: 'Get user notifications (paginated)' })
   async getNotifications(
@@ -18,7 +28,9 @@ export class NotificationsController {
     @Query('limit') limit?: number,
     @Query('unread') unread?: boolean,
   ) {
-    const result = await this.notificationsService.getUserNotifications(userId, page, limit, unread);
+    const safePage = this.parsePage(page);
+    const safeLimit = this.parseLimit(limit, 20);
+    const result = await this.notificationsService.getUserNotifications(userId, safePage, safeLimit, unread);
     return { success: true, ...result };
   }
 

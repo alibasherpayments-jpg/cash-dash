@@ -44,6 +44,16 @@ import {
 export class AdminController {
   constructor(private adminService: AdminService) {}
 
+  private parsePage(page?: unknown): number {
+    const num = Number(page);
+    return typeof num === 'number' && !isNaN(num) && num >= 1 ? Math.floor(num) : 1;
+  }
+
+  private parseLimit(limit?: unknown, defaultLimit = 20): number {
+    const num = Number(limit);
+    return typeof num === 'number' && !isNaN(num) && num >= 1 ? Math.min(Math.floor(num), 100) : defaultLimit;
+  }
+
   // ─── Dashboard ─────────────────────────────────────────────────────────────
 
   @Get('stats')
@@ -64,7 +74,9 @@ export class AdminController {
     @Query('status') status?: string,
     @Query('role') role?: string,
   ) {
-    const result = await this.adminService.listUsers({ page, limit, search, status, role });
+    const safePage = this.parsePage(page);
+    const safeLimit = this.parseLimit(limit, 20);
+    const result = await this.adminService.listUsers({ page: safePage, limit: safeLimit, search, status, role });
     return { success: true, ...result };
   }
 
@@ -135,7 +147,9 @@ export class AdminController {
     @Query('status') status?: OfferStatus,
     @Query('category') category?: OfferCategory,
   ) {
-    const result = await this.adminService.listOffers({ page, limit, search, status, category });
+    const safePage = this.parsePage(page);
+    const safeLimit = this.parseLimit(limit, 50);
+    const result = await this.adminService.listOffers({ page: safePage, limit: safeLimit, search, status, category });
     return { success: true, ...result };
   }
 
@@ -234,7 +248,9 @@ export class AdminController {
     @Query('status') status?: string,
     @Query('userId') userId?: string,
   ) {
-    const result = await this.adminService.listWithdrawals({ page, limit, status, userId });
+    const safePage = this.parsePage(page);
+    const safeLimit = this.parseLimit(limit, 20);
+    const result = await this.adminService.listWithdrawals({ page: safePage, limit: safeLimit, status, userId });
     return { success: true, ...result };
   }
 
@@ -371,7 +387,9 @@ export class AdminController {
     @Query('action') action?: AuditAction,
     @Query('entityType') entityType?: string,
   ) {
-    const result = await this.adminService.getAuditLogs({ page, limit, action, entityType });
+    const safePage = this.parsePage(page);
+    const safeLimit = this.parseLimit(limit, 50);
+    const result = await this.adminService.getAuditLogs({ page: safePage, limit: safeLimit, action, entityType });
     return { success: true, ...result };
   }
 }

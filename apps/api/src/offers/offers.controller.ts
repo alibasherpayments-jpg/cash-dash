@@ -23,7 +23,8 @@ export class OffersController {
   @Get('featured')
   @ApiOperation({ summary: 'Get featured offers' })
   async getFeatured(@Query('limit') limit?: number) {
-    const data = await this.offersService.getFeaturedOffers(limit);
+    const safeLimit = !limit || isNaN(Number(limit)) || Number(limit) < 1 ? 6 : Math.min(Math.floor(Number(limit)), 50);
+    const data = await this.offersService.getFeaturedOffers(safeLimit);
     return { success: true, data };
   }
 

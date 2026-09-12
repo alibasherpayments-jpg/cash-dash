@@ -27,6 +27,16 @@ export class SupportController {
     return { success: true, data };
   }
 
+  private parsePage(page?: unknown): number {
+    const num = Number(page);
+    return typeof num === 'number' && !isNaN(num) && num >= 1 ? Math.floor(num) : 1;
+  }
+
+  private parseLimit(limit?: unknown, defaultLimit = 20): number {
+    const num = Number(limit);
+    return typeof num === 'number' && !isNaN(num) && num >= 1 ? Math.min(Math.floor(num), 100) : defaultLimit;
+  }
+
   @Get('tickets')
   @ApiOperation({ summary: 'List support tickets (own for users, all for staff)' })
   async listTickets(
@@ -35,7 +45,9 @@ export class SupportController {
     @Query('limit') limit?: number,
     @Query('status') status?: TicketStatus,
   ) {
-    const result = await this.supportService.listTickets(user.id, user.role, page, limit, status);
+    const safePage = this.parsePage(page);
+    const safeLimit = this.parseLimit(limit, 20);
+    const result = await this.supportService.listTickets(user.id, user.role, safePage, safeLimit, status);
     return { success: true, ...result };
   }
 

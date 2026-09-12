@@ -1,6 +1,7 @@
 import { Injectable, Logger } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { AuditAction, Prisma } from '@prisma/client';
+import { getPaginationParams, paginate } from '../common/dto/pagination.dto';
 
 interface LogOptions {
   adminId: string;
@@ -40,8 +41,7 @@ export class AuditService {
   }
 
   async listLogs(page = 1, limit = 50, filters?: { adminId?: string; action?: AuditAction; entityType?: string }) {
-    const take = Math.min(limit, 100);
-    const skip = (page - 1) * take;
+    const { take, skip } = getPaginationParams(page, limit || 50);
 
     const where: Prisma.AuditLogWhereInput = {
       ...(filters?.adminId && { adminId: filters.adminId }),
@@ -62,9 +62,6 @@ export class AuditService {
       this.prisma.auditLog.count({ where }),
     ]);
 
-    return {
-      data: logs,
-      meta: { total, page, limit: take, totalPages: Math.ceil(total / take) },
-    };
+    return paginate(logs, total, page, take);
   }
 }
