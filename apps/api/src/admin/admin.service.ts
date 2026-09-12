@@ -552,7 +552,82 @@ export class AdminService {
   }
 
   async getWithdrawal(id: string) {
-    return this.withdrawalsService.getWithdrawalById(id);
+    const withdrawal = await this.prisma.withdrawalRequest.findUnique({
+      where: { id },
+      include: {
+        method: true,
+        statusHistory: { orderBy: { createdAt: 'asc' } },
+        user: {
+          select: {
+            id: true,
+            username: true,
+            email: true,
+            role: true,
+            status: true,
+            profile: { select: { country: true, avatarUrl: true } },
+            createdAt: true,
+            riskAssessment: true,
+          },
+        },
+      },
+    });
+
+    if (!withdrawal) throw new NotFoundException('Withdrawal not found');
+
+    const [wallet, transactions, completions] = await Promise.all([
+      this.prisma.wallet.findUnique({
+        where: { userId: withdrawal.userId },
+      }),
+      this.prisma.ledgerTransaction.findMany({
+        where: { userId: withdrawal.userId },
+        orderBy: { createdAt: 'desc' },
+        take: 50,
+      }),
+      this.prisma.offerCompletion.findMany({
+        where: { userId: withdrawal.userId },
+        include: {
+          offer: {
+            select: {
+              title: true,
+              category: true,
+              provider: { select: { name: true, slug: true } },
+            },
+          },
+        },
+        orderBy: { createdAt: 'desc' },
+        take: 30,
+      }),
+    ]);
+
+    const breakdown = {
+      totalEarned: wallet?.totalEarned ?? 0,
+      availablePoints: wallet?.availablePoints ?? 0,
+      totalWithdrawn: wallet?.totalWithdrawn ?? 0,
+      pendingPoints: wallet?.pendingPoints ?? 0,
+      fromOffers: 0,
+      fromSurveys: 0,
+      fromReferrals: 0,
+      fromBonuses: 0,
+      fromAdjustments: 0,
+    };
+
+    for (const tx of transactions) {
+      if (tx.direction === TransactionDirection.CREDIT) {
+        if (tx.type === TransactionType.OFFER_REWARD) breakdown.fromOffers += tx.amount;
+        else if (tx.type === TransactionType.SURVEY_REWARD) breakdown.fromSurveys += tx.amount;
+        else if (tx.type === TransactionType.REFERRAL_REWARD) breakdown.fromReferrals += tx.amount;
+        else if (tx.type === TransactionType.DAILY_BONUS || tx.type === TransactionType.PROMOTIONAL_BONUS) breakdown.fromBonuses += tx.amount;
+        else if (tx.type === TransactionType.ADMIN_ADJUSTMENT) breakdown.fromAdjustments += tx.amount;
+      }
+    }
+
+    return {
+      ...withdrawal,
+      wallet,
+      transactions,
+      completions,
+      pointsBreakdown: breakdown,
+    };
   }
 
   async updateWithdrawalStatus(id: string, dto: UpdateWithdrawalStatusDto, adminId: string, ipAddress?: string) {

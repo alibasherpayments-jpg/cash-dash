@@ -28,6 +28,20 @@ export interface ThemeOption {
 
 export const THEMES: ThemeOption[] = [
   {
+    id: "bumboy",
+    nameEn: "BumBoy's Special",
+    nameAr: "سيم BumBoy الخاص 👑",
+    type: "dark",
+    descriptionEn: "Cosmic obsidian void with iridescent hyper-violet & aurora cyan glow",
+    descriptionAr: "فراغ كوني ساحر بتوهج أرجواني هولوجرافي وأورورا سيان أسطوري",
+    bgHex: "#05060b",
+    cardHex: "#0b0c15",
+    primaryHex: "#a855f7",
+    accentHex: "#00f5d4",
+    previewClass: "bg-[#05060b] border-violet-500/50 shadow-lg shadow-violet-500/30 ring-1 ring-cyan-400/40",
+    dotClass: "bg-gradient-to-r from-violet-500 via-fuchsia-500 to-cyan-400",
+  },
+  {
     id: "black",
     nameEn: "Obsidian Black",
     nameAr: "الأسود الأوبسيديان",
@@ -432,6 +446,11 @@ export function ThemeSwitcher({ className = "" }: { className?: string }) {
                   <div className="min-w-0">
                     <div className="flex items-center gap-1.5">
                       <p className="font-semibold text-foreground truncate">{title}</p>
+                      {t.id === "bumboy" && (
+                        <span className="text-[9px] px-1.5 py-0.2 rounded font-black uppercase tracking-wider bg-gradient-to-r from-violet-600 via-fuchsia-600 to-cyan-500 text-white shadow-sm">
+                          👑 VIP
+                        </span>
+                      )}
                       <span
                         className={`text-[9px] px-1.5 py-0.2 rounded font-bold uppercase tracking-wider ${
                           t.type === "dark"

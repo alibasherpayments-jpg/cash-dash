@@ -293,4 +293,112 @@ export interface TranslationSchema {
     resolved: string;
     closed: string;
   };
+
+  landing: {
+    hero: {
+      badge: string;
+      titleMain: string;
+      titleGradient: string;
+      subtitle: string;
+      startEarningBtn: string;
+      exploreOffersBtn: string;
+      instantBadge: string;
+      noCardRequired: string;
+      ratingLabel: string;
+      ratingScore: string;
+    };
+    stats: {
+      activeUsers: string;
+      activeUsersLabel: string;
+      totalPaid: string;
+      totalPaidLabel: string;
+      avgPayoutTime: string;
+      avgPayoutTimeLabel: string;
+      trustedPartners: string;
+      trustedPartnersLabel: string;
+    };
+    howItWorks: {
+      tag: string;
+      title: string;
+      subtitle: string;
+      step1Title: string;
+      step1Desc: string;
+      step2Title: string;
+      step2Desc: string;
+      step3Title: string;
+      step3Desc: string;
+    };
+    featured: {
+      tag: string;
+      title: string;
+      subtitle: string;
+      earnUpTo: string;
+      startOfferBtn: string;
+      viewAllOffers: string;
+    };
+    payouts: {
+      tag: string;
+      title: string;
+      subtitle: string;
+      instantAlert: string;
+      minimumNotice: string;
+      methods: {
+        vodafone: string;
+        binance: string;
+        instapay: string;
+        paypal: string;
+        usdt: string;
+      };
+    };
+    security: {
+      tag: string;
+      title: string;
+      subtitle: string;
+      feature1Title: string;
+      feature1Desc: string;
+      feature2Title: string;
+      feature2Desc: string;
+      feature3Title: string;
+      feature3Desc: string;
+    };
+    faq: {
+      tag: string;
+      title: string;
+      subtitle: string;
+      q1: string;
+      a1: string;
+      q2: string;
+      a2: string;
+      q3: string;
+      a3: string;
+      q4: string;
+      a4: string;
+      q5: string;
+      a5: string;
+    };
+    cta: {
+      title: string;
+      subtitle: string;
+      button: string;
+      note: string;
+    };
+  };
+
+  footer: {
+    tagline: string;
+    product: string;
+    offers: string;
+    rewards: string;
+    leaderboard: string;
+    company: string;
+    about: string;
+    contact: string;
+    support: string;
+    helpCenter: string;
+    faq: string;
+    legal: string;
+    terms: string;
+    privacy: string;
+    rights: string;
+  };
 }

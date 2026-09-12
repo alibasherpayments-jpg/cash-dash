@@ -32,6 +32,8 @@ const notificationIcons: Record<NotificationType, React.ReactNode> = {
   ACHIEVEMENT_UNLOCKED: <Trophy className="h-4 w-4 text-amber-400" />,
 };
 
+import { localizeNotification } from "@/lib/localize-notification";
+
 interface NotificationItemProps {
   notification: NotificationPublic;
   onClick?: (id: string) => void;
@@ -40,6 +42,7 @@ interface NotificationItemProps {
 export function NotificationItem({ notification, onClick }: NotificationItemProps) {
   const { locale } = useTranslation();
   const icon = notificationIcons[notification.type] ?? <Bell className="h-4 w-4" />;
+  const { title, message } = localizeNotification(notification, locale);
 
   return (
     <button
@@ -59,10 +62,10 @@ export function NotificationItem({ notification, onClick }: NotificationItemProp
       </div>
       <div className="min-w-0 flex-1">
         <div className="flex items-start justify-between gap-2">
-          <p className="text-sm font-semibold text-foreground">{notification.title}</p>
+          <p className="text-sm font-semibold text-foreground">{title}</p>
           {!notification.isRead && <span className="mt-1 h-2 w-2 shrink-0 rounded-full bg-primary" />}
         </div>
-        <p className="text-xs text-muted-foreground line-clamp-2 mt-0.5">{notification.message}</p>
+        <p className="text-xs text-muted-foreground line-clamp-2 mt-0.5">{message}</p>
         <p className="mt-1 text-[11px] text-muted-foreground/70 font-medium">
           {formatRelativeTime(notification.createdAt, locale)}
         </p>

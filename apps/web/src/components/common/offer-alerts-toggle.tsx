@@ -19,6 +19,7 @@ import { BellRing, BellOff, Volume2, VolumeX, Sparkles, ShieldCheck } from "luci
 import { toast } from "sonner";
 import { useNotifications } from "@/hooks/use-notifications";
 import { useTranslation } from "@/providers/i18n-provider";
+import { localizeNotification } from "@/lib/localize-notification";
 import apiClient from "@/lib/api-client";
 
 // Synthesizer Web Audio API pleasant two-tone chime (zero external assets needed)
@@ -29,19 +30,19 @@ export function playNotificationChime() {
     const ctx = new AudioCtx();
     const now = ctx.currentTime;
 
-    // Tone 1: C5 (523.25 Hz)
+    // First tone - 523.25 Hz (C5)
     const osc1 = ctx.createOscillator();
     const gain1 = ctx.createGain();
     osc1.type = "sine";
     osc1.frequency.setValueAtTime(523.25, now);
-    gain1.gain.setValueAtTime(0.15, now);
-    gain1.gain.exponentialRampToValueAtTime(0.0001, now + 0.35);
+    gain1.gain.setValueAtTime(0.18, now);
+    gain1.gain.exponentialRampToValueAtTime(0.0001, now + 0.45);
     osc1.connect(gain1);
     gain1.connect(ctx.destination);
     osc1.start(now);
-    osc1.stop(now + 0.35);
+    osc1.stop(now + 0.45);
 
-    // Tone 2: G5 (783.99 Hz)
+    // Second chime chord - 783.99 Hz (G5) for rewarding sparkle
     const osc2 = ctx.createOscillator();
     const gain2 = ctx.createGain();
     osc2.type = "sine";
@@ -58,7 +59,7 @@ export function playNotificationChime() {
 }
 
 export function OfferAlertsToggle() {
-  const { t } = useTranslation();
+  const { t, locale } = useTranslation();
   const [alertsEnabled, setAlertsEnabled] = useState<boolean>(true);
   const [soundEnabled, setSoundEnabled] = useState<boolean>(true);
   const [browserPerm, setBrowserPerm] = useState<NotificationPermission>("default");
@@ -159,8 +160,10 @@ export function OfferAlertsToggle() {
           playNotificationChime();
         }
 
-        toast.success(newest.title, {
-          description: newest.message,
+        const { title: locTitle, message: locMessage } = localizeNotification(newest, locale);
+
+        toast.success(locTitle, {
+          description: locMessage,
           duration: 9000,
           action: {
             label: t.common.wallet,
@@ -172,8 +175,8 @@ export function OfferAlertsToggle() {
 
         if (typeof window !== "undefined" && "Notification" in window && Notification.permission === "granted") {
           try {
-            new Notification(newest.title, {
-              body: newest.message,
+            new Notification(locTitle, {
+              body: locMessage,
               icon: "/icon-192.png",
               badge: "/icon-192.png",
             });
@@ -183,7 +186,7 @@ export function OfferAlertsToggle() {
         }
       }
     }
-  }, [notifications, alertsEnabled, soundEnabled, mounted, t.common.wallet]);
+  }, [notifications, alertsEnabled, soundEnabled, mounted, locale, t.common.wallet]);
 
   // Test notification button
   const handleTestAlert = async () => {

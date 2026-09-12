@@ -117,6 +117,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
         <ThemeProvider
           attribute="class"
           themes={[
+            "bumboy",
             "black",
             "mint",
             "aura",
