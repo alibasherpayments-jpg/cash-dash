@@ -116,8 +116,22 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
       <body className="min-h-screen bg-background font-sans antialiased transition-colors duration-200">
         <ThemeProvider
           attribute="class"
+          themes={[
+            "black",
+            "mint",
+            "aura",
+            "cyberpunk",
+            "amethyst",
+            "crimson",
+            "sunset",
+            "emerald",
+            "abyss",
+            "royale",
+            "rose",
+            "arctic",
+            "synthwave",
+          ]}
           defaultTheme="black"
-          themes={["black", "mint", "aura"]}
           enableSystem={false}
           disableTransitionOnChange
         >
