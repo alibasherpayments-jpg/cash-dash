@@ -204,6 +204,8 @@ export const de: TranslationSchema = {
     insufficientBalance: "Nicht genügend verfügbare Punkte für diese Auszahlung.",
     belowMinimum: "Der eingegebene Betrag liegt unter dem Mindestwert.",
     successToast: "Auszahlungsantrag erfolgreich eingereicht!",
+    max: "MAX",
+    allPoints: "Alle Punkte abheben",
   },
   withdrawHistory: {
     title: "Auszahlungs- & Transaktionsverlauf",

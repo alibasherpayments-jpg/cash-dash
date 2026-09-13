@@ -204,6 +204,8 @@ export const es: TranslationSchema = {
     insufficientBalance: "Puntos disponibles insuficientes para este retiro.",
     belowMinimum: "El monto ingresado es inferior al límite mínimo.",
     successToast: "¡Solicitud de retiro enviada con éxito!",
+    max: "MÁX",
+    allPoints: "Retirar todos los puntos",
   },
   withdrawHistory: {
     title: "Historial de retiros",

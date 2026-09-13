@@ -213,6 +213,8 @@ export interface TranslationSchema {
     insufficientBalance: string;
     belowMinimum: string;
     successToast: string;
+    max: string;
+    allPoints: string;
   };
   withdrawHistory: {
     title: string;

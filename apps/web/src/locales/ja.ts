@@ -204,6 +204,8 @@ export const ja: TranslationSchema = {
     insufficientBalance: "出金に必要なポイントが不足しています。",
     belowMinimum: "入力金額が最低出金額未満です。",
     successToast: "出金申請を受け付けました！まもなく処理されます。",
+    max: "全額",
+    allPoints: "全ポイントを引き出す",
   },
   withdrawHistory: {
     title: "出金履歴",

@@ -204,6 +204,8 @@ export const en: TranslationSchema = {
     insufficientBalance: "Insufficient available points for this cashout.",
     belowMinimum: "Entered amount is below the minimum threshold.",
     successToast: "Withdrawal request submitted successfully!",
+    max: "MAX",
+    allPoints: "Withdraw all points",
   },
   withdrawHistory: {
     title: "Withdrawal & Payout History",

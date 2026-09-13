@@ -204,6 +204,8 @@ export const ar: TranslationSchema = {
     insufficientBalance: "رصيدك من النقاط المتاحة لا يكفي لإتمام هذا السحب.",
     belowMinimum: "المبلغ المدخل أقل من الحد الأدنى المسموح به لهذه الوسيلة.",
     successToast: "تم إرسال طلب السحب بنجاح! سيتم مراجعته فوراً.",
+    max: "الكل",
+    allPoints: "سحب كامل الرصيد",
   },
   withdrawHistory: {
     title: "سجل عمليات السحب",

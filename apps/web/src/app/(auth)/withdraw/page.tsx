@@ -145,12 +145,23 @@ export default function WithdrawPage() {
   const { settings } = usePlatformSettings();
   const conversionRate = (wallet as any)?.conversionRate || settings?.conversionRate || 1000;
   const availablePoints = wallet?.availablePoints || 0;
-  const points = parseInt(pointsInput, 10) || 0;
+  const points = parseInt((pointsInput || "").toString().replace(/,/g, ""), 10) || 0;
   const feePercent = selectedMethod?.feePercent || 0;
-  const feePoints = Math.round((points * feePercent) / 100);
+  const feePoints = Math.floor((points * feePercent) / 100);
   const netPoints = Math.max(0, points - feePoints);
   const cashValue = netPoints / conversionRate;
 
+  const handleSetMaxPoints = () => {
+    if (availablePoints <= 0) return;
+    setPointsInput(availablePoints.toString());
+    if (fieldErrors.points) {
+      setFieldErrors((prev) => {
+        const next = { ...prev };
+        delete next.points;
+        return next;
+      });
+    }
+  };
 
   const handleSelectMethod = (m: WithdrawalMethodItem) => {
     setSelectedMethod(m);
@@ -400,28 +411,66 @@ export default function WithdrawPage() {
               {/* Amount input & Net Value with consistent alignment */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 items-start">
                 <div className="space-y-1.5">
-                  <Label htmlFor="points" className="text-xs font-semibold">{t.withdraw.pointsToWithdraw}</Label>
-                  <div className="relative">
-                    <Input
-                      id="points"
-                      type="number"
-                      min={selectedMethod.minimumPoints}
-                      max={availablePoints}
-                      step={100}
-                      hasError={!!fieldErrors.points}
-                      value={pointsInput}
-                      onChange={(e) => {
-                        setPointsInput(e.target.value);
-                        if (fieldErrors.points) setFieldErrors((prev) => ({ ...prev, points: "" }));
-                      }}
-                      className="h-10 text-sm pl-8 font-mono"
-                    />
-                    <Coins className="h-4 w-4 text-muted-foreground absolute left-2.5 top-3" />
+                  <div className="flex items-center justify-between">
+                    <Label htmlFor="points" className="text-xs font-semibold">{t.withdraw.pointsToWithdraw}</Label>
+                    {availablePoints > 0 && (
+                      <button
+                        type="button"
+                        onClick={handleSetMaxPoints}
+                        className="text-[11px] font-bold text-primary hover:underline flex items-center gap-1 cursor-pointer transition-colors"
+                        title={t.withdraw.allPoints}
+                      >
+                        {t.withdraw.max || "Max"}: <span className="font-mono">{formatPoints(availablePoints)}</span>
+                      </button>
+                    )}
                   </div>
+
+                  <div className="flex items-center gap-2">
+                    <div className="relative flex-1">
+                      <Input
+                        id="points"
+                        type="number"
+                        min={selectedMethod.minimumPoints}
+                        max={availablePoints}
+                        step={1}
+                        hasError={!!fieldErrors.points}
+                        value={pointsInput}
+                        onChange={(e) => {
+                          setPointsInput(e.target.value);
+                          if (fieldErrors.points) setFieldErrors((prev) => ({ ...prev, points: "" }));
+                        }}
+                        className="h-10 text-sm ps-8 pe-3 font-mono font-bold"
+                        placeholder="0"
+                      />
+                      <Coins className="h-4 w-4 text-muted-foreground absolute start-2.5 top-1/2 -translate-y-1/2 pointer-events-none" />
+                    </div>
+
+                    <Button
+                      type="button"
+                      variant="secondary"
+                      size="sm"
+                      onClick={handleSetMaxPoints}
+                      disabled={availablePoints <= 0}
+                      className="h-10 px-3.5 font-black text-xs tracking-wider uppercase bg-primary/10 hover:bg-primary text-primary hover:text-primary-foreground border border-primary/25 hover:border-primary transition-all active:scale-95 shrink-0 shadow-xs cursor-pointer"
+                      title={t.withdraw.allPoints}
+                    >
+                      MAX
+                    </Button>
+                  </div>
+
                   <FieldError message={fieldErrors.points} />
-                  <p className="text-[11px] text-muted-foreground">
-                    {t.withdraw.minWithdrawal}: {formatPoints(selectedMethod.minimumPoints)} • Max: {formatPoints(availablePoints)}
-                  </p>
+                  <div className="flex items-center justify-between text-[11px] text-muted-foreground">
+                    <span>
+                      {t.withdraw.minWithdrawal}: {formatPoints(selectedMethod.minimumPoints)}
+                    </span>
+                    <button
+                      type="button"
+                      onClick={handleSetMaxPoints}
+                      className="hover:text-primary transition-colors font-semibold cursor-pointer"
+                    >
+                      Max: {formatPoints(availablePoints)}
+                    </button>
+                  </div>
                 </div>
 
                 <div className="space-y-1.5">
