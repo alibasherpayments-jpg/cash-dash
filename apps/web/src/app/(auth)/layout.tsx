@@ -226,15 +226,15 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
             {/* Quick Points Pill */}
             <Link
               href="/wallet"
-              className="flex items-center gap-1.5 sm:gap-2 px-2.5 sm:px-3 py-1 sm:py-1.5 rounded-xl bg-card border border-border/80 hover:border-primary/50 transition-colors shadow-sm shrink-0 active:scale-95"
+              className="h-9 flex items-center gap-2 px-2.5 sm:px-3 rounded-xl bg-card border border-border/80 hover:border-primary/50 transition-all shadow-xs shrink-0 active:scale-95"
             >
               <div className="h-5 w-5 rounded-full bg-accent/20 flex items-center justify-center text-accent shrink-0">
                 <Coins className="h-3 w-3" />
               </div>
-              <div className="text-start sm:text-right leading-none">
-                <span className="text-xs font-black text-foreground block">{formatPoints(wallet?.availablePoints || 0)}</span>
-                <span className="text-[9px] sm:text-[10px] text-muted-foreground block font-medium mt-0.5">
-                  {formatCash((wallet?.availablePoints || 0) / 1000)}
+              <div className="flex items-center gap-1.5 leading-none">
+                <span className="text-xs font-black text-foreground">{formatPoints(wallet?.availablePoints || 0)}</span>
+                <span className="text-[11px] font-semibold text-muted-foreground hidden sm:inline-block">
+                  ({formatCash((wallet?.availablePoints || 0) / 1000)})
                 </span>
               </div>
             </Link>

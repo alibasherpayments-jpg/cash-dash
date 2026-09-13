@@ -411,18 +411,10 @@ export default function WithdrawPage() {
               {/* Amount input & Net Value with consistent alignment */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 items-start">
                 <div className="space-y-1.5">
-                  <div className="flex items-center justify-between">
-                    <Label htmlFor="points" className="text-xs font-semibold">{t.withdraw.pointsToWithdraw}</Label>
-                    {availablePoints > 0 && (
-                      <button
-                        type="button"
-                        onClick={handleSetMaxPoints}
-                        className="text-[11px] font-bold text-primary hover:underline flex items-center gap-1 cursor-pointer transition-colors"
-                        title={t.withdraw.allPoints}
-                      >
-                        {t.withdraw.max || "Max"}: <span className="font-mono">{formatPoints(availablePoints)}</span>
-                      </button>
-                    )}
+                  <div className="h-5 flex items-center justify-between">
+                    <Label htmlFor="points" className="text-xs font-semibold leading-none">
+                      {t.withdraw.pointsToWithdraw}
+                    </Label>
                   </div>
 
                   <div className="flex items-center gap-2">
@@ -459,7 +451,7 @@ export default function WithdrawPage() {
                   </div>
 
                   <FieldError message={fieldErrors.points} />
-                  <div className="flex items-center justify-between text-[11px] text-muted-foreground">
+                  <div className="h-5 flex items-center justify-between text-[11px] text-muted-foreground">
                     <span>
                       {t.withdraw.minWithdrawal}: {formatPoints(selectedMethod.minimumPoints)}
                     </span>
@@ -474,16 +466,22 @@ export default function WithdrawPage() {
                 </div>
 
                 <div className="space-y-1.5">
-                  <Label className="text-xs font-semibold">{t.withdraw.willReceive}</Label>
+                  <div className="h-5 flex items-center justify-between">
+                    <Label className="text-xs font-semibold leading-none">
+                      {t.withdraw.willReceive}
+                    </Label>
+                  </div>
+
                   <div className="h-10 px-3.5 rounded-md bg-accent/5 border border-border flex items-center justify-between text-sm">
                     <span className="text-emerald-500 font-bold">{formatCash(cashValue)} USD</span>
                     <span className="text-xs text-muted-foreground">
                       {t.withdraw.fee} ({selectedMethod.feePercent}%): {formatPoints(feePoints)}
                     </span>
                   </div>
-                  <p className="text-[11px] text-muted-foreground">
-                    Net: {formatPoints(netPoints)}
-                  </p>
+
+                  <div className="h-5 flex items-center text-[11px] text-muted-foreground">
+                    <span>Net: {formatPoints(netPoints)}</span>
+                  </div>
                 </div>
               </div>
 
