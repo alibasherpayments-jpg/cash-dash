@@ -36,7 +36,7 @@ const OFFERWALLS: OfferwallItem[] = [
     id: "cpalead",
     name: "CPALead",
     logo: "/images/offerwalls/cpalead.png",
-    url: "https://cpalead.com/offerwall?id=cashdash",
+    url: "https://www.cdnnd.com/wall/MDUA3yf",
   },
   {
     id: "clickwall",
@@ -56,6 +56,9 @@ export default function OfferwallsPage() {
     const separator = wall.url.includes("?") ? "&" : "?";
     if (wall.id === "taskwall") {
       return `${wall.url}${separator}userid=${encodeURIComponent(subId)}`;
+    }
+    if (wall.id === "cpalead") {
+      return `${wall.url}${separator}subid=${encodeURIComponent(subId)}`;
     }
     return `${wall.url}${separator}user_id=${encodeURIComponent(subId)}&sub_id=${encodeURIComponent(subId)}&subid=${encodeURIComponent(subId)}`;
   };
