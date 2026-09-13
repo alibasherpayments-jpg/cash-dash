@@ -121,36 +121,36 @@ describe('LeaderboardService', () => {
   });
 
   describe('getLiveTopWithdrawers', () => {
-    it('should return live top withdrawers with masked wallet destination', async () => {
-      mockPrisma.user = {
+    it('should return live top withdrawers with masked wallet destination and sum multiple accounts on same wallet', async () => {
+      mockPrisma.withdrawalRequest = {
         findMany: vi.fn().mockResolvedValue([
           {
-            id: 'user-1',
-            username: 'super_earner',
+            id: 'req-1',
+            points: 30000,
+            destination: { walletNumber: '010123456789' },
+            status: 'PAID',
             createdAt: new Date(),
-            profile: { avatarUrl: null, country: 'EG', isLeaderboardVisible: true },
-            wallet: {
-              totalWithdrawn: 50000,
-              totalEarned: 80000,
-              availablePoints: 30000,
-            },
-            withdrawalRequests: [
-              {
-                points: 50000,
-                destination: { walletNumber: '010123456789' },
-                status: 'PAID',
-                createdAt: new Date(),
-                method: { name: 'Vodafone Cash', slug: 'vodafone-cash' },
-              },
-            ],
+            method: { name: 'Vodafone Cash', slug: 'vodafone-cash', logoUrl: null },
+            user: { id: 'user-1', username: 'super_earner', profile: { country: 'EG' } },
+          },
+          {
+            id: 'req-2',
+            points: 20000,
+            destination: { walletNumber: '010123456789' },
+            status: 'PAID',
+            createdAt: new Date(),
+            method: { name: 'Vodafone Cash', slug: 'vodafone-cash', logoUrl: null },
+            user: { id: 'user-2', username: 'second_user', profile: { country: 'EG' } },
           },
         ]),
       };
 
       const result = await service.getLiveTopWithdrawers(10);
       expect(result.length).toBe(1);
-      expect(result[0].username).toBe('super_earner');
+      expect(result[0].username).toBe('01012*****89');
       expect(result[0].totalWithdrawn).toBe(50000);
+      expect(result[0].withdrawalsCount).toBe(2);
+      expect(result[0].accountsCount).toBe(2);
       expect(result[0].lastPayoutMasked).toBe('01012*****89');
       expect(result[0].lastMethodName).toBe('Vodafone Cash');
     });

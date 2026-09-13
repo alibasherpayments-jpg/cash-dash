@@ -262,8 +262,8 @@ export const ar: TranslationSchema = {
     title: "قائمة المتصدرين",
     subtitle: "تكريم أفضل الأعضاء تحقيقاً للأرباح بناءً على النشاط الموثق الفعلي",
     tabs: {
-      withdrawn: "الأكثر سحباً",
-      earners: "الأكثر ربحاً",
+      withdrawn: "أكثر المحافظ سحباً",
+      earners: "أكثر المستخدمين ربحاً",
     },
     rank: "الترتيب",
     user: "المستخدم",
@@ -271,6 +271,8 @@ export const ar: TranslationSchema = {
     totalEarned: "إجمالي المكتسب",
     country: "الدولة",
     noData: "لا توجد بيانات بعد — كن أول من يتصدر القائمة!",
+    wallet: "المحفظة",
+    payoutsCount: "سحوبات",
   },
 
   support: {

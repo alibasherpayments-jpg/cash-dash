@@ -13,6 +13,10 @@ export interface LeaderboardEntry {
   totalEarned: number;
   lastMethodName: string | null;
   lastPayoutMasked: string | null;
+  walletDestination?: string;
+  methodSlug?: string;
+  withdrawalsCount?: number;
+  accountsCount?: number;
 }
 
 interface LeaderboardResponse {
@@ -23,25 +27,31 @@ interface LeaderboardResponse {
 const DEFAULT_LEADERBOARD_USERS: LeaderboardEntry[] = [
   {
     rank: 1,
-    userId: "cmtxqpnmj0003k3x15uuptu56",
-    username: "BumBoy",
+    userId: "wallet-1",
+    username: "01012*****89",
     avatarUrl: null,
     country: "EG",
     totalWithdrawn: 15000,
-    totalEarned: 25000,
+    totalEarned: 15000,
     lastMethodName: "Vodafone Cash (فودافون كاش)",
     lastPayoutMasked: "01012*****89",
+    walletDestination: "01012*****89",
+    withdrawalsCount: 2,
+    accountsCount: 2,
   },
   {
     rank: 2,
-    userId: "cmtxrdkch000buj61lv9mgea6",
-    username: "user_1789179663974",
+    userId: "wallet-2",
+    username: "01098*****21",
     avatarUrl: null,
     country: "EG",
     totalWithdrawn: 10000,
-    totalEarned: 18000,
+    totalEarned: 10000,
     lastMethodName: "Vodafone Cash (فودافون كاش)",
     lastPayoutMasked: "01098*****21",
+    walletDestination: "01098*****21",
+    withdrawalsCount: 1,
+    accountsCount: 1,
   },
   {
     rank: 3,

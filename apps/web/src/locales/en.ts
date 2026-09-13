@@ -262,7 +262,7 @@ export const en: TranslationSchema = {
     title: "Platform Leaderboard",
     subtitle: "Recognizing our top platform achievers based strictly on completed, verified activity",
     tabs: {
-      withdrawn: "Top Withdrawn",
+      withdrawn: "Top Payout Wallets",
       earners: "Top Earners",
     },
     rank: "Rank",
@@ -271,6 +271,8 @@ export const en: TranslationSchema = {
     totalEarned: "Total Earned",
     country: "Country",
     noData: "No entries yet — be the first on the leaderboard!",
+    wallet: "Wallet",
+    payoutsCount: "payouts",
   },
 
   support: {

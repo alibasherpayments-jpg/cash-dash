@@ -13,6 +13,10 @@ export interface LeaderboardUserResult {
   totalEarned: number;
   lastMethodName: string | null;
   lastPayoutMasked: string | null;
+  walletDestination?: string;
+  methodSlug?: string;
+  withdrawalsCount?: number;
+  accountsCount?: number;
 }
 
 @Injectable()
@@ -70,8 +74,9 @@ export class LeaderboardService {
   }
 
   /**
-   * Live top users by total amount withdrawn from wallet / paid out
-   * Fully connected to database with masked wallet destination
+   * Live top withdrawn grouped by specific payout destination / wallet address.
+   * Aggregates total amounts sent to the exact same wallet across all accounts.
+   * Masks wallet in the middle for privacy.
    */
   async getLiveTopWithdrawers(limit = 10): Promise<LeaderboardUserResult[]> {
     const safeLimit = typeof limit === 'number' && !isNaN(limit) && limit > 0 ? Math.min(limit, 100) : 10;
@@ -84,103 +89,115 @@ export class LeaderboardService {
       // Graceful fallback
     }
 
-    // Query platform users directly so all registered users are represented
-    const users = await this.prisma.user.findMany({
+    // 1. Query all valid withdrawal requests from database
+    const requests = await this.prisma.withdrawalRequest.findMany({
       where: {
-        NOT: {
-          profile: { isLeaderboardVisible: false },
+        status: {
+          notIn: [WithdrawalStatus.REJECTED, WithdrawalStatus.CANCELLED, WithdrawalStatus.FAILED],
         },
       },
-      select: {
-        id: true,
-        username: true,
-        createdAt: true,
-        profile: {
-          select: { avatarUrl: true, country: true, isLeaderboardVisible: true },
+      include: {
+        method: {
+          select: { id: true, name: true, slug: true, logoUrl: true },
         },
-        wallet: {
+        user: {
           select: {
-            availablePoints: true,
-            totalEarned: true,
-            totalWithdrawn: true,
+            id: true,
+            username: true,
+            profile: { select: { avatarUrl: true, country: true, isLeaderboardVisible: true } },
           },
-        },
-        withdrawalRequests: {
-          select: {
-            points: true,
-            destination: true,
-            status: true,
-            createdAt: true,
-            method: { select: { name: true, slug: true } },
-          },
-          orderBy: { createdAt: 'desc' },
         },
       },
       orderBy: { createdAt: 'desc' },
-      take: 200,
+      take: 1000,
     });
 
-    // Map each user with effective total withdrawn and extract payout destination
-    const items = users
-      .filter((u) => u.profile?.isLeaderboardVisible !== false)
-      .map((u) => {
-        const validWithdrawals = (u.withdrawalRequests || []).filter(
-          (r) =>
-            r.status !== WithdrawalStatus.REJECTED &&
-            r.status !== WithdrawalStatus.CANCELLED &&
-            r.status !== WithdrawalStatus.FAILED,
-        );
+    // 2. Group withdrawals by specific wallet destination address
+    const walletMap = new Map<
+      string,
+      {
+        rawDestination: string;
+        maskedDestination: string;
+        methodName: string;
+        methodSlug: string;
+        methodLogoUrl: string | null;
+        totalWithdrawn: number;
+        withdrawalsCount: number;
+        distinctUsers: Set<string>;
+        usernames: string[];
+        country: string | null;
+        latestDate: Date;
+      }
+    >();
 
-        const requestsSum = validWithdrawals.reduce((sum, r) => sum + (r.points || 0), 0);
-        const effectiveWithdrawn = Math.max(u.wallet?.totalWithdrawn || 0, requestsSum);
+    for (const req of requests) {
+      const rawDest = this.extractDestinationString(req.destination);
+      if (!rawDest) continue;
 
-        // Pick latest withdrawal request for destination masking
-        const latestReq = validWithdrawals[0] || (u.withdrawalRequests || [])[0];
-        let maskedDestination: string | null = null;
-        let methodName: string | null = null;
+      // Group key is method + normalized destination string
+      const normalizedDest = rawDest.trim().toLowerCase();
+      const groupKey = `${req.method?.slug || 'method'}::${normalizedDest}`;
 
-        if (latestReq) {
-          methodName = latestReq.method?.name ?? null;
-          const rawDest = this.extractDestinationString(latestReq.destination);
-          if (rawDest) {
-            maskedDestination = this.maskIdentifier(rawDest);
-          }
-        }
+      if (!walletMap.has(groupKey)) {
+        walletMap.set(groupKey, {
+          rawDestination: rawDest,
+          maskedDestination: this.maskIdentifier(rawDest),
+          methodName: req.method?.name || 'Wallet Payout',
+          methodSlug: req.method?.slug || 'wallet',
+          methodLogoUrl: req.method?.logoUrl || null,
+          totalWithdrawn: 0,
+          withdrawalsCount: 0,
+          distinctUsers: new Set<string>(),
+          usernames: [],
+          country: req.user?.profile?.country || null,
+          latestDate: req.createdAt,
+        });
+      }
 
-        return {
-          userId: u.id,
-          username: u.username,
-          avatarUrl: u.profile?.avatarUrl ?? null,
-          country: u.profile?.country ?? null,
-          totalWithdrawn: effectiveWithdrawn,
-          totalEarned: Math.max(u.wallet?.totalEarned || 0, u.wallet?.availablePoints || 0),
-          lastMethodName: methodName,
-          lastPayoutMasked: maskedDestination,
-          createdAt: u.createdAt,
-        };
-      })
+      const group = walletMap.get(groupKey)!;
+      group.totalWithdrawn += req.points;
+      group.withdrawalsCount += 1;
+      if (req.user?.id) {
+        group.distinctUsers.add(req.user.id);
+      }
+      if (req.user?.username && !group.usernames.includes(req.user.username)) {
+        group.usernames.push(req.user.username);
+      }
+      if (!group.country && req.user?.profile?.country) {
+        group.country = req.user.profile.country;
+      }
+      if (new Date(req.createdAt).getTime() > new Date(group.latestDate).getTime()) {
+        group.latestDate = req.createdAt;
+      }
+    }
+
+    // 3. Sort wallets by totalWithdrawn descending
+    const sortedWallets = Array.from(walletMap.values())
       .sort((a, b) => {
         if (b.totalWithdrawn !== a.totalWithdrawn) {
           return b.totalWithdrawn - a.totalWithdrawn;
         }
-        if (b.totalEarned !== a.totalEarned) {
-          return b.totalEarned - a.totalEarned;
+        if (b.withdrawalsCount !== a.withdrawalsCount) {
+          return b.withdrawalsCount - a.withdrawalsCount;
         }
-        // Latest registered users first when stats are equal
-        return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+        return new Date(b.latestDate).getTime() - new Date(a.latestDate).getTime();
       })
       .slice(0, safeLimit);
 
-    return items.map((item, idx) => ({
+    return sortedWallets.map((w, idx) => ({
       rank: idx + 1,
-      userId: item.userId,
-      username: item.username,
-      avatarUrl: item.avatarUrl,
-      country: item.country,
-      totalWithdrawn: item.totalWithdrawn,
-      totalEarned: item.totalEarned,
-      lastMethodName: item.lastMethodName,
-      lastPayoutMasked: item.lastPayoutMasked,
+      userId: `wallet-${idx + 1}`,
+      username: w.maskedDestination,
+      avatarUrl: w.methodLogoUrl,
+      country: w.country,
+      totalWithdrawn: w.totalWithdrawn,
+      totalEarned: w.totalWithdrawn,
+      lastMethodName: w.methodName,
+      lastPayoutMasked: w.maskedDestination,
+      walletDestination: w.maskedDestination,
+      methodSlug: w.methodSlug,
+      withdrawalsCount: w.withdrawalsCount,
+      accountsCount: w.distinctUsers.size,
     }));
   }
 

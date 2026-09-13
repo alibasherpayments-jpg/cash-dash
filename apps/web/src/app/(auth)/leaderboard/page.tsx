@@ -79,6 +79,9 @@ interface PodiumCardProps {
 function PodiumCard({ user, position, activeTab, t }: PodiumCardProps) {
   const value =
     activeTab === "WITHDRAWALS" ? user.totalWithdrawn : user.totalEarned;
+  const isWithdrawals = activeTab === "WITHDRAWALS";
+  const maskedAddress = user.walletDestination || user.lastPayoutMasked || user.username;
+  const methodName = user.lastMethodName || "Verified Payout";
 
   if (position === 1) {
     return (
@@ -86,25 +89,61 @@ function PodiumCard({ user, position, activeTab, t }: PodiumCardProps) {
         <div className="mx-auto h-10 w-10 rounded-full bg-amber-500 text-slate-950 font-black text-base flex items-center justify-center shadow-lg shadow-amber-500/30">
           <Crown className="h-5 w-5" />
         </div>
-        <AvatarWithFallback username={user.username} size="lg" className="mx-auto ring-4 ring-amber-500/30" />
+
+        {isWithdrawals ? (
+          <div className="mx-auto h-16 w-16 rounded-2xl bg-gradient-to-br from-emerald-500/20 via-emerald-500/10 to-transparent border border-emerald-500/40 flex items-center justify-center shadow-lg shadow-emerald-500/15 ring-4 ring-emerald-500/20">
+            <Wallet className="h-8 w-8 text-emerald-400" />
+          </div>
+        ) : (
+          <AvatarWithFallback username={user.username} size="lg" className="mx-auto ring-4 ring-amber-500/30" />
+        )}
+
         <div>
           <Badge className="bg-amber-500/20 text-amber-500 border-amber-500/30 text-[10px] font-bold mb-1">
-            #1 CHAMPION
+            {isWithdrawals ? "#1 TOP PAYOUT WALLET" : "#1 CHAMPION"}
           </Badge>
-          <h3 className="font-black text-lg text-foreground">{user.username}</h3>
-          {user.country && (
-            <span className="text-xs text-muted-foreground uppercase">{user.country}</span>
+
+          {isWithdrawals ? (
+            <div className="space-y-1">
+              <h3 className="font-mono font-black text-xl text-emerald-400 tracking-wider dir-ltr select-all">
+                {maskedAddress}
+              </h3>
+              <div className="flex items-center justify-center gap-1.5 flex-wrap">
+                <Badge variant="outline" className="bg-emerald-500/10 text-emerald-300 border-emerald-500/25 text-xs font-semibold px-2 py-0.5">
+                  {methodName}
+                </Badge>
+                {user.withdrawalsCount && user.withdrawalsCount > 1 && (
+                  <span className="text-[11px] text-muted-foreground font-mono">
+                    ({user.withdrawalsCount} {user.accountsCount && user.accountsCount > 1 ? `from ${user.accountsCount} accounts` : "payouts"})
+                  </span>
+                )}
+              </div>
+            </div>
+          ) : (
+            <>
+              <h3 className="font-black text-lg text-foreground">{user.username}</h3>
+              {user.country && (
+                <span className="text-xs text-muted-foreground uppercase">{user.country}</span>
+              )}
+            </>
           )}
         </div>
+
         <div className="p-3 rounded-xl bg-amber-500/10 border border-amber-500/20">
           <span className="text-[10px] uppercase font-bold text-amber-500 block">
-            {activeTab === "WITHDRAWALS" ? t.leaderboard.totalWithdrawn : t.leaderboard.totalEarned}
+            {isWithdrawals ? t.leaderboard.totalWithdrawn : t.leaderboard.totalEarned}
           </span>
           <span className="text-2xl font-black text-emerald-500">
-            {activeTab === "WITHDRAWALS" ? formatPointsAsCash(value) : formatPoints(value)}
+            {isWithdrawals ? formatPointsAsCash(value) : formatPoints(value)}
           </span>
+          {isWithdrawals && (
+            <span className="text-[11px] text-muted-foreground font-mono block mt-0.5">
+              {formatPoints(value)}
+            </span>
+          )}
         </div>
-        {user.lastPayoutMasked && (
+
+        {!isWithdrawals && user.lastPayoutMasked && (
           <div className="inline-flex items-center justify-center gap-1.5 px-3 py-1.5 rounded-full bg-emerald-500/10 border border-emerald-500/25 text-emerald-400 font-mono text-xs font-semibold shadow-sm mx-auto max-w-full truncate">
             <Wallet className="h-3.5 w-3.5 shrink-0 text-emerald-400" />
             {user.lastMethodName && (
@@ -128,22 +167,57 @@ function PodiumCard({ user, position, activeTab, t }: PodiumCardProps) {
       <div className={`mx-auto h-8 w-8 rounded-full ${colors.badge} font-black text-sm flex items-center justify-center`}>
         {position}
       </div>
-      <AvatarWithFallback username={user.username} size="lg" className="mx-auto" />
+
+      {isWithdrawals ? (
+        <div className="mx-auto h-12 w-12 rounded-xl bg-gradient-to-br from-emerald-500/15 via-accent/5 to-transparent border border-emerald-500/30 flex items-center justify-center shadow-md">
+          <Wallet className="h-6 w-6 text-emerald-400" />
+        </div>
+      ) : (
+        <AvatarWithFallback username={user.username} size="lg" className="mx-auto" />
+      )}
+
       <div>
-        <h4 className="font-bold text-base text-foreground">{user.username}</h4>
-        {user.country && (
-          <span className="text-xs text-muted-foreground uppercase">{user.country}</span>
+        {isWithdrawals ? (
+          <div className="space-y-1">
+            <h4 className="font-mono font-bold text-base text-emerald-400 tracking-wide dir-ltr select-all">
+              {maskedAddress}
+            </h4>
+            <div className="flex items-center justify-center gap-1 flex-wrap">
+              <Badge variant="outline" className="bg-card text-muted-foreground border-border text-[11px] font-medium px-2 py-0.5">
+                {methodName}
+              </Badge>
+              {user.withdrawalsCount && user.withdrawalsCount > 1 && (
+                <span className="text-[10px] text-muted-foreground font-mono">
+                  ({user.withdrawalsCount}x)
+                </span>
+              )}
+            </div>
+          </div>
+        ) : (
+          <>
+            <h4 className="font-bold text-base text-foreground">{user.username}</h4>
+            {user.country && (
+              <span className="text-xs text-muted-foreground uppercase">{user.country}</span>
+            )}
+          </>
         )}
       </div>
+
       <div className="p-2.5 rounded-xl bg-accent/5 border border-border">
         <span className="text-[10px] uppercase font-bold text-muted-foreground block">
-          {activeTab === "WITHDRAWALS" ? t.leaderboard.totalWithdrawn : t.leaderboard.totalEarned}
+          {isWithdrawals ? t.leaderboard.totalWithdrawn : t.leaderboard.totalEarned}
         </span>
         <span className="text-lg font-black text-foreground">
-          {activeTab === "WITHDRAWALS" ? formatPointsAsCash(value) : formatPoints(value)}
+          {isWithdrawals ? formatPointsAsCash(value) : formatPoints(value)}
         </span>
+        {isWithdrawals && (
+          <span className="text-[10px] text-muted-foreground font-mono block">
+            {formatPoints(value)}
+          </span>
+        )}
       </div>
-      {user.lastPayoutMasked && (
+
+      {!isWithdrawals && user.lastPayoutMasked && (
         <div className="inline-flex items-center justify-center gap-1.5 px-2.5 py-1 rounded-full bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 font-mono text-xs font-semibold shadow-sm mx-auto max-w-full truncate">
           <Wallet className="h-3.5 w-3.5 shrink-0 text-emerald-400" />
           {user.lastMethodName && (
@@ -295,42 +369,76 @@ export default function LeaderboardPage() {
 
           <CardContent className="p-0">
             <div className="divide-y divide-border">
-              {remaining.map((user) => (
-                <div key={user.userId} className="p-4 flex items-center justify-between hover:bg-accent/5 transition-colors">
-                  <div className="flex items-center gap-4 min-w-0">
-                    <span className="font-mono text-sm font-bold text-muted-foreground w-6 text-center shrink-0">
-                      #{user.rank}
-                    </span>
-                    <AvatarWithFallback username={user.username} size="sm" />
-                    <div className="min-w-0">
-                      <p className="font-bold text-sm text-foreground truncate">{user.username}</p>
-                      <div className="flex items-center gap-2 flex-wrap mt-0.5">
-                        {user.country && (
-                          <span className="text-[10px] text-muted-foreground uppercase">{user.country}</span>
-                        )}
-                        {user.lastPayoutMasked && (
-                          <span className="text-xs text-emerald-400 font-mono font-medium flex items-center gap-1 bg-emerald-500/10 px-2 py-0.5 rounded-full border border-emerald-500/20">
-                            <Wallet className="h-3 w-3 shrink-0" />
-                            {user.lastMethodName ? `${user.lastMethodName}: ` : ""}
-                            <span className="font-mono tracking-wider">{user.lastPayoutMasked}</span>
-                          </span>
+              {remaining.map((user) => {
+                const isWithdrawals = activeTab === "WITHDRAWALS";
+                const maskedAddress = user.walletDestination || user.lastPayoutMasked || user.username;
+                const methodName = user.lastMethodName || "Verified Method";
+
+                return (
+                  <div key={user.userId} className="p-4 flex items-center justify-between hover:bg-accent/5 transition-colors">
+                    <div className="flex items-center gap-4 min-w-0">
+                      <span className="font-mono text-sm font-bold text-muted-foreground w-6 text-center shrink-0">
+                        #{user.rank}
+                      </span>
+
+                      {isWithdrawals ? (
+                        <div className="h-9 w-9 rounded-xl bg-emerald-500/10 border border-emerald-500/25 flex items-center justify-center shrink-0 shadow-sm">
+                          <Wallet className="h-4 w-4 text-emerald-400" />
+                        </div>
+                      ) : (
+                        <AvatarWithFallback username={user.username} size="sm" />
+                      )}
+
+                      <div className="min-w-0">
+                        {isWithdrawals ? (
+                          <>
+                            <p className="font-mono font-bold text-sm text-emerald-400 tracking-wider truncate dir-ltr select-all">
+                              {maskedAddress}
+                            </p>
+                            <div className="flex items-center gap-2 flex-wrap mt-0.5">
+                              <span className="text-[11px] text-muted-foreground bg-accent/10 px-2 py-0.5 rounded border border-border">
+                                {methodName}
+                              </span>
+                              {user.withdrawalsCount && user.withdrawalsCount > 1 && (
+                                <span className="text-[10px] text-muted-foreground font-mono">
+                                  {user.withdrawalsCount} {user.accountsCount && user.accountsCount > 1 ? `(${user.accountsCount} accounts)` : "payouts"}
+                                </span>
+                              )}
+                            </div>
+                          </>
+                        ) : (
+                          <>
+                            <p className="font-bold text-sm text-foreground truncate">{user.username}</p>
+                            <div className="flex items-center gap-2 flex-wrap mt-0.5">
+                              {user.country && (
+                                <span className="text-[10px] text-muted-foreground uppercase">{user.country}</span>
+                              )}
+                              {user.lastPayoutMasked && (
+                                <span className="text-xs text-emerald-400 font-mono font-medium flex items-center gap-1 bg-emerald-500/10 px-2 py-0.5 rounded-full border border-emerald-500/20">
+                                  <Wallet className="h-3 w-3 shrink-0" />
+                                  {user.lastMethodName ? `${user.lastMethodName}: ` : ""}
+                                  <span className="font-mono tracking-wider">{user.lastPayoutMasked}</span>
+                                </span>
+                              )}
+                            </div>
+                          </>
                         )}
                       </div>
                     </div>
-                  </div>
 
-                  <div className="text-end shrink-0">
-                    <span className="font-bold text-sm text-foreground block">
-                      {activeTab === "WITHDRAWALS"
-                        ? formatPointsAsCash(user.totalWithdrawn)
-                        : formatPoints(user.totalEarned)}
-                    </span>
-                    <span className="text-[10px] text-muted-foreground font-mono">
-                      {formatPoints(activeTab === "WITHDRAWALS" ? user.totalWithdrawn : user.totalEarned)}
-                    </span>
+                    <div className="text-end shrink-0">
+                      <span className="font-bold text-sm text-foreground block">
+                        {isWithdrawals
+                          ? formatPointsAsCash(user.totalWithdrawn)
+                          : formatPoints(user.totalEarned)}
+                      </span>
+                      <span className="text-[10px] text-muted-foreground font-mono">
+                        {formatPoints(isWithdrawals ? user.totalWithdrawn : user.totalEarned)}
+                      </span>
+                    </div>
                   </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
           </CardContent>
         </Card>

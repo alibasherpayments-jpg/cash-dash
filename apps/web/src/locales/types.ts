@@ -280,6 +280,8 @@ export interface TranslationSchema {
     totalEarned: string;
     country: string;
     noData: string;
+    wallet?: string;
+    payoutsCount?: string;
   };
 
   support: {
