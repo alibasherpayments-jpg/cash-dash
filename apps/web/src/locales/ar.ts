@@ -273,6 +273,8 @@ export const ar: TranslationSchema = {
     noData: "لا توجد بيانات بعد — كن أول من يتصدر القائمة!",
     wallet: "المحفظة",
     payoutsCount: "سحوبات",
+    emptySlotTitle: "شاغر",
+    emptySlotDesc: "كن أول من يحجز هذا المركز!",
   },
 
   support: {

@@ -282,6 +282,8 @@ export interface TranslationSchema {
     noData: string;
     wallet?: string;
     payoutsCount?: string;
+    emptySlotTitle?: string;
+    emptySlotDesc?: string;
   };
 
   support: {

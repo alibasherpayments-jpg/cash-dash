@@ -232,6 +232,59 @@ function PodiumCard({ user, position, activeTab, t }: PodiumCardProps) {
   );
 }
 
+function PodiumEmptySlot({
+  position,
+  t,
+  activeTab,
+}: {
+  position: 2 | 3;
+  t: any;
+  activeTab: "WITHDRAWALS" | "EARNERS";
+}) {
+  const colors =
+    position === 2
+      ? { border: "border-dashed border-slate-700/60", badge: "bg-slate-500/20 text-slate-400" }
+      : { border: "border-dashed border-amber-800/40", badge: "bg-amber-800/20 text-amber-600" };
+
+  const isWithdrawals = activeTab === "WITHDRAWALS";
+
+  return (
+    <div
+      className={`order-${position === 2 ? "2 md:order-1" : "3"} p-6 rounded-2xl bg-card/40 border ${colors.border} shadow text-center space-y-3 relative opacity-75 hover:opacity-100 transition-opacity`}
+    >
+      <div className={`mx-auto h-8 w-8 rounded-full ${colors.badge} font-black text-sm flex items-center justify-center`}>
+        {position}
+      </div>
+
+      <div className="mx-auto h-12 w-12 rounded-xl bg-accent/5 border border-dashed border-border flex items-center justify-center">
+        {isWithdrawals ? (
+          <Wallet className="h-5 w-5 text-muted-foreground/40" />
+        ) : (
+          <Crown className="h-5 w-5 text-muted-foreground/40" />
+        )}
+      </div>
+
+      <div className="space-y-0.5">
+        <h4 className="font-bold text-sm text-muted-foreground">
+          #{position} {t.leaderboard?.emptySlotTitle || "Available"}
+        </h4>
+        <p className="text-[11px] text-muted-foreground/70">
+          {t.leaderboard?.emptySlotDesc || "Be the first to claim this rank!"}
+        </p>
+      </div>
+
+      <div className="p-2 rounded-xl bg-accent/5 border border-border/50">
+        <span className="text-[10px] uppercase font-bold text-muted-foreground/60 block">
+          {isWithdrawals ? t.leaderboard.totalWithdrawn : t.leaderboard.totalEarned}
+        </span>
+        <span className="text-sm font-bold text-muted-foreground/50 font-mono">
+          $0.00
+        </span>
+      </div>
+    </div>
+  );
+}
+
 // ─── Main page ───────────────────────────────────────────────────────────────
 
 export default function LeaderboardPage() {
@@ -333,25 +386,26 @@ export default function LeaderboardPage() {
         </div>
       </div>
 
-      {/* ─── Top 3 Podium (Resilient to 1, 2, or 3+ users) ───────── */}
+      {/* ─── Top 3 Podium (Always Top 3 columns) ───────── */}
       {isLoading ? (
         <PodiumSkeleton />
-      ) : top3.length === 0 ? (
+      ) : users.length === 0 ? (
         <EmptyState message={t.leaderboard.noData ?? "No data yet — be the first on the leaderboard!"} />
-      ) : top3.length === 1 ? (
-        <div className="max-w-md mx-auto pt-4">
-          <PodiumCard user={top3[0]} position={1} activeTab={activeTab} t={t} />
-        </div>
-      ) : top3.length === 2 ? (
-        <div className="max-w-2xl mx-auto grid grid-cols-1 sm:grid-cols-2 gap-6 pt-4 items-end">
-          <PodiumCard user={top3[0]} position={1} activeTab={activeTab} t={t} />
-          <PodiumCard user={top3[1]} position={2} activeTab={activeTab} t={t} />
-        </div>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6 pt-4 items-end">
-          <PodiumCard user={top3[1]} position={2} activeTab={activeTab} t={t} />
+          {top3[1] ? (
+            <PodiumCard user={top3[1]} position={2} activeTab={activeTab} t={t} />
+          ) : (
+            <PodiumEmptySlot position={2} t={t} activeTab={activeTab} />
+          )}
+
           <PodiumCard user={top3[0]} position={1} activeTab={activeTab} t={t} />
-          <PodiumCard user={top3[2]} position={3} activeTab={activeTab} t={t} />
+
+          {top3[2] ? (
+            <PodiumCard user={top3[2]} position={3} activeTab={activeTab} t={t} />
+          ) : (
+            <PodiumEmptySlot position={3} t={t} activeTab={activeTab} />
+          )}
         </div>
       )}
 

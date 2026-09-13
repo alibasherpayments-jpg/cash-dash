@@ -273,6 +273,8 @@ export const en: TranslationSchema = {
     noData: "No entries yet — be the first on the leaderboard!",
     wallet: "Wallet",
     payoutsCount: "payouts",
+    emptySlotTitle: "Available",
+    emptySlotDesc: "Be the first to claim this rank!",
   },
 
   support: {
