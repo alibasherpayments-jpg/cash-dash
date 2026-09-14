@@ -75,7 +75,6 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
   const navigationItems = [
     { name: t.common.dashboard, href: "/dashboard", icon: LayoutDashboard },
     { name: t.common.offerwalls, href: "/offerwalls", icon: Layers },
-    { name: t.common.offers, href: "/offers", icon: Layers },
     { name: t.common.wallet, href: "/wallet", icon: Wallet },
     { name: t.common.withdraw, href: "/withdraw", icon: ArrowUpRight },
     { name: t.common.leaderboard, href: "/leaderboard", icon: Trophy },
@@ -136,7 +135,7 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
               <Link href="/withdraw">{t.common.withdraw}</Link>
             </Button>
             <Button size="sm" variant="outline" className="h-7 text-xs font-semibold" asChild>
-              <Link href="/offers">{t.common.offers}</Link>
+              <Link href="/offerwalls">{t.common.offerwalls}</Link>
             </Button>
           </div>
         </div>
@@ -443,7 +442,7 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
       >
         {[
           { name: t.common.dashboard, href: "/dashboard", icon: LayoutDashboard },
-          { name: t.common.offers, href: "/offers", icon: Layers },
+          { name: t.common.offerwalls, href: "/offerwalls", icon: Layers },
           { name: t.common.wallet, href: "/wallet", icon: Wallet },
           { name: t.common.withdraw, href: "/withdraw", icon: ArrowUpRight },
           { name: t.common.leaderboard, href: "/leaderboard", icon: Trophy },
@@ -467,7 +466,7 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
               >
                 <Icon className="h-4 w-4" />
               </div>
-              <span className="truncate max-w-[64px] text-center">{item.name}</span>
+              <span className="truncate max-w-[72px] sm:max-w-[80px] text-center leading-tight">{item.name}</span>
             </Link>
           );
         })}
