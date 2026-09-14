@@ -92,7 +92,7 @@ export default function AdminOfferwallsPage() {
         } else if (p.slug === "clickwall") {
           postback = `${apiHost}/api/v1/webhooks/providers/clickwall?user_id={user_id}&points={points}&trans_id={trans_id}`;
         } else if (p.slug === "pixylabs") {
-          postback = `${apiHost}/api/v1/webhooks/providers/pixylabs?user_id={user_id}&subid={subid}&payout={payout}&points={points}&tx_id={tx_id}`;
+          postback = `${apiHost}/api/v1/webhooks/providers/pixylabs?user_id=#{click.publisher.unique1}&click_id=#{id}&payout_usd=#{payout.theyGetInDollars}&points=#{payout.theyGetPoints}&offer_id=#{offer.id}&offer_name=#{offer.name}`;
         } else {
           postback = `${apiHost}/api/v1/webhooks/providers/${p.slug}?user_id={user_id}&points={points}&tx_id={tx_id}`;
         }

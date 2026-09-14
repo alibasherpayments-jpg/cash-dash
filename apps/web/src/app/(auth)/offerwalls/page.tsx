@@ -48,7 +48,7 @@ const OFFERWALLS: OfferwallItem[] = [
     id: "pixylabs",
     name: "PixyLabs",
     logo: "/images/offerwalls/pixylabs.png",
-    url: "https://www.pixylabs.co/wall?app_id=cashdash",
+    url: "https://offerwall.pixylabs.co/362",
   },
 ];
 
@@ -67,7 +67,7 @@ export default function OfferwallsPage() {
       return `${wall.url}${separator}subid=${encodeURIComponent(subId)}`;
     }
     if (wall.id === "pixylabs") {
-      return `${wall.url}${separator}subid=${encodeURIComponent(subId)}&user_id=${encodeURIComponent(subId)}`;
+      return `https://offerwall.pixylabs.co/362?uid=${encodeURIComponent(subId)}`;
     }
     return `${wall.url}${separator}user_id=${encodeURIComponent(subId)}&sub_id=${encodeURIComponent(subId)}&subid=${encodeURIComponent(subId)}`;
   };
