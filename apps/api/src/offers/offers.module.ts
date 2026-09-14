@@ -5,6 +5,7 @@ import {
   TaskwallProvider,
   CPALeadProvider,
   ClickWallProvider,
+  PixyLabsProvider,
   ProviderRegistry,
 } from './providers/offer-providers';
 
@@ -14,6 +15,7 @@ import {
     TaskwallProvider,
     CPALeadProvider,
     ClickWallProvider,
+    PixyLabsProvider,
     ProviderRegistry,
   ],
   controllers: [OffersController],

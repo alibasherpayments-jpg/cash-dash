@@ -44,6 +44,12 @@ const OFFERWALLS: OfferwallItem[] = [
     logo: "/images/offerwalls/clickwall.png",
     url: "https://clickwall.io/wall?app_id=cashdash",
   },
+  {
+    id: "pixylabs",
+    name: "PixyLabs",
+    logo: "/images/offerwalls/pixylabs.png",
+    url: "https://www.pixylabs.co/wall?app_id=cashdash",
+  },
 ];
 
 export default function OfferwallsPage() {
@@ -60,6 +66,9 @@ export default function OfferwallsPage() {
     if (wall.id === "cpalead") {
       return `${wall.url}${separator}subid=${encodeURIComponent(subId)}`;
     }
+    if (wall.id === "pixylabs") {
+      return `${wall.url}${separator}subid=${encodeURIComponent(subId)}&user_id=${encodeURIComponent(subId)}`;
+    }
     return `${wall.url}${separator}user_id=${encodeURIComponent(subId)}&sub_id=${encodeURIComponent(subId)}&subid=${encodeURIComponent(subId)}`;
   };
 
@@ -72,7 +81,7 @@ export default function OfferwallsPage() {
   };
 
   return (
-    <div className="space-y-8 max-w-5xl mx-auto py-2">
+    <div className="space-y-8 max-w-6xl mx-auto py-2">
       {/* ─── Header ─────────────────────────────────────────────── */}
       <div className="text-center space-y-2 max-w-2xl mx-auto">
         <h1 className="text-3xl sm:text-4xl font-black tracking-tight flex items-center justify-center gap-3">
@@ -83,8 +92,8 @@ export default function OfferwallsPage() {
         </p>
       </div>
 
-      {/* ─── Offerwalls 3-Card Grid (Only Logo + Name) ──────────── */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 sm:gap-8 pt-4">
+      {/* ─── Offerwalls 4-Card Grid (Only Logo + Name) ──────────── */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 sm:gap-6 pt-4">
         {OFFERWALLS.map((wall) => (
           <Card
             key={wall.id}

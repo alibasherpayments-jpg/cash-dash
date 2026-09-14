@@ -16,7 +16,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { EmptyOffers } from "@/components/illustrations/empty-offers";
-import { Gift, Sparkles, Filter, SlidersHorizontal, Layers, ArrowRight } from "lucide-react";
+import { Sparkles, Filter, SlidersHorizontal, Layers, ArrowRight } from "lucide-react";
 import { OfferCategory } from "@cashdash/shared";
 
 export default function OffersPage() {
@@ -47,7 +47,7 @@ export default function OffersPage() {
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <h1 className="text-2xl sm:text-3xl font-black tracking-tight flex items-center gap-2.5">
-            <Gift className="h-7 w-7 text-primary" /> {t.offers.title}
+            <Layers className="h-7 w-7 text-primary" /> {t.offers.title}
           </h1>
           <p className="text-xs sm:text-sm text-muted-foreground mt-0.5">
             {t.offers.subtitle}

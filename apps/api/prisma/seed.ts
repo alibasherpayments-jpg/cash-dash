@@ -110,6 +110,20 @@ async function main() {
     },
   });
 
+  const pixylabs = await prisma.offerProvider.create({
+    data: {
+      name: 'PixyLabs',
+      type: 'cpi_offers',
+      slug: 'pixylabs',
+      logoUrl: '/images/offerwalls/pixylabs.png',
+      apiKeyMasked: 'pixylabs_••••••••••••11a2',
+      webhookSecret: 'pixylabs-secret-cashdash',
+      postbackUrl: 'http://localhost:3001/api/v1/webhooks/providers/pixylabs',
+      isActive: true,
+      offersCount: 30,
+    },
+  });
+
   // ----------------------------------------------------
   // 4. Withdrawal Methods: Vodafone Cash & Binance ONLY
   // Min: $0.10 (100 points at 1,000 pts = $1.00 USD)

@@ -23,7 +23,6 @@ import {
 import {
   Coins,
   LayoutDashboard,
-  Gift,
   Wallet,
   ArrowUpRight,
   Trophy,
@@ -76,7 +75,7 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
   const navigationItems = [
     { name: t.common.dashboard, href: "/dashboard", icon: LayoutDashboard },
     { name: t.common.offerwalls, href: "/offerwalls", icon: Layers },
-    { name: t.common.offers, href: "/offers", icon: Gift },
+    { name: t.common.offers, href: "/offers", icon: Layers },
     { name: t.common.wallet, href: "/wallet", icon: Wallet },
     { name: t.common.withdraw, href: "/withdraw", icon: ArrowUpRight },
     { name: t.common.leaderboard, href: "/leaderboard", icon: Trophy },
@@ -444,7 +443,7 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
       >
         {[
           { name: t.common.dashboard, href: "/dashboard", icon: LayoutDashboard },
-          { name: t.common.offers, href: "/offers", icon: Gift },
+          { name: t.common.offers, href: "/offers", icon: Layers },
           { name: t.common.wallet, href: "/wallet", icon: Wallet },
           { name: t.common.withdraw, href: "/withdraw", icon: ArrowUpRight },
           { name: t.common.leaderboard, href: "/leaderboard", icon: Trophy },

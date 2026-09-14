@@ -493,15 +493,22 @@ export default function LandingPage() {
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 pt-4">
-            {hallOfFame.map(({ rank, user, primary }, idx) => (
-              <div
-                key={user.userId || idx}
-                className={`p-6 rounded-2xl border transition-all ${
-                  primary
-                    ? "bg-gradient-to-b from-amber-500/10 via-card to-card border-amber-500/40 shadow-xl shadow-amber-500/10 md:-translate-y-4"
-                    : "bg-card border-border"
-                }`}
-              >
+            {hallOfFame.map(({ rank, user, primary }, idx) => {
+              const orderClass = primary
+                ? "order-1 md:order-2"
+                : rank.includes("2")
+                ? "order-2 md:order-1"
+                : "order-3 md:order-3";
+
+              return (
+                <div
+                  key={user.userId || idx}
+                  className={`${orderClass} p-6 rounded-2xl border transition-all ${
+                    primary
+                      ? "bg-gradient-to-b from-amber-500/10 via-card to-card border-amber-500/40 shadow-xl shadow-amber-500/10 md:-translate-y-4"
+                      : "bg-card border-border"
+                  }`}
+                >
                 <div className="text-2xl font-black mb-2">{rank}</div>
                 <div className="mb-3 flex justify-center">
                   <AvatarWithFallback username={user.username} avatarUrl={user.avatarUrl} size="lg" />
@@ -523,7 +530,8 @@ export default function LandingPage() {
                   </span>
                 </div>
               </div>
-            ))}
+            );
+          })}
           </div>
 
           <div>
@@ -638,19 +646,19 @@ export default function LandingPage() {
       </section>
 
       {/* ─── Final CTA Banner ─────────────────────────────────────── */}
-      <section className="py-20 px-4 sm:px-6 lg:px-8 text-center relative">
-        <div className="max-w-4xl mx-auto p-10 md:p-16 rounded-3xl bg-gradient-to-br from-primary/20 via-card to-accent/10 border border-primary/30 shadow-2xl relative space-y-6">
-          <h2 className="text-3xl sm:text-5xl font-black tracking-tight">
+      <section className="py-12 sm:py-20 px-4 sm:px-6 lg:px-8 text-center relative">
+        <div className="max-w-4xl mx-auto p-6 sm:p-10 md:p-16 rounded-3xl bg-gradient-to-br from-primary/20 via-card to-accent/10 border border-primary/30 shadow-2xl relative space-y-4 sm:space-y-6">
+          <h2 className="text-2xl sm:text-4xl md:text-5xl font-black tracking-tight leading-tight">
             {t.landing.cta.title}
           </h2>
-          <p className="text-base sm:text-lg text-muted-foreground max-w-xl mx-auto">
+          <p className="text-sm sm:text-base md:text-lg text-muted-foreground max-w-xl mx-auto leading-relaxed">
             {t.landing.cta.subtitle}
           </p>
-          <div className="pt-4 flex flex-col items-center gap-3">
-            <Button size="lg" className="h-14 px-10 text-base font-bold shadow-xl shadow-primary/30 rounded-2xl hover:shadow-primary/50 hover:-translate-y-0.5 transition-all" asChild>
-              <Link href="/register">{t.landing.cta.button}</Link>
+          <div className="pt-2 sm:pt-4 flex flex-col items-center gap-3 w-full">
+            <Button size="lg" className="h-12 sm:h-14 px-6 sm:px-10 text-sm sm:text-base font-bold shadow-xl shadow-primary/30 rounded-2xl hover:shadow-primary/50 hover:-translate-y-0.5 transition-all max-w-full w-full sm:w-auto" asChild>
+              <Link href="/register" className="truncate px-2">{t.landing.cta.button}</Link>
             </Button>
-            <span className="text-xs text-muted-foreground">{t.landing.cta.note}</span>
+            <span className="text-[11px] sm:text-xs text-muted-foreground px-2">{t.landing.cta.note}</span>
           </div>
         </div>
       </section>

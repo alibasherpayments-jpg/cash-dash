@@ -162,8 +162,10 @@ function PodiumCard({ user, position, activeTab, t }: PodiumCardProps) {
     ? { border: "border-slate-700/60", badge: "bg-slate-400/20 text-slate-300" }
     : { border: "border-amber-800/40", badge: "bg-amber-800/20 text-amber-600" };
 
+  const orderClass = position === 2 ? "order-2 md:order-1" : "order-3 md:order-3";
+
   return (
-    <div className={`order-${position === 2 ? "2 md:order-1" : "3"} p-6 rounded-2xl bg-card border ${colors.border} shadow-lg text-center space-y-3 relative`}>
+    <div className={`${orderClass} p-6 rounded-2xl bg-card border ${colors.border} shadow-lg text-center space-y-3 relative`}>
       <div className={`mx-auto h-8 w-8 rounded-full ${colors.badge} font-black text-sm flex items-center justify-center`}>
         {position}
       </div>
@@ -247,10 +249,11 @@ function PodiumEmptySlot({
       : { border: "border-dashed border-amber-800/40", badge: "bg-amber-800/20 text-amber-600" };
 
   const isWithdrawals = activeTab === "WITHDRAWALS";
+  const orderClass = position === 2 ? "order-2 md:order-1" : "order-3 md:order-3";
 
   return (
     <div
-      className={`order-${position === 2 ? "2 md:order-1" : "3"} p-6 rounded-2xl bg-card/40 border ${colors.border} shadow text-center space-y-3 relative opacity-75 hover:opacity-100 transition-opacity`}
+      className={`${orderClass} p-6 rounded-2xl bg-card/40 border ${colors.border} shadow text-center space-y-3 relative opacity-75 hover:opacity-100 transition-opacity`}
     >
       <div className={`mx-auto h-8 w-8 rounded-full ${colors.badge} font-black text-sm flex items-center justify-center`}>
         {position}

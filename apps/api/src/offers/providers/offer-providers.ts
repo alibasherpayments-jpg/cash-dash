@@ -114,6 +114,40 @@ export class ClickWallProvider implements IOfferProvider {
   }
 }
 
+// ─── PixyLabs Provider ───────────────────────────────────────────────────────
+
+@Injectable()
+export class PixyLabsProvider implements IOfferProvider {
+  private readonly logger = new Logger(PixyLabsProvider.name);
+  readonly slug = 'pixylabs';
+  readonly name = 'PixyLabs';
+
+  validateWebhook(payload: unknown, signatureOrSecret: string, secret: string): boolean {
+    if (!signatureOrSecret || !secret) return false;
+    try {
+      if (signatureOrSecret.length === secret.length) {
+        if (crypto.timingSafeEqual(Buffer.from(signatureOrSecret), Buffer.from(secret))) return true;
+      }
+      const expected = crypto
+        .createHmac('sha256', secret)
+        .update(typeof payload === 'string' ? payload : JSON.stringify(payload))
+        .digest('hex');
+      const sigBuffer = Buffer.from(signatureOrSecret, 'hex');
+      const expBuffer = Buffer.from(expected, 'hex');
+      if (sigBuffer.length === expBuffer.length && crypto.timingSafeEqual(sigBuffer, expBuffer)) {
+        return true;
+      }
+      return false;
+    } catch {
+      return false;
+    }
+  }
+
+  async processCompletion(externalTxId: string, userId: string, rewardPoints: number): Promise<void> {
+    this.logger.log(`PixyLabs: Processing completion ${externalTxId} for user ${userId} (${rewardPoints} pts)`);
+  }
+}
+
 // Aliases for compatibility
 export { TaskwallProvider as MockOfferProviderA };
 export { CPALeadProvider as MockOfferProviderB };
@@ -131,11 +165,13 @@ export class ProviderRegistry {
     private taskwall: TaskwallProvider,
     private cpalead: CPALeadProvider,
     private clickwall: ClickWallProvider,
+    private pixylabs: PixyLabsProvider,
   ) {
     this.providers = new Map<string, IOfferProvider>([
       [taskwall.slug, taskwall],
       [cpalead.slug, cpalead],
       [clickwall.slug, clickwall],
+      [pixylabs.slug, pixylabs],
       // Legacy aliases
       ['mock-provider-a', taskwall],
       ['mock-provider-b', cpalead],
@@ -150,6 +186,6 @@ export class ProviderRegistry {
   }
 
   getAllProviders(): IOfferProvider[] {
-    return [this.taskwall, this.cpalead, this.clickwall];
+    return [this.taskwall, this.cpalead, this.clickwall, this.pixylabs];
   }
 }
