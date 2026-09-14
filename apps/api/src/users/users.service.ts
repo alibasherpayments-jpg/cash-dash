@@ -19,17 +19,18 @@ export class UsersService {
   }
 
   async updateProfile(userId: string, dto: UpdateProfileDto) {
+    const updateData: Record<string, any> = {};
+    if (dto.avatarUrl !== undefined) updateData.avatarUrl = dto.avatarUrl;
+    if (dto.country !== undefined) updateData.country = dto.country;
+    if (dto.bio !== undefined) updateData.bio = dto.bio;
+    if (dto.isLeaderboardVisible !== undefined) updateData.isLeaderboardVisible = dto.isLeaderboardVisible;
+    if (dto.isProfileVisible !== undefined) updateData.isProfileVisible = dto.isProfileVisible;
+    if (dto.emailNotifications !== undefined) updateData.emailNotifications = dto.emailNotifications;
+    if (dto.pushNotifications !== undefined) updateData.pushNotifications = dto.pushNotifications;
+
     const profile = await this.prisma.profile.upsert({
       where: { userId },
-      update: {
-        avatarUrl: dto.avatarUrl,
-        country: dto.country,
-        bio: dto.bio,
-        isLeaderboardVisible: dto.isLeaderboardVisible,
-        isProfileVisible: dto.isProfileVisible,
-        emailNotifications: dto.emailNotifications,
-        pushNotifications: dto.pushNotifications,
-      },
+      update: updateData,
       create: {
         userId,
         avatarUrl: dto.avatarUrl,

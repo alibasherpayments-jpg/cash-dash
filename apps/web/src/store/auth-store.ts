@@ -13,6 +13,8 @@ interface AuthState {
   setUser: (user: UserPublic | null) => void;
   setToken: (token: string | null) => void;
   setLoading: (loading: boolean) => void;
+  updateUserAvatar: (avatarUrl: string) => void;
+  updateUserProfile: (profile: Partial<NonNullable<UserPublic['profile']>>) => void;
   login: (email: string, password: string) => Promise<void>;
   register: (username: string, email: string, password: string, referralCode?: string) => Promise<void>;
   loginWithGoogle: (credential: string, referralCode?: string) => Promise<void>;
@@ -27,6 +29,30 @@ export const useAuthStore = create<AuthState>()(persist(
     isAuthenticated: false,
     isLoading: true,
     setUser: (user) => set({ user, isAuthenticated: !!user, isLoading: false }),
+    updateUserAvatar: (avatarUrl) =>
+      set((state) => ({
+        user: state.user
+          ? {
+              ...state.user,
+              profile: {
+                ...(state.user.profile || { isLeaderboardVisible: true }),
+                avatarUrl,
+              },
+            }
+          : null,
+      })),
+    updateUserProfile: (profileData) =>
+      set((state) => ({
+        user: state.user
+          ? {
+              ...state.user,
+              profile: {
+                ...(state.user.profile || { isLeaderboardVisible: true }),
+                ...profileData,
+              },
+            }
+          : null,
+      })),
     setToken: (accessToken) => set({ accessToken }),
     setLoading: (isLoading) => set({ isLoading }),
     login: async (email, password) => {

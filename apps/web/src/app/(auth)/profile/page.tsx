@@ -21,8 +21,12 @@ import {
   Globe,
   Check,
   Sparkles,
+  Camera,
+  RefreshCw,
 } from "lucide-react";
 import { toast } from "sonner";
+import { AvatarSelectorModal } from "@/components/profile/avatar-selector-modal";
+import { updateUserProfile } from "@/lib/user";
 
 export default function ProfilePage() {
   const { user } = useAuthStore();
@@ -32,6 +36,8 @@ export default function ProfilePage() {
     "PERSONAL" | "LANGUAGE" | "SECURITY" | "PREFERENCES" | "PRIVACY"
   >("PERSONAL");
   const [saved, setSaved] = useState(false);
+  const [isAvatarModalOpen, setIsAvatarModalOpen] = useState(false);
+  const [isSavingProfile, setIsSavingProfile] = useState(false);
 
   // Form states
   const [country, setCountry] = useState(user?.profile?.country || "US");
@@ -40,11 +46,34 @@ export default function ProfilePage() {
   const [emailRewardNotifs, setEmailRewardNotifs] = useState(true);
   const [emailWithdrawalNotifs, setEmailWithdrawalNotifs] = useState(true);
 
-  const handleSave = (e: React.FormEvent) => {
+  const handleSave = async (e: React.FormEvent) => {
     e.preventDefault();
-    setSaved(true);
-    toast.success(t.common.saved);
-    setTimeout(() => setSaved(false), 2500);
+    try {
+      setIsSavingProfile(true);
+      const res = await updateUserProfile({
+        country,
+        bio,
+        isLeaderboardVisible: leaderboardVisible,
+      });
+
+      if (res.success || res.data) {
+        useAuthStore.getState().updateUserProfile({
+          country,
+          bio,
+          isLeaderboardVisible: leaderboardVisible,
+        });
+        setSaved(true);
+        toast.success(t.common.saved);
+        setTimeout(() => setSaved(false), 2500);
+      } else {
+        toast.error(res.message || "Failed to update profile");
+      }
+    } catch (err: any) {
+      console.error("Save profile error:", err);
+      toast.error(err.response?.data?.message || "Failed to update profile");
+    } finally {
+      setIsSavingProfile(false);
+    }
   };
 
   const handleLanguageChange = (newLocale: Locale, langName: string) => {
@@ -57,7 +86,24 @@ export default function ProfilePage() {
       {/* ─── Profile Header ──────────────────────────────────────── */}
       <div className="p-6 rounded-2xl bg-card border border-border shadow-md flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div className="flex items-center gap-4">
-          <AvatarWithFallback username={user?.username || "user"} avatarUrl={user?.profile?.avatarUrl} size="lg" />
+          <div
+            className="relative group cursor-pointer shrink-0"
+            onClick={() => setIsAvatarModalOpen(true)}
+            title={locale === "ar" ? "اضغط لتغيير الصورة الشخصية" : "Click to change avatar"}
+          >
+            <AvatarWithFallback
+              username={user?.username || "user"}
+              avatarUrl={user?.profile?.avatarUrl}
+              size="lg"
+              className="h-16 w-16 text-xl ring-2 ring-primary/30 group-hover:ring-primary group-hover:opacity-90 transition-all shadow-md"
+            />
+            <div className="absolute inset-0 rounded-full bg-black/40 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity">
+              <Camera className="h-5 w-5 text-white drop-shadow-md" />
+            </div>
+            <div className="absolute -bottom-1 -right-1 h-6 w-6 rounded-full bg-primary text-primary-foreground border-2 border-card flex items-center justify-center shadow-md group-hover:scale-110 transition-transform">
+              <Camera className="h-3 w-3" />
+            </div>
+          </div>
           <div>
             <div className="flex items-center gap-2">
               <h1 className="text-xl font-black text-foreground">{user?.username}</h1>
@@ -66,9 +112,19 @@ export default function ProfilePage() {
               </Badge>
             </div>
             <p className="text-xs text-muted-foreground">{user?.email}</p>
-            <p className="text-[11px] text-muted-foreground/80 mt-1">
-              {t.profile.memberSince} {new Date().toLocaleDateString(locale === "ar" ? "ar-EG" : "en-US", { month: "short", year: "numeric" })}
-            </p>
+            <div className="flex flex-wrap items-center gap-3 mt-1.5">
+              <p className="text-[11px] text-muted-foreground/80">
+                {t.profile.memberSince} {new Date().toLocaleDateString(locale === "ar" ? "ar-EG" : "en-US", { month: "short", year: "numeric" })}
+              </p>
+              <button
+                type="button"
+                onClick={() => setIsAvatarModalOpen(true)}
+                className="text-[11px] font-bold text-primary hover:underline flex items-center gap-1 transition-colors"
+              >
+                <Camera className="h-3 w-3" />
+                <span>{locale === "ar" ? "تغيير الصورة" : "Change Avatar"}</span>
+              </button>
+            </div>
           </div>
         </div>
 
@@ -265,8 +321,18 @@ export default function ProfilePage() {
                   <CheckCircle2 className="h-4 w-4" /> {t.common.saved}
                 </span>
               )}
-              <Button type="submit" size="sm" className="ml-auto font-bold">
-                <Save className="mr-1.5 h-4 w-4" /> {t.profile.personal.saveButton}
+              <Button type="submit" size="sm" disabled={isSavingProfile} className="ml-auto font-bold gap-1.5">
+                {isSavingProfile ? (
+                  <>
+                    <RefreshCw className="h-4 w-4 animate-spin" />
+                    <span>{t.common.saving}</span>
+                  </>
+                ) : (
+                  <>
+                    <Save className="h-4 w-4" />
+                    <span>{t.profile.personal.saveButton}</span>
+                  </>
+                )}
               </Button>
             </CardFooter>
           </form>
@@ -373,6 +439,12 @@ export default function ProfilePage() {
           </CardContent>
         </Card>
       )}
+
+      {/* ─── Avatar Selector Modal ───────────────────────────────── */}
+      <AvatarSelectorModal
+        open={isAvatarModalOpen}
+        onOpenChange={setIsAvatarModalOpen}
+      />
     </div>
   );
 }

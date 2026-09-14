@@ -11,7 +11,8 @@ import { ApiPropertyOptional } from '@nestjs/swagger';
 export class UpdateProfileDto {
   @ApiPropertyOptional()
   @IsOptional()
-  @IsUrl()
+  @IsString()
+  @MaxLength(2000000)
   avatarUrl?: string;
 
   @ApiPropertyOptional()
