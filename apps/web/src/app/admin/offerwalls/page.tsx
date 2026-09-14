@@ -91,6 +91,8 @@ export default function AdminOfferwallsPage() {
           postback = `${apiHost}/api/v1/webhooks/providers/cpalead?subid={subid}&payout={payout}&lead_id={lead_id}&campaign_name={campaign_name}`;
         } else if (p.slug === "clickwall") {
           postback = `${apiHost}/api/v1/webhooks/providers/clickwall?user_id={user_id}&points={points}&trans_id={trans_id}`;
+        } else if (p.slug === "pixylabs") {
+          postback = `${apiHost}/api/v1/webhooks/providers/pixylabs?user_id={user_id}&subid={subid}&payout={payout}&points={points}&tx_id={tx_id}`;
         } else {
           postback = `${apiHost}/api/v1/webhooks/providers/${p.slug}?user_id={user_id}&points={points}&tx_id={tx_id}`;
         }
@@ -100,7 +102,14 @@ export default function AdminOfferwallsPage() {
           name: p.name,
           slug: p.slug,
           type: (p.type || "TASKS").toUpperCase(),
-          badge: p.slug === "taskwall" ? "Instant Clearance" : p.slug === "cpalead" ? "Fastest Approval" : "Instant Clicks",
+          badge:
+            p.slug === "taskwall"
+              ? "Instant Clearance"
+              : p.slug === "cpalead"
+              ? "Fastest Approval"
+              : p.slug === "pixylabs"
+              ? "High Payouts"
+              : "Instant Clicks",
           rating: 4.9,
           avgPayout: "$1.00 - $25.00",
           devices: ["Web", "Android", "iOS"],
