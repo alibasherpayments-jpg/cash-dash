@@ -33,13 +33,15 @@ import { useLeaderboard } from "@/hooks/use-leaderboard";
 import { AvatarWithFallback } from "@/components/common/avatar-with-fallback";
 import { useTranslation } from "@/providers/i18n-provider";
 
+const baseUrl = process.env.NEXT_PUBLIC_APP_URL || "https://web-production-79a62.up.railway.app";
+
 const jsonLd = {
   "@context": "https://schema.org",
   "@graph": [
     {
       "@type": "WebSite",
-      "@id": "https://www.alibasher.online/#website",
-      "url": "https://www.alibasher.online",
+      "@id": `${baseUrl}/#website`,
+      "url": baseUrl,
       "name": "Cash Dash",
       "alternateName": ["Cash Dash Rewards", "CashDash"],
       "description": "Complete offers, answer surveys, play games, and earn real cash rewards with instant payouts.",
@@ -47,21 +49,21 @@ const jsonLd = {
     },
     {
       "@type": "Organization",
-      "@id": "https://www.alibasher.online/#organization",
+      "@id": `${baseUrl}/#organization`,
       "name": "Cash Dash",
-      "url": "https://www.alibasher.online",
+      "url": baseUrl,
       "logo": {
         "@type": "ImageObject",
-        "url": "https://www.alibasher.online/icon-512.png",
+        "url": `${baseUrl}/icon-512.png`,
         "width": 512,
         "height": 512,
       },
     },
     {
       "@type": "WebApplication",
-      "@id": "https://www.alibasher.online/#app",
+      "@id": `${baseUrl}/#app`,
       "name": "Cash Dash Rewards",
-      "url": "https://www.alibasher.online",
+      "url": baseUrl,
       "applicationCategory": "FinanceApplication, EntertainmentApplication",
       "operatingSystem": "All",
       "offers": {
@@ -79,7 +81,7 @@ const jsonLd = {
     },
     {
       "@type": "FAQPage",
-      "@id": "https://www.alibasher.online/#faq",
+      "@id": `${baseUrl}/#faq`,
       "mainEntity": [
         {
           "@type": "Question",
