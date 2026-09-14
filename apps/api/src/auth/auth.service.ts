@@ -10,7 +10,9 @@ import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
 import { PrismaService } from '../prisma/prisma.service';
 import * as bcrypt from 'bcrypt';
-import { RegisterDto, LoginDto } from './dto/auth.dto';
+import * as crypto from 'crypto';
+import { OAuth2Client } from 'google-auth-library';
+import { RegisterDto, LoginDto, GoogleAuthDto } from './dto/auth.dto';
 import { UserRole, UserStatus } from '@prisma/client';
 
 interface TokenPair {
@@ -21,12 +23,18 @@ interface TokenPair {
 @Injectable()
 export class AuthService {
   private readonly logger = new Logger(AuthService.name);
+  private readonly googleClient: OAuth2Client;
 
   constructor(
     private prisma: PrismaService,
     private jwtService: JwtService,
     private configService: ConfigService,
-  ) {}
+  ) {
+    const clientId =
+      this.configService.get<string>('GOOGLE_CLIENT_ID') ||
+      '219845067052-r4t9s9qfor0bi7q46etc01fejtps4q2r.apps.googleusercontent.com';
+    this.googleClient = new OAuth2Client(clientId);
+  }
 
   async register(dto: RegisterDto, ipAddress?: string): Promise<{ user: Record<string, unknown>; tokens: TokenPair }> {
     const normalizedEmail = dto.email.trim().toLowerCase();
@@ -176,6 +184,178 @@ export class AuthService {
     const passwordValid = await bcrypt.compare(dto.password, user.passwordHash);
     if (!passwordValid) {
       throw new UnauthorizedException('Invalid credentials');
+    }
+
+    const tokens = await this.generateTokens(user.id, user.email, user.role, ipAddress, userAgent);
+    const { passwordHash: _ph, ...safeUser } = user;
+    return { user: safeUser as Record<string, unknown>, tokens };
+  }
+
+  async googleAuth(
+    dto: GoogleAuthDto,
+    ipAddress?: string,
+    userAgent?: string,
+  ): Promise<{ user: Record<string, unknown>; tokens: TokenPair }> {
+    const clientId =
+      this.configService.get<string>('GOOGLE_CLIENT_ID') ||
+      '219845067052-r4t9s9qfor0bi7q46etc01fejtps4q2r.apps.googleusercontent.com';
+
+    let payload;
+    try {
+      const ticket = await this.googleClient.verifyIdToken({
+        idToken: dto.credential,
+        audience: clientId,
+      });
+      payload = ticket.getPayload();
+    } catch (err: any) {
+      this.logger.error(`Google token verification failed: ${err.message}`);
+      throw new UnauthorizedException('Invalid or expired Google token');
+    }
+
+    if (!payload || !payload.email) {
+      throw new UnauthorizedException('Google account did not return a valid email address');
+    }
+
+    const googleId = payload.sub;
+    const normalizedEmail = payload.email.trim().toLowerCase();
+    const name = payload.name || payload.given_name || normalizedEmail.split('@')[0];
+    const picture = payload.picture;
+
+    // Check if user already exists by googleId or email
+    let user = await this.prisma.user.findFirst({
+      where: {
+        OR: [
+          { googleId },
+          { email: { equals: normalizedEmail, mode: 'insensitive' } },
+        ],
+      },
+      include: { profile: true, wallet: true },
+    });
+
+    if (user) {
+      if (user.status === UserStatus.BANNED) {
+        throw new UnauthorizedException('Account has been banned');
+      }
+
+      // Link googleId or auto-verify email if not already set
+      const updateData: any = {};
+      if (!user.googleId) updateData.googleId = googleId;
+      if (!user.emailVerifiedAt) updateData.emailVerifiedAt = new Date();
+      if (user.status === UserStatus.PENDING_VERIFICATION) updateData.status = UserStatus.ACTIVE;
+
+      if (Object.keys(updateData).length > 0) {
+        user = await this.prisma.user.update({
+          where: { id: user.id },
+          data: updateData,
+          include: { profile: true, wallet: true },
+        });
+      }
+
+      // Update avatar if profile doesn't have one
+      if (picture && user.profile && !user.profile.avatarUrl) {
+        await this.prisma.profile.update({
+          where: { userId: user.id },
+          data: { avatarUrl: picture },
+        });
+      }
+
+      this.logger.log(`User logged in via Google: ${user.username} (${user.id})`);
+    } else {
+      // Generate clean unique username
+      let baseUsername = name.replace(/[^a-zA-Z0-9_]/g, '').substring(0, 14);
+      if (baseUsername.length < 3) {
+        baseUsername = 'user_' + Math.random().toString(36).substring(2, 7);
+      }
+      let username = baseUsername;
+      let counter = 1;
+      while (await this.prisma.user.findUnique({ where: { username } })) {
+        username = `${baseUsername}${counter}`;
+        counter++;
+      }
+
+      // Secure random password hash
+      const randomSecret = crypto.randomBytes(32).toString('hex');
+      const passwordHash = await bcrypt.hash(randomSecret, 12);
+
+      // Resolve referrer if referralCode passed
+      let referredById: string | undefined;
+      if (dto.referralCode) {
+        const referrer = await this.prisma.user.findUnique({
+          where: { referralCode: dto.referralCode.trim() },
+        });
+        if (referrer) {
+          referredById = referrer.id;
+        }
+      }
+
+      user = await this.prisma.$transaction(async (tx) => {
+        const newUser = await tx.user.create({
+          data: {
+            email: normalizedEmail,
+            username,
+            passwordHash,
+            googleId,
+            role: UserRole.USER,
+            status: UserStatus.ACTIVE,
+            emailVerifiedAt: new Date(),
+            referredById,
+            wallet: {
+              create: {
+                availablePoints: 0,
+                pendingPoints: 0,
+                totalEarned: 0,
+                totalWithdrawn: 0,
+              },
+            },
+            profile: {
+              create: {
+                avatarUrl: picture || null,
+                isLeaderboardVisible: true,
+                isProfileVisible: true,
+                emailNotifications: true,
+                pushNotifications: false,
+              },
+            },
+            userStreak: {
+              create: {
+                currentStreak: 0,
+                longestStreak: 0,
+                lastActiveAt: new Date(),
+              },
+            },
+            notificationPref: {
+              create: {
+                rewardNotifications: true,
+                withdrawalNotifications: true,
+                referralNotifications: true,
+                promotionalNotifications: false,
+                systemNotifications: true,
+                emailRewardNotifications: true,
+                emailWithdrawalNotifications: true,
+              },
+            },
+            riskAssessment: {
+              create: {},
+            },
+          },
+          include: { profile: true, wallet: true },
+        });
+
+        if (referredById) {
+          await tx.referral.create({
+            data: {
+              referrerId: referredById,
+              referredId: newUser.id,
+              rewardGiven: false,
+              rewardPoints: 0,
+            },
+          });
+        }
+
+        return newUser;
+      });
+
+      this.logger.log(`New user registered via Google: ${user.username} (${user.id})`);
     }
 
     const tokens = await this.generateTokens(user.id, user.email, user.role, ipAddress, userAgent);

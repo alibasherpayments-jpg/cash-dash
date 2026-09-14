@@ -26,6 +26,15 @@ export async function register(data: RegisterData): Promise<ApiResponse<AuthResp
   return apiPost<ApiResponse<AuthResponse>>('/auth/register', data);
 }
 
+export interface GoogleAuthData {
+  credential: string;
+  referralCode?: string;
+}
+
+export async function loginWithGoogle(data: GoogleAuthData): Promise<ApiResponse<AuthResponse>> {
+  return apiPost<ApiResponse<AuthResponse>>('/auth/google', data);
+}
+
 export async function logout(): Promise<ApiResponse<void>> {
   return apiPost<ApiResponse<void>>('/auth/logout');
 }

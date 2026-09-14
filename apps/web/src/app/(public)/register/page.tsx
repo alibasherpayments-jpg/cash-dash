@@ -11,6 +11,7 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Coins, AlertCircle, Loader2, CheckCircle2 } from "lucide-react";
 import { FieldError } from "@/components/ui/field-error";
 import { validateEmail } from "@/lib/validation";
+import { GoogleAuthButton } from "@/components/common/google-auth-button";
 
 export default function RegisterPage() {
   const router = useRouter();
@@ -88,6 +89,20 @@ export default function RegisterPage() {
             Join Cash Dash and claim your first rewards immediately
           </CardDescription>
         </CardHeader>
+
+        {/* ─── Google One-Click Registration ─────────────────────── */}
+        <div className="px-6 pt-1 pb-2">
+          <GoogleAuthButton mode="signup" />
+
+          <div className="relative my-4">
+            <div className="absolute inset-0 flex items-center">
+              <span className="w-full border-t border-border/70" />
+            </div>
+            <div className="relative flex justify-center text-[11px] uppercase">
+              <span className="bg-card px-2 text-muted-foreground font-semibold">Or register with email</span>
+            </div>
+          </div>
+        </div>
 
         <form onSubmit={handleSubmit} noValidate>
           <CardContent className="space-y-4">

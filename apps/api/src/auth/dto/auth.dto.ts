@@ -77,3 +77,14 @@ export class RefreshTokenDto {
   @IsString()
   refreshToken?: string;
 }
+
+export class GoogleAuthDto {
+  @ApiProperty({ description: 'Google Identity credential ID token' })
+  @IsString()
+  credential: string;
+
+  @ApiPropertyOptional({ example: 'abc123xyz', description: 'Optional referral code' })
+  @IsOptional()
+  @IsString()
+  referralCode?: string;
+}

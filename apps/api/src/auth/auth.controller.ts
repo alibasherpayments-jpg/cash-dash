@@ -16,6 +16,7 @@ import { AuthService } from './auth.service';
 import {
   RegisterDto,
   LoginDto,
+  GoogleAuthDto,
   ForgotPasswordDto,
   ResetPasswordDto,
   VerifyEmailDto,
@@ -67,6 +68,27 @@ export class AuthController {
       success: true,
       data: { user, accessToken: tokens.accessToken, refreshToken: tokens.refreshToken },
       message: 'Login successful',
+    };
+  }
+
+  @Public()
+  @Post('google')
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: 'Sign in or register with Google credential token' })
+  async googleAuth(
+    @Body() dto: GoogleAuthDto,
+    @Req() req: Request,
+    @Res({ passthrough: true }) res: Response,
+  ) {
+    const ip = req.ip;
+    const ua = req.headers['user-agent'];
+    const { user, tokens } = await this.authService.googleAuth(dto, ip, ua);
+    res.cookie('refresh_token', tokens.refreshToken, COOKIE_OPTIONS);
+    res.cookie('access_token', tokens.accessToken, { ...COOKIE_OPTIONS, maxAge: 15 * 60 * 1000 });
+    return {
+      success: true,
+      data: { user, accessToken: tokens.accessToken, refreshToken: tokens.refreshToken },
+      message: 'Google authentication successful',
     };
   }
 
