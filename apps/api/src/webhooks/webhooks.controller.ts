@@ -19,6 +19,7 @@ import { ProviderRegistry } from '../offers/providers/offer-providers';
 import { Public } from '../common/decorators/public.decorator';
 import { WalletService } from '../wallet/wallet.service';
 import { NotificationsService } from '../notifications/notifications.service';
+import { TelegramService } from '../notifications/telegram.service';
 import { TransactionType, NotificationType, OfferCompletionStatus, OfferCategory } from '@prisma/client';
 import { Request, Response } from 'express';
 
@@ -33,6 +34,7 @@ export class WebhooksController {
     private providerRegistry: ProviderRegistry,
     private walletService: WalletService,
     private notificationsService: NotificationsService,
+    private telegramService: TelegramService,
   ) {}
 
   @Get(['providers/:providerId', 'postback/:providerId'])
@@ -329,6 +331,21 @@ export class WebhooksController {
       })
       .catch((err) => {
         this.logger.warn(`Failed to trigger notification: ${err.message}`);
+      });
+
+    // 9b. Send Real-time Telegram Alert
+    await this.telegramService
+      .sendRewardAlert({
+        provider: providerRecord.name,
+        offerTitle,
+        rewardPoints,
+        payoutUsd: rewardPoints / 1000,
+        username: user.username,
+        userId: user.id,
+        txId: externalTxId,
+      })
+      .catch((err) => {
+        this.logger.warn(`Failed to dispatch Telegram notification: ${err.message}`);
       });
 
     // 10. Record Webhook Event & Update Provider LastWebhookAt
