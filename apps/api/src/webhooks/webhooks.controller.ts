@@ -344,7 +344,7 @@ export class WebhooksController {
         this.logger.warn(`Failed to trigger notification: ${err.message}`);
       });
 
-    // 9b. Send Real-time Telegram Alert
+    // 9b. Send Real-time Telegram Alert (with offer icon if available)
     await this.telegramService
       .sendRewardAlert({
         provider: providerRecord.name,
@@ -354,10 +354,13 @@ export class WebhooksController {
         username: user.username,
         userId: user.id,
         txId: externalTxId,
+        offerId: offerExternalId,
+        imageUrl: String(payload['icon'] || payload['image'] || '').trim() || undefined,
       })
       .catch((err) => {
         this.logger.warn(`Failed to dispatch Telegram notification: ${err.message}`);
       });
+
 
     // 10. Record Webhook Event & Update Provider LastWebhookAt
     await this.prisma.providerWebhookEvent.upsert({

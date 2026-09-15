@@ -12,6 +12,8 @@ export interface RewardAlertPayload {
   userId: string;
   txId?: string;
   date?: Date;
+  imageUrl?: string;
+  offerId?: string;
 }
 
 @Injectable()
@@ -25,6 +27,9 @@ export class TelegramService implements OnModuleInit, OnModuleDestroy {
   private isPolling: boolean = false;
   private lastUpdateId: number = 0;
   private pollAbortController: AbortController | null = null;
+  private offerIconsCache: Map<string, string> = new Map();
+  private lastCacheFetchTime: number = 0;
+
 
   constructor(private configService: ConfigService) {
     this.botToken =
@@ -286,7 +291,92 @@ export class TelegramService implements OnModuleInit, OnModuleDestroy {
       .filter(Boolean)
       .join('\n');
 
+    // Attempt to resolve offer image if not passed directly
+    let imageUrl = payload.imageUrl;
+    if (!imageUrl && payload.offerId) {
+      imageUrl = await this.getTaskwallOfferIcon(payload.offerId);
+    }
+
+    // Try sending as Photo with caption first
+    if (imageUrl) {
+      const photoSent = await this.sendPhoto(this.adminChatId, imageUrl, message);
+      if (photoSent) return true;
+    }
+
+    // Fallback to text message
     return this.sendMessage(this.adminChatId, message);
+  }
+
+  /**
+   * Fetch and cache offer icon from Taskwall API.
+   */
+  async getTaskwallOfferIcon(offerId: string): Promise<string | undefined> {
+    if (!offerId || offerId === 'N/A') return undefined;
+
+    if (this.offerIconsCache.has(offerId)) {
+      return this.offerIconsCache.get(offerId);
+    }
+
+    const now = Date.now();
+    if (now - this.lastCacheFetchTime > 10 * 60 * 1000 || this.offerIconsCache.size === 0) {
+      try {
+        const res = await fetch('https://wall.taskwall.io/api/?app_id=6404e8a2318aa5f42725dd3c2cbc8d46&userid=admin');
+        if (res.ok) {
+          const data = (await res.json()) as any;
+          const offers = Array.isArray(data) ? data : (data.offers || []);
+          for (const off of offers) {
+            if (off && off.offer_id && off.icon) {
+              this.offerIconsCache.set(String(off.offer_id), String(off.icon));
+            }
+          }
+          this.lastCacheFetchTime = now;
+        }
+      } catch (err) {
+        this.logger.debug(`Could not cache Taskwall icons: ${(err as Error).message}`);
+      }
+    }
+
+    return this.offerIconsCache.get(offerId);
+  }
+
+  /**
+   * Send a photo with formatted HTML caption to Telegram.
+   */
+  async sendPhoto(chatId: string, photoUrl: string, caption: string): Promise<boolean> {
+    if (!this.botToken) return false;
+
+    const url = `https://api.telegram.org/bot${this.botToken}/sendPhoto`;
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 15000);
+
+    try {
+      const res = await fetch(url, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          chat_id: chatId,
+          photo: photoUrl,
+          caption,
+          parse_mode: 'HTML',
+        }),
+        signal: controller.signal,
+      });
+
+      clearTimeout(timeout);
+
+      if (!res.ok) {
+        const errorText = await res.text();
+        this.logger.warn(`Telegram sendPhoto failed (${res.status}): ${errorText}. Falling back to text.`);
+        return false;
+      }
+
+      this.logger.log(`Telegram photo alert delivered successfully to chat ${chatId}`);
+      return true;
+    } catch (err) {
+      clearTimeout(timeout);
+      this.logger.warn(`Failed to send Telegram photo: ${(err as Error).message}`);
+      return false;
+    }
   }
 
   /**
