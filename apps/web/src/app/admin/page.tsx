@@ -9,7 +9,6 @@ import {
   Users,
   Coins,
   ArrowUpRight,
-  Gift,
   ShieldAlert,
   Clock,
   ArrowRight,
