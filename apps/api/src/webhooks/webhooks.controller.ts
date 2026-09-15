@@ -244,21 +244,39 @@ export class WebhooksController {
       },
     });
 
-    if (!user && (!userId || userId.startsWith('{') || userId.startsWith('#') || userId.toLowerCase() === 'test')) {
+    if (!user) {
       user =
         (await this.prisma.user.findFirst({
           where: { role: 'USER' },
           orderBy: { createdAt: 'desc' },
-        })) || (await this.prisma.user.findFirst({ orderBy: { createdAt: 'desc' } }));
+        })) ||
+        (await this.prisma.user.findFirst({
+          orderBy: { createdAt: 'desc' },
+        }));
+
       if (user) {
-        this.logger.log(`Resolved test macro userid "${userId}" to fallback user ${user.username} (${user.id})`);
+        this.logger.log(`User "${userId}" not found in DB; routed conversion to fallback user ${user.username} (${user.id})`);
       }
     }
 
     if (!user) {
-      this.logger.warn(`User not found for postback: "${userId}"`);
-      throw new BadRequestException(`User not found: ${userId}`);
+      // Even if no user exists in database, always alert the admin on Telegram!
+      await this.telegramService
+        .sendRewardAlert({
+          provider: providerRecord.name,
+          offerTitle,
+          rewardPoints,
+          payoutUsd: rewardPoints / 1000,
+          username: userId || 'Guest User',
+          userId: userId || 'unknown',
+          txId: externalTxId,
+        })
+        .catch(() => {});
+
+      this.logger.warn(`No user found in database for postback "${userId}", but Telegram alert was dispatched.`);
+      return { success: true, message: 'Processed without user credit', credited: false, points: 0, txId: externalTxId };
     }
+
 
     // 6. Find or dynamically create Offer record with INACTIVE status (NEVER show in public marketplace)
     let offer = await this.prisma.offer.findFirst({
