@@ -28,7 +28,7 @@ import {
   Lock,
   Layers,
 } from "lucide-react";
-import { formatPoints, formatCash, formatPointsAsCash } from "@/lib/formatters";
+import { formatPoints, formatCash, formatPointsAsCash, formatPointsRaw } from "@/lib/formatters";
 import { useLeaderboard } from "@/hooks/use-leaderboard";
 import { AvatarWithFallback } from "@/components/common/avatar-with-fallback";
 import { useTranslation } from "@/providers/i18n-provider";
@@ -416,7 +416,7 @@ export default function LandingPage() {
                     <div>
                       <span className="text-xs text-muted-foreground font-semibold">{t.landing.featured.earnUpTo}</span>
                       <p className="text-lg font-black text-foreground">
-                        {formatPoints(offer.reward)} <span className="text-xs font-bold text-accent">{t.common.pts}</span>
+                        {formatPointsRaw(offer.reward)} <span className="text-xs font-bold text-accent">{t.common.pts}</span>
                       </p>
                       <p className="text-xs font-medium text-emerald-500">
                         ≈ {formatCash(offer.reward / 1000)}
@@ -528,7 +528,7 @@ export default function LandingPage() {
                     {formatPointsAsCash(user.totalWithdrawn)}
                   </span>
                   <span className="text-[10px] text-muted-foreground block">
-                    {formatPoints(user.totalWithdrawn)} {t.common.pts}
+                    {formatPointsRaw(user.totalWithdrawn)} {t.common.pts}
                   </span>
                 </div>
               </div>
