@@ -230,7 +230,7 @@ export default function LandingPage() {
                   <span className="text-sm font-bold text-accent">Points</span>
                 </div>
                 <div className="text-sm font-semibold text-emerald-500 mt-1">
-                  ≈ $124.50 USD Available
+                  ≈ {formatPointsAsCash(12450)} USD Available
                 </div>
               </div>
 

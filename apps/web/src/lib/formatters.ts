@@ -41,7 +41,7 @@ export function formatCash(amount: number): string {
 
 /**
  * Convert points to USD
- * e.g. 12450 -> 1.245
+ * e.g. 12450 -> 12.45
  */
 export function pointsToCash(points: number): number {
   return sharedPointsToCash(points);
@@ -49,7 +49,7 @@ export function pointsToCash(points: number): number {
 
 /**
  * Format points as cash value string
- * e.g. 12450 -> "$1.25"
+ * e.g. 12450 -> "$12.45"
  */
 export function formatPointsAsCash(points: number): string {
   return formatCash(pointsToCash(points));
