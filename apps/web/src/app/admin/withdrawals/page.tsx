@@ -31,9 +31,13 @@ import {
   CheckSquare,
   Square,
   Sparkles,
+  Copy,
+  Check,
 } from "lucide-react";
 import { formatPoints, formatCash } from "@/lib/formatters";
 import apiClient from "@/lib/api-client";
+import { parseWithdrawalDestination } from "@/lib/withdrawal-helpers";
+import { WalletCopyBadge } from "@/components/admin/wallet-display";
 
 interface AdminWithdrawalRow {
   id: string;
@@ -47,6 +51,9 @@ interface AdminWithdrawalRow {
   destination: string;
   rawDestination?: any;
   walletKey: string;
+  primaryWallet: string;
+  walletType?: string;
+  accountHolder?: string;
   date: string;
   externalTxId?: string;
 }
@@ -55,62 +62,9 @@ interface AdminWithdrawalRow {
  * Extracts a normalized wallet/account identifier from withdrawal destination details.
  * Ensures all requests directed to the same phone/wallet/UID share the same key.
  */
-function extractWalletKey(raw: any, destStr?: string): string {
-  if (raw && typeof raw === "object") {
-    const priorityKeys = [
-      "phone",
-      "mobile",
-      "mobile_number",
-      "wallet",
-      "wallet_number",
-      "vodafone_cash",
-      "orange_money",
-      "etisalat_cash",
-      "instapay",
-      "ipa",
-      "account",
-      "address",
-      "crypto_address",
-      "binance_id",
-      "binance_pay_id",
-      "pay_id",
-      "uid",
-      "email",
-      "number",
-    ];
-    for (const key of priorityKeys) {
-      if (raw[key]) {
-        return String(raw[key]).trim().toLowerCase();
-      }
-    }
-    for (const [k, v] of Object.entries(raw)) {
-      const kl = k.toLowerCase();
-      if (
-        (kl.includes("phone") ||
-          kl.includes("mobile") ||
-          kl.includes("wallet") ||
-          kl.includes("address") ||
-          kl.includes("account") ||
-          kl.includes("binance") ||
-          kl.includes("uid")) &&
-        v
-      ) {
-        return String(v).trim().toLowerCase();
-      }
-    }
-    const vals = Object.values(raw).filter(Boolean);
-    if (vals.length > 0) return String(vals[0]).trim().toLowerCase();
-  }
-
-  const s = String(destStr || raw || "").trim().toLowerCase();
-  if (s.includes(":")) {
-    const parts = s.split("|").map((p) => p.trim());
-    for (const part of parts) {
-      const [k, v] = part.split(":").map((x) => x.trim());
-      if (v && v.length >= 2) return v;
-    }
-  }
-  return s || "unknown";
+function extractWalletKey(raw: any, methodName?: string): string {
+  const parsed = parseWithdrawalDestination(raw, methodName);
+  return parsed.primaryWallet.toLowerCase();
 }
 
 export default function AdminWithdrawalsPage() {
@@ -147,16 +101,8 @@ export default function AdminWithdrawalsPage() {
       const res = await apiClient.get("/admin/withdrawals", { params });
       const rawList = res.data?.data || (Array.isArray(res.data) ? res.data : []);
       const mapped: AdminWithdrawalRow[] = rawList.map((w: any) => {
-        let destStr = "";
-        if (typeof w.destination === "object" && w.destination !== null) {
-          destStr = Object.entries(w.destination)
-            .map(([k, v]) => `${k}: ${v}`)
-            .join(" | ");
-        } else {
-          destStr = String(w.destination || "N/A");
-        }
-
-        const walletKey = extractWalletKey(w.destination, destStr);
+        const parsed = parseWithdrawalDestination(w.destination, w.method?.name);
+        const walletKey = parsed.primaryWallet.toLowerCase();
 
         return {
           id: w.id,
@@ -167,9 +113,12 @@ export default function AdminWithdrawalsPage() {
           cashValue: w.cashValue || w.points / 1000,
           status: w.status,
           riskScore: w.user?.riskAssessment?.riskScore ?? 10,
-          destination: destStr,
+          destination: parsed.summary,
           rawDestination: w.destination,
           walletKey,
+          primaryWallet: parsed.primaryWallet,
+          walletType: parsed.walletType,
+          accountHolder: parsed.accountHolder,
           date: new Date(w.createdAt).toLocaleString(),
           externalTxId: w.externalTxId,
         };
@@ -208,6 +157,8 @@ export default function AdminWithdrawalsPage() {
         w.user.toLowerCase().includes(q) ||
         w.destination.toLowerCase().includes(q) ||
         w.walletKey.toLowerCase().includes(q) ||
+        w.primaryWallet.toLowerCase().includes(q) ||
+        (w.accountHolder && w.accountHolder.toLowerCase().includes(q)) ||
         w.method.toLowerCase().includes(q)
       );
     }
@@ -611,13 +562,12 @@ export default function AdminWithdrawalsPage() {
 
                         {/* Destination & Dedicated 'Select Same Wallet' Button */}
                         <td className="py-3.5 px-5">
-                          <div className="space-y-1.5">
-                            <span
-                              className="font-mono text-[11px] text-slate-300 block max-w-xs truncate"
-                              title={w.destination}
-                            >
-                              {w.destination}
-                            </span>
+                          <div className="space-y-1.5 min-w-[220px] max-w-sm">
+                            <WalletCopyBadge
+                              destination={w.rawDestination}
+                              methodName={w.method}
+                            />
+
                             {w.externalTxId && (
                               <span className="text-[10px] text-emerald-400 font-mono block">
                                 TxID: {w.externalTxId}
@@ -796,9 +746,19 @@ export default function AdminWithdrawalsPage() {
                 <strong className="text-foreground">{selectedIds.length} items</strong>
               </div>
               {selectedUniqueWallets.length === 1 && (
-                <div className="flex justify-between">
+                <div className="flex justify-between items-center">
                   <span className="text-muted-foreground">Target Wallet</span>
-                  <span className="font-mono text-primary font-bold">{selectedUniqueWallets[0]}</span>
+                  <div className="flex items-center gap-1.5">
+                    <span className="font-mono text-primary font-bold">{selectedUniqueWallets[0]}</span>
+                    <button
+                      type="button"
+                      onClick={() => navigator?.clipboard?.writeText(selectedUniqueWallets[0])}
+                      className="p-1 text-slate-400 hover:text-amber-300 rounded transition-colors"
+                      title="Copy Wallet / نسخ المحفظة"
+                    >
+                      <Copy className="h-3.5 w-3.5" />
+                    </button>
+                  </div>
                 </div>
               )}
               <div className="flex justify-between">
@@ -937,11 +897,24 @@ export default function AdminWithdrawalsPage() {
                   {formatPoints(actionItem?.row.points || 0)} pts ({formatCash(actionItem?.row.cashValue || 0)} USD)
                 </strong>
               </div>
-              <div className="flex justify-between">
-                <span className="text-muted-foreground">Destination</span>
-                <span className="font-mono text-foreground text-[11px] truncate max-w-[200px]">
-                  {actionItem?.row.destination}
-                </span>
+              <div className="flex justify-between items-center">
+                <span className="text-muted-foreground">Target Wallet</span>
+                <div className="flex items-center gap-1.5">
+                  <span className="font-mono text-primary font-bold text-xs truncate max-w-[180px]">
+                    {actionItem?.row.primaryWallet || actionItem?.row.destination}
+                  </span>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const val = actionItem?.row.primaryWallet || actionItem?.row.destination;
+                      if (val) navigator?.clipboard?.writeText(val);
+                    }}
+                    className="p-1 text-slate-400 hover:text-amber-300 rounded transition-colors"
+                    title="Copy Wallet / نسخ المحفظة"
+                  >
+                    <Copy className="h-3.5 w-3.5" />
+                  </button>
+                </div>
               </div>
             </div>
 

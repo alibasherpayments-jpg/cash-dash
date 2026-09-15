@@ -21,6 +21,7 @@ import {
 } from "lucide-react";
 import { formatPoints, formatCash } from "@/lib/formatters";
 import apiClient from "@/lib/api-client";
+import { WalletCopyBadge } from "@/components/admin/wallet-display";
 
 interface StatData {
   usersCount: number;
@@ -271,6 +272,7 @@ export default function AdminOverviewPage() {
                   <tr>
                     <th className="py-3 px-5 font-semibold">User</th>
                     <th className="py-3 px-5 font-semibold">Method</th>
+                    <th className="py-3 px-5 font-semibold">Target Wallet / المحفظة</th>
                     <th className="py-3 px-5 font-semibold">Points</th>
                     <th className="py-3 px-5 font-semibold">USD Value</th>
                     <th className="py-3 px-5 font-semibold">Status</th>
@@ -282,6 +284,12 @@ export default function AdminOverviewPage() {
                     <tr key={row.id} className="hover:bg-muted/40 transition-colors">
                       <td className="py-3.5 px-5 font-bold text-foreground">{row.user?.username || "User"}</td>
                       <td className="py-3.5 px-5 text-muted-foreground">{row.method?.name || "Payout"}</td>
+                      <td className="py-3.5 px-5 min-w-[200px] max-w-xs">
+                        <WalletCopyBadge
+                          destination={row.destination}
+                          methodName={row.method?.name}
+                        />
+                      </td>
                       <td className="py-3.5 px-5 font-mono">{formatPoints(row.points || 0)}</td>
                       <td className="py-3.5 px-5 font-bold text-emerald-500">
                         ${((row.points || 0) / 1000).toFixed(2)}

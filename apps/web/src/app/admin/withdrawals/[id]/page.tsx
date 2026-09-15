@@ -42,6 +42,7 @@ import {
 } from "lucide-react";
 import { formatPoints, formatCash } from "@/lib/formatters";
 import apiClient from "@/lib/api-client";
+import { DestinationDetailCard } from "@/components/admin/wallet-display";
 
 interface WithdrawalDetailData {
   id: string;
@@ -337,30 +338,20 @@ export default function AdminWithdrawalDetailPage() {
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <Card className="bg-card border-border text-card-foreground shadow-sm">
           <CardHeader className="p-5 pb-3">
-            <CardTitle className="text-sm font-bold text-foreground">Destination Details</CardTitle>
+            <CardTitle className="text-sm font-bold text-foreground flex items-center gap-2">
+              <Wallet className="h-4 w-4 text-amber-500" /> Payout Destination & Wallet
+            </CardTitle>
+            <CardDescription className="text-xs text-muted-foreground">
+              Review and copy user payout details for manual or automated disbursement
+            </CardDescription>
           </CardHeader>
-          <CardContent className="p-5 pt-0 space-y-2.5 text-xs">
-            <div className="p-3.5 rounded-lg bg-background/60 border border-border space-y-1.5 font-mono">
-              {Object.entries(data.destination).map(([k, v]) => (
-                <div key={k} className="flex justify-between">
-                  <span className="text-muted-foreground">{k}:</span>
-                  <span className="text-primary font-bold">{String(v)}</span>
-                </div>
-              ))}
-            </div>
-
-            {data.externalTxId && (
-              <div className="p-2.5 rounded-lg bg-emerald-500/10 border border-emerald-500/20 text-emerald-500 font-mono text-[11px]">
-                TxID: {data.externalTxId}
-              </div>
-            )}
-
-            {data.adminNote && (
-              <div className="p-2.5 rounded-lg bg-background/60 border border-border text-foreground text-xs">
-                <span className="text-muted-foreground block text-[10px] uppercase font-bold">Admin Note:</span>
-                {data.adminNote}
-              </div>
-            )}
+          <CardContent className="p-5 pt-0">
+            <DestinationDetailCard
+              destination={data.destination}
+              methodName={data.method}
+              externalTxId={data.externalTxId}
+              adminNote={data.adminNote}
+            />
           </CardContent>
         </Card>
 
