@@ -242,8 +242,12 @@ export class TelegramService implements OnModuleInit, OnModuleDestroy {
    * Returns false if notifications are paused or if an error occurs.
    */
   async sendRewardAlert(payload: RewardAlertPayload): Promise<boolean> {
+    this.logger.log(
+      `sendRewardAlert triggered: offer="${payload.offerTitle}", payout=$${payload.payoutUsd}, isPaused=${this.isPaused}, adminChatId=${this.adminChatId}`,
+    );
+
     if (!this.botToken || !this.adminChatId) {
-      this.logger.debug('Telegram bot token or admin chat ID not configured. Skipping alert.');
+      this.logger.warn('Telegram bot token or admin chat ID not configured. Skipping alert.');
       return false;
     }
 
@@ -252,6 +256,7 @@ export class TelegramService implements OnModuleInit, OnModuleDestroy {
       this.logger.log(`Telegram notifications are PAUSED (/pause). Skipping alert for: "${payload.offerTitle}"`);
       return false;
     }
+
 
     const dateStr =
       (payload.date || new Date()).toLocaleString('en-US', {
@@ -315,6 +320,7 @@ export class TelegramService implements OnModuleInit, OnModuleDestroy {
         return false;
       }
 
+      this.logger.log(`Telegram notification delivered successfully to chat ${chatId}`);
       return true;
     } catch (err) {
       clearTimeout(timeout);
