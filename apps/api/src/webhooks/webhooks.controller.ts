@@ -245,37 +245,30 @@ export class WebhooksController {
     });
 
     if (!user) {
-      user =
-        (await this.prisma.user.findFirst({
-          where: { role: 'USER' },
-          orderBy: { createdAt: 'desc' },
-        })) ||
-        (await this.prisma.user.findFirst({
-          orderBy: { createdAt: 'desc' },
-        }));
+      this.logger.warn(`Postback received for unknown user: "${userId}". NO wallet will be credited.`);
 
-      if (user) {
-        this.logger.log(`User "${userId}" not found in DB; routed conversion to fallback user ${user.username} (${user.id})`);
-      }
-    }
-
-    if (!user) {
-      // Even if no user exists in database, always alert the admin on Telegram!
+      // Send alert to admin so you know a conversion occurred, but clearly state user was not found
       await this.telegramService
         .sendRewardAlert({
           provider: providerRecord.name,
-          offerTitle,
-          rewardPoints,
+          offerTitle: `${offerTitle} (⚠️ User Not Found - No Points Credited)`,
+          rewardPoints: 0,
           payoutUsd: rewardPoints / 1000,
-          username: userId || 'Guest User',
+          username: `Unregistered (${userId || 'N/A'})`,
           userId: userId || 'unknown',
           txId: externalTxId,
         })
         .catch(() => {});
 
-      this.logger.warn(`No user found in database for postback "${userId}", but Telegram alert was dispatched.`);
-      return { success: true, message: 'Processed without user credit', credited: false, points: 0, txId: externalTxId };
+      return {
+        success: true,
+        message: `User '${userId}' not found; no wallet credited`,
+        credited: false,
+        points: 0,
+        txId: externalTxId,
+      };
     }
+
 
 
     // 6. Find or dynamically create Offer record with INACTIVE status (NEVER show in public marketplace)
