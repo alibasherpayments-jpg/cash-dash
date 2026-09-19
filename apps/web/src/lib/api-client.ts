@@ -1,7 +1,10 @@
 import axios from 'axios';
 import type { AxiosInstance, AxiosRequestConfig, InternalAxiosRequestConfig } from 'axios';
 
-const BASE_URL = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:3001/api/v1';
+const BASE_URL =
+  typeof window !== 'undefined'
+    ? '/api/v1'
+    : (process.env.INTERNAL_API_URL ?? 'http://api.railway.internal:3001') + '/api/v1';
 
 const apiClient: AxiosInstance = axios.create({
   baseURL: BASE_URL,
