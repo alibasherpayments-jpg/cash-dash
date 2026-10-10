@@ -82,7 +82,7 @@ export default function AdminOfferwallsPage() {
     try {
       const res = await apiClient.get("/admin/providers");
       const list = res.data?.data || (Array.isArray(res.data) ? res.data : []);
-      const apiHost = "https://api-production-8237.up.railway.app";
+      const apiHost = "https://web-production-79a62.up.railway.app";
       const mapped: OfferwallItem[] = list.map((p: any) => {
         let postback = "";
         if (p.slug === "taskwall") {
@@ -219,14 +219,20 @@ export default function AdminOfferwallsPage() {
 
     try {
       const txId = `TEST-${Date.now()}`;
+      const payload: any = {
+        sub_id: testUserId,
+        tx_id: txId,
+        offer_name: `Admin Test Task (${testModalWall.name})`,
+      };
+      if (testModalWall.slug === "taskwall") {
+        payload.payout = (Number(testPoints) / 700).toFixed(4);
+        payload.userid = testUserId;
+      } else {
+        payload.points = Number(testPoints);
+      }
       const res = await apiClient.post(
         `/webhooks/providers/${testModalWall.slug}?response_format=json`,
-        {
-          sub_id: testUserId,
-          points: Number(testPoints),
-          tx_id: txId,
-          offer_name: `Admin Test Task (${testModalWall.name})`,
-        },
+        payload,
         {
           headers: {
             Accept: "application/json",
@@ -369,7 +375,14 @@ export default function AdminOfferwallsPage() {
                         </div>
                         <div>
                           <p className="font-bold text-white text-sm">{wall.name}</p>
-                          <span className="text-[10px] text-slate-400 font-mono">slug: {wall.slug}</span>
+                          <div className="flex items-center gap-1.5 mt-0.5">
+                            <span className="text-[10px] text-slate-400 font-mono">slug: {wall.slug}</span>
+                            {wall.slug === "taskwall" && (
+                              <Badge className="bg-amber-500/15 text-amber-300 border-amber-500/30 text-[9px] px-1.5 py-0 font-bold">
+                                700 pts = $1.00 USD
+                              </Badge>
+                            )}
+                          </div>
                         </div>
                       </div>
                     </td>
@@ -647,7 +660,9 @@ export default function AdminOfferwallsPage() {
                 className="bg-background border-border text-foreground font-mono"
               />
               <span className="text-[11px] text-emerald-500 block mt-0.5 font-medium">
-                ≈ ${(Number(testPoints) / 1000).toFixed(2)} USD Value (1,000 pts = $1.00)
+                {testModalWall?.slug === "taskwall"
+                  ? `Taskwall Conversion: 700 pts = $1.00 USD (Simulates $${(Number(testPoints) / 700).toFixed(2)} USD payout)`
+                  : `≈ $${(Number(testPoints) / 1000).toFixed(2)} USD Value (1,000 pts = $1.00)`}
               </span>
             </div>
 

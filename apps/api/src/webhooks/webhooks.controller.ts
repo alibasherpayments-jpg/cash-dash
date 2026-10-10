@@ -103,53 +103,92 @@ export class WebhooksController {
         '',
     ).trim();
 
-    // Reward points calculation (1,000 pts = $1.00 USD)
+    // Points per USD dollar conversion rate (Taskwall: 700 pts = $1.00 USD, Standard: 1,000 pts = $1.00 USD)
+    const isTaskwall = providerRecord.slug === 'taskwall';
+    const pointsPerDollar = isTaskwall ? 700 : 1000;
+
     let rewardPoints = 0;
-    if (payload['pts'] !== undefined && payload['pts'] !== '') {
+    let actualPayoutUsd: number | undefined;
+
+    // 1. Check if direct USD payout is provided (payout, payout_usd, usd)
+    if (payload['payout'] !== undefined && payload['payout'] !== '') {
+      const p = parseFloat(String(payload['payout']));
+      if (!isNaN(p) && p > 0) actualPayoutUsd = p;
+    } else if (payload['payout_usd'] !== undefined && payload['payout_usd'] !== '') {
+      const p = parseFloat(String(payload['payout_usd']));
+      if (!isNaN(p) && p > 0) actualPayoutUsd = p;
+    } else if (payload['usd'] !== undefined && payload['usd'] !== '') {
+      const p = parseFloat(String(payload['usd']));
+      if (!isNaN(p) && p > 0) actualPayoutUsd = p;
+    }
+
+    if (actualPayoutUsd !== undefined) {
+      rewardPoints = Math.round(actualPayoutUsd * pointsPerDollar);
+    } else if (payload['pts'] !== undefined && payload['pts'] !== '') {
       const p = parseInt(String(payload['pts']), 10);
-      if (!isNaN(p) && p > 0) rewardPoints = p;
+      if (!isNaN(p) && p > 0) {
+        rewardPoints = p;
+        actualPayoutUsd = p / pointsPerDollar;
+      }
     } else if (payload['points'] !== undefined && payload['points'] !== '') {
       const p = parseInt(String(payload['points']), 10);
-      if (!isNaN(p) && p > 0) rewardPoints = p;
-    } else if (payload['payout'] !== undefined && payload['payout'] !== '') {
-      // payout is in USD (e.g. 1.00 USD = 1,000 points)
-      const payoutUsd = parseFloat(String(payload['payout']));
-      if (!isNaN(payoutUsd) && payoutUsd > 0) {
-        rewardPoints = Math.round(payoutUsd * 1000);
-      }
-    } else if (payload['payout_usd'] !== undefined && payload['payout_usd'] !== '') {
-      const payoutUsd = parseFloat(String(payload['payout_usd']));
-      if (!isNaN(payoutUsd) && payoutUsd > 0) {
-        rewardPoints = Math.round(payoutUsd * 1000);
+      if (!isNaN(p) && p > 0) {
+        rewardPoints = p;
+        actualPayoutUsd = p / pointsPerDollar;
       }
     } else if (payload['user_amount'] !== undefined && payload['user_amount'] !== '') {
       const ua = parseFloat(String(payload['user_amount']));
-      if (!isNaN(ua) && ua > 0) rewardPoints = Math.round(ua);
+      if (!isNaN(ua) && ua > 0) {
+        rewardPoints = Math.round(ua);
+        actualPayoutUsd = rewardPoints / pointsPerDollar;
+      }
     } else if (payload['virtual_currency'] !== undefined && payload['virtual_currency'] !== '') {
       const vc = parseInt(String(payload['virtual_currency']), 10);
-      if (!isNaN(vc) && vc > 0) rewardPoints = vc;
+      if (!isNaN(vc) && vc > 0) {
+        rewardPoints = vc;
+        actualPayoutUsd = vc / pointsPerDollar;
+      }
     } else if (payload['reward'] !== undefined && payload['reward'] !== '') {
       const r = parseInt(String(payload['reward']), 10);
-      if (!isNaN(r) && r > 0) rewardPoints = r;
+      if (!isNaN(r) && r > 0) {
+        rewardPoints = r;
+        actualPayoutUsd = r / pointsPerDollar;
+      }
     } else if (payload['amount'] !== undefined && payload['amount'] !== '') {
       const a = parseInt(String(payload['amount']), 10);
-      if (!isNaN(a) && a > 0) rewardPoints = a;
+      if (!isNaN(a) && a > 0) {
+        rewardPoints = a;
+        actualPayoutUsd = a / pointsPerDollar;
+      }
     } else if (payload['credit'] !== undefined && payload['credit'] !== '') {
       const c = parseInt(String(payload['credit']), 10);
-      if (!isNaN(c) && c > 0) rewardPoints = c;
-    } else if (payload['usd'] !== undefined && payload['usd'] !== '') {
-      const usd = parseFloat(String(payload['usd']));
-      if (!isNaN(usd) && usd > 0) rewardPoints = Math.round(usd * 1000);
+      if (!isNaN(c) && c > 0) {
+        rewardPoints = c;
+        actualPayoutUsd = c / pointsPerDollar;
+      }
     }
 
     if (isNaN(rewardPoints) || rewardPoints <= 0) {
-      const rawPayout = String(payload['payout'] ?? payload['payout_usd'] ?? payload['points'] ?? payload['user_amount'] ?? payload['amount'] ?? '');
+      const rawPayout = String(
+        payload['payout'] ??
+          payload['payout_usd'] ??
+          payload['points'] ??
+          payload['user_amount'] ??
+          payload['amount'] ??
+          '',
+      );
       if (rawPayout.startsWith('{') || rawPayout.startsWith('#') || rawPayout.toLowerCase() === 'test') {
-        rewardPoints = 100; // Default test reward: 100 pts ($0.10)
-        this.logger.log(`Defaulted test reward macro "${rawPayout}" to 100 pts`);
+        actualPayoutUsd = 0.10;
+        rewardPoints = Math.round(actualPayoutUsd * pointsPerDollar); // 70 pts for Taskwall ($0.10), 100 pts standard
+        this.logger.log(`Defaulted test reward macro "${rawPayout}" to ${rewardPoints} pts ($${actualPayoutUsd.toFixed(2)} USD)`);
       } else {
-        rewardPoints = 100; // Safe minimum fallback
+        actualPayoutUsd = 0.10;
+        rewardPoints = Math.round(actualPayoutUsd * pointsPerDollar);
       }
+    }
+
+    if (actualPayoutUsd === undefined) {
+      actualPayoutUsd = rewardPoints / pointsPerDollar;
     }
 
     const offerExternalId = String(
@@ -253,7 +292,7 @@ export class WebhooksController {
           provider: providerRecord.name,
           offerTitle: `${offerTitle} (⚠️ User Not Found - No Points Credited)`,
           rewardPoints: 0,
-          payoutUsd: rewardPoints / 1000,
+          payoutUsd: actualPayoutUsd,
           username: `Unregistered (${userId || 'N/A'})`,
           userId: userId || 'unknown',
           txId: externalTxId,
@@ -350,7 +389,7 @@ export class WebhooksController {
         provider: providerRecord.name,
         offerTitle,
         rewardPoints,
-        payoutUsd: rewardPoints / 1000,
+        payoutUsd: actualPayoutUsd,
         username: user.username,
         userId: user.id,
         txId: externalTxId,
