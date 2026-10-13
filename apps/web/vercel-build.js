@@ -18,23 +18,18 @@ console.log('[vercel-build] 2. Running next build...');
 const nextBin = require.resolve('next/dist/bin/next');
 execSync(`node "${nextBin}" build`, { stdio: 'inherit' });
 
-console.log('[vercel-build] 3. Linking apps/web/.next...');
+console.log('[vercel-build] 3. Copying apps/web/.next...');
 try {
   const appsWebDir = path.resolve(__dirname, 'apps/web');
   if (!fs.existsSync(appsWebDir)) {
     fs.mkdirSync(appsWebDir, { recursive: true });
   }
   const nestedNext = path.resolve(appsWebDir, '.next');
-  if (!fs.existsSync(nestedNext)) {
-    try {
-      fs.symlinkSync('../.next', nestedNext, 'junction');
-    } catch {
-      fs.cpSync(path.resolve(__dirname, '.next'), nestedNext, { recursive: true });
-    }
-    console.log('[vercel-build] ✓ Linked apps/web/.next');
-  }
+  try { fs.rmSync(nestedNext, { recursive: true, force: true }); } catch (e) {}
+  fs.cpSync(path.resolve(__dirname, '.next'), nestedNext, { recursive: true });
+  console.log('[vercel-build] ✓ Copied apps/web/.next (items: ' + fs.readdirSync(nestedNext).length + ')');
 } catch (e) {
-  console.warn('[vercel-build] Warning linking apps/web/.next:', e.message);
+  console.warn('[vercel-build] Warning copying apps/web/.next:', e.message);
 }
 
 console.log('[vercel-build] ✓ Build finished successfully!');
