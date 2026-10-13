@@ -36,15 +36,18 @@ RUN pnpm --filter api build
 FROM node:20-alpine AS runner
 RUN apk add --no-cache libc6-compat openssl
 
-WORKDIR /app/apps/api
+WORKDIR /app
 
 ENV NODE_ENV=production
 
-COPY --from=builder /app/apps/api/dist ./dist
-COPY --from=builder /app/apps/api/node_modules ./node_modules
-COPY --from=builder /app/apps/api/prisma ./prisma
-COPY --from=builder /app/apps/api/package.json ./
+COPY --from=builder /app/node_modules ./node_modules
+COPY --from=builder /app/packages ./packages
+COPY --from=builder /app/apps/api/dist ./apps/api/dist
+COPY --from=builder /app/apps/api/node_modules ./apps/api/node_modules
+COPY --from=builder /app/apps/api/prisma ./apps/api/prisma
+COPY --from=builder /app/apps/api/package.json ./apps/api/package.json
+COPY --from=builder /app/package.json ./package.json
 
 EXPOSE 3001
 
-CMD ["node", "dist/main"]
+CMD ["node", "apps/api/dist/main"]
