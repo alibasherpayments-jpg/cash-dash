@@ -6,7 +6,6 @@ const __dirname = path.dirname(__filename);
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  outputFileTracingRoot: path.join(__dirname, '../../'),
   images: {
     remotePatterns: [
       { protocol: 'https', hostname: 'api.dicebear.com' },
