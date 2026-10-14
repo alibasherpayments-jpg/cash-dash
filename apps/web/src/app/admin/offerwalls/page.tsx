@@ -82,7 +82,7 @@ export default function AdminOfferwallsPage() {
     try {
       const res = await apiClient.get("/admin/providers");
       const list = res.data?.data || (Array.isArray(res.data) ? res.data : []);
-      const apiHost = "https://web-production-79a62.up.railway.app";
+      const apiHost = typeof window !== 'undefined' ? window.location.origin : (process.env.NEXT_PUBLIC_APP_URL || "https://cash-dash-chi.vercel.app");
       const mapped: OfferwallItem[] = list.map((p: any) => {
         let postback = "";
         if (p.slug === "taskwall") {

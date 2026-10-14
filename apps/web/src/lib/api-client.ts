@@ -4,7 +4,7 @@ import type { AxiosInstance, AxiosRequestConfig, InternalAxiosRequestConfig } fr
 const BASE_URL =
   typeof window !== 'undefined'
     ? '/api/v1'
-    : (process.env.INTERNAL_API_URL ?? 'http://api.railway.internal:3001') + '/api/v1';
+    : (process.env.INTERNAL_API_URL ?? process.env.API_URL ?? 'https://cashdash-api.vercel.app') + '/api/v1';
 
 const apiClient: AxiosInstance = axios.create({
   baseURL: BASE_URL,

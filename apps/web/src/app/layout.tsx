@@ -15,7 +15,7 @@ const inter = Inter({
   display: "swap",
 });
 
-const appUrl = process.env.NEXT_PUBLIC_APP_URL || "https://web-production-79a62.up.railway.app";
+const appUrl = process.env.NEXT_PUBLIC_APP_URL || "https://cash-dash-chi.vercel.app";
 
 export const viewport: Viewport = {
   width: "device-width",

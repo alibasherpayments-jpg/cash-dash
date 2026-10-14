@@ -24,9 +24,7 @@ const nextConfig = {
       process.env.INTERNAL_API_URL ||
       process.env.API_URL ||
       process.env.BACKEND_URL ||
-      (process.env.NODE_ENV === 'production'
-        ? 'http://api.railway.internal:3001'
-        : 'http://localhost:3001');
+      'https://cashdash-api.vercel.app';
 
     return [
       {

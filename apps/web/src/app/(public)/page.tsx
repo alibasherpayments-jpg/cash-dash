@@ -33,7 +33,7 @@ import { useLeaderboard } from "@/hooks/use-leaderboard";
 import { AvatarWithFallback } from "@/components/common/avatar-with-fallback";
 import { useTranslation } from "@/providers/i18n-provider";
 
-const baseUrl = process.env.NEXT_PUBLIC_APP_URL || "https://web-production-79a62.up.railway.app";
+const baseUrl = process.env.NEXT_PUBLIC_APP_URL || "https://cash-dash-chi.vercel.app";
 
 const jsonLd = {
   "@context": "https://schema.org",
