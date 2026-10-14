@@ -4,45 +4,37 @@ import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
 import { ConfigService } from '@nestjs/config';
 import cookieParser from 'cookie-parser';
 import helmet from 'helmet';
+import { ExpressAdapter } from '@nestjs/platform-express';
+import express, { Express, Request, Response } from 'express';
 import { AppModule } from './app.module';
 
-async function bootstrap() {
-  const app = await NestFactory.create(AppModule, {
+const server: Express = express();
+let isInitialized = false;
+
+export async function bootstrapServer(): Promise<Express> {
+  if (isInitialized) {
+    return server;
+  }
+
+  const app = await NestFactory.create(AppModule, new ExpressAdapter(server), {
     logger: ['error', 'warn', 'log'],
   });
 
   const configService = app.get(ConfigService);
-  const port = configService.get<number>('app.port', 3001);
-  const frontendUrl = configService.get<string>('app.frontendUrl', 'http://localhost:3000');
-  const nodeEnv = configService.get<string>('app.nodeEnv', 'development');
+  const nodeEnv = configService.get<string>('app.nodeEnv', 'production');
 
-  // Security middleware
-  app.use(helmet({ contentSecurityPolicy: nodeEnv === 'production' }));
+  app.use(helmet({ contentSecurityPolicy: false }));
 
-  // CORS
-  const allowedOrigins = Array.from(
-    new Set([frontendUrl, ...(nodeEnv !== 'production' ? ['http://localhost:3000'] : [])]),
-  );
   app.enableCors({
-    origin: (origin, callback) => {
-      if (!origin || allowedOrigins.includes(origin) || origin.endsWith('.up.railway.app') || origin.endsWith('.vercel.app')) {
-        callback(null, true);
-      } else {
-        callback(null, true);
-      }
-    },
+    origin: (origin, callback) => callback(null, true),
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'x-signature', 'x-event-id'],
   });
 
-  // Cookie parser
-  app.use(cookieParser(configService.get<string>('cookie.secret')));
-
-  // Global prefix
+  app.use(cookieParser(configService.get<string>('cookie.secret', 'default-cookie-secret')));
   app.setGlobalPrefix('api/v1');
 
-  // Global validation pipe
   app.useGlobalPipes(
     new ValidationPipe({
       whitelist: true,
@@ -52,7 +44,6 @@ async function bootstrap() {
     }),
   );
 
-  // Swagger documentation
   if (nodeEnv !== 'production') {
     const config = new DocumentBuilder()
       .setTitle('CashDash API')
@@ -60,30 +51,29 @@ async function bootstrap() {
       .setVersion('1.0')
       .addBearerAuth()
       .addCookieAuth('refresh_token')
-      .addTag('auth', 'Authentication endpoints')
-      .addTag('users', 'User management')
-      .addTag('wallet', 'Wallet & transactions')
-      .addTag('offers', 'Offer listings')
-      .addTag('withdrawals', 'Withdrawal management')
-      .addTag('notifications', 'Notification management')
-      .addTag('leaderboard', 'Leaderboard rankings')
-      .addTag('referrals', 'Referral program')
-      .addTag('support', 'Support tickets')
-      .addTag('admin', 'Admin operations')
-      .addTag('webhooks', 'Provider webhooks')
       .build();
 
     const document = SwaggerModule.createDocument(app, config);
-    SwaggerModule.setup('api/docs', app, document, {
-      swaggerOptions: { persistAuthorization: true },
-    });
+    SwaggerModule.setup('api/docs', app, document);
   }
 
-  await app.listen(port, '0.0.0.0');
-  console.log(`🚀 CashDash API running on http://0.0.0.0:${port}/api/v1`);
-  if (nodeEnv !== 'production') {
-    console.log(`📚 Swagger docs at http://localhost:${port}/api/docs`);
-  }
+  await app.init();
+  isInitialized = true;
+  return server;
 }
 
-bootstrap();
+export default async function handler(req: Request, res: Response) {
+  const app = await bootstrapServer();
+  return app(req, res);
+}
+
+if (!process.env.VERCEL) {
+  bootstrapServer().then(() => {
+    const port = parseInt(process.env.PORT ?? process.env.API_PORT ?? '3001', 10);
+    server.listen(port, '0.0.0.0', () => {
+      console.log(`🚀 CashDash API running on http://0.0.0.0:${port}/api/v1`);
+    });
+  }).catch((err) => {
+    console.error('Failed to bootstrap server:', err);
+  });
+}
