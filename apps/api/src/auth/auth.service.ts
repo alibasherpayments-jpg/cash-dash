@@ -200,20 +200,51 @@ export class AuthService {
       this.configService.get<string>('GOOGLE_CLIENT_ID') ||
       '219845067052-r4t9s9qfor0bi7q46etc01fejtps4q2r.apps.googleusercontent.com';
 
-    let payload;
+    let payload: { sub: string; email: string; name?: string; given_name?: string; picture?: string } | null = null;
+
+    // 1. Try verifying as Google ID Token (JWT)
     try {
       const ticket = await this.googleClient.verifyIdToken({
         idToken: dto.credential,
         audience: clientId,
       });
-      payload = ticket.getPayload();
+      const idPayload = ticket.getPayload();
+      if (idPayload?.email) {
+        payload = {
+          sub: idPayload.sub,
+          email: idPayload.email,
+          name: idPayload.name || idPayload.given_name,
+          picture: idPayload.picture,
+        };
+      }
     } catch (err: any) {
-      this.logger.error(`Google token verification failed: ${err.message}`);
-      throw new UnauthorizedException('Invalid or expired Google token');
+      this.logger.warn(`Google ID token verification failed, checking access token: ${err.message}`);
+    }
+
+    // 2. If not a valid ID Token, try verifying as Google OAuth2 Access Token
+    if (!payload) {
+      try {
+        const userInfoRes = await fetch('https://www.googleapis.com/oauth2/v3/userinfo', {
+          headers: { Authorization: `Bearer ${dto.credential}` },
+        });
+        if (userInfoRes.ok) {
+          const info = await userInfoRes.json();
+          if (info?.email) {
+            payload = {
+              sub: info.sub,
+              email: info.email,
+              name: info.name || info.given_name,
+              picture: info.picture,
+            };
+          }
+        }
+      } catch (err: any) {
+        this.logger.error(`Google userinfo verification failed: ${err.message}`);
+      }
     }
 
     if (!payload || !payload.email) {
-      throw new UnauthorizedException('Google account did not return a valid email address');
+      throw new UnauthorizedException('Invalid or expired Google token');
     }
 
     const googleId = payload.sub;

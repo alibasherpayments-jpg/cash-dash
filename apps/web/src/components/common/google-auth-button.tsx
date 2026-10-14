@@ -14,8 +14,13 @@ declare global {
         id: {
           initialize: (config: any) => void;
           renderButton: (parent: HTMLElement, options: any) => void;
-          prompt: () => void;
+          prompt: (notification?: (notification: any) => void) => void;
           cancel: () => void;
+        };
+        oauth2: {
+          initTokenClient: (config: any) => {
+            requestAccessToken: (options?: any) => void;
+          };
         };
       };
     };
@@ -44,6 +49,7 @@ export function GoogleAuthButton({
   const buttonRef = useRef<HTMLDivElement>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [scriptLoaded, setScriptLoaded] = useState(false);
+  const [buttonRendered, setButtonRendered] = useState(false);
   const [effectiveRefCode, setEffectiveRefCode] = useState<string | undefined>(referralCode);
 
   useEffect(() => {
@@ -112,7 +118,7 @@ export function GoogleAuthButton({
 
   // Initialize and Render Button
   useEffect(() => {
-    if (!scriptLoaded || !buttonRef.current || typeof window === "undefined" || !window.google?.accounts?.id) {
+    if (!scriptLoaded || typeof window === "undefined" || !window.google?.accounts?.id) {
       return;
     }
 
@@ -127,25 +133,90 @@ export function GoogleAuthButton({
         cancel_on_tap_outside: true,
       });
 
-      buttonRef.current.innerHTML = "";
-      window.google.accounts.id.renderButton(buttonRef.current, {
-        type: "standard",
-        theme: resolvedTheme === "dark" ? "filled_black" : "outline",
-        size: "large",
-        text: mode === "signup" ? "signup_with" : "signin_with",
-        shape: "pill",
-        logo_alignment: "left",
-        width: buttonRef.current.offsetWidth || 360,
-      });
+      if (buttonRef.current) {
+        buttonRef.current.innerHTML = "";
+        const targetWidth = Math.min(
+          Math.max(buttonRef.current.offsetWidth || 340, 240),
+          380
+        );
+
+        window.google.accounts.id.renderButton(buttonRef.current, {
+          type: "standard",
+          theme: resolvedTheme === "dark" ? "filled_black" : "outline",
+          size: "large",
+          text: mode === "signup" ? "signup_with" : "signin_with",
+          shape: "pill",
+          logo_alignment: "left",
+          width: targetWidth,
+        });
+
+        // Check if button actually injected iframe
+        setTimeout(() => {
+          if (buttonRef.current && buttonRef.current.children.length > 0) {
+            setButtonRendered(true);
+          }
+        }, 300);
+      }
     } catch (err) {
       console.error("Error rendering Google button:", err);
     }
   }, [scriptLoaded, resolvedTheme, mode]);
 
+  // Fallback OAuth2 popup click handler
+  const handleCustomClick = () => {
+    if (typeof window === "undefined") return;
+
+    const clientId =
+      process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID || DEFAULT_GOOGLE_CLIENT_ID;
+
+    setIsLoading(true);
+
+    if (window.google?.accounts?.oauth2) {
+      try {
+        const tokenClient = window.google.accounts.oauth2.initTokenClient({
+          client_id: clientId,
+          scope: "email profile openid",
+          callback: async (tokenResponse: any) => {
+            if (tokenResponse?.access_token) {
+              await handleCredentialResponse({ credential: tokenResponse.access_token });
+            } else if (tokenResponse?.error) {
+              setIsLoading(false);
+              toast.error(`Google sign-in error: ${tokenResponse.error}`);
+            } else {
+              setIsLoading(false);
+            }
+          },
+          error_callback: (err: any) => {
+            setIsLoading(false);
+            console.error("Token client error:", err);
+            toast.error("Google sign-in popup error. Please verify Authorized Origins in Google Console.");
+          },
+        });
+        tokenClient.requestAccessToken({ prompt: "select_account" });
+        return;
+      } catch (e) {
+        console.warn("initTokenClient failed, falling back to prompt:", e);
+      }
+    }
+
+    if (window.google?.accounts?.id) {
+      window.google.accounts.id.prompt((notification: any) => {
+        if (notification.isNotDisplayed() || notification.isSkippedMoment()) {
+          setIsLoading(false);
+          toast.error("Google prompt could not be displayed. Please check your browser popup settings.");
+        }
+      });
+      return;
+    }
+
+    setIsLoading(false);
+    toast.error("Google Services are loading, please try again in a moment.");
+  };
+
   return (
     <div className={`w-full flex flex-col items-center justify-center relative min-h-[44px] ${className}`}>
       {isLoading && (
-        <div className="absolute inset-0 bg-card/80 backdrop-blur-xs rounded-full flex items-center justify-center z-10">
+        <div className="absolute inset-0 bg-card/80 backdrop-blur-xs rounded-full flex items-center justify-center z-20">
           <Loader2 className="h-5 w-5 animate-spin text-primary" />
         </div>
       )}
@@ -153,15 +224,18 @@ export function GoogleAuthButton({
       {/* Official Google Button Render Mount Target */}
       <div
         ref={buttonRef}
-        className="w-full flex justify-center items-center overflow-hidden rounded-full shadow-xs hover:shadow-md transition-shadow"
+        className={`w-full flex justify-center items-center overflow-hidden rounded-full transition-all ${
+          buttonRendered ? "block" : "hidden"
+        }`}
       />
 
-      {/* Fallback button while Google script loads or renders */}
-      {!scriptLoaded && (
+      {/* Interactive Fallback/Custom Google Button when native button is loading or not yet rendered */}
+      {!buttonRendered && (
         <button
           type="button"
-          disabled
-          className="w-full h-11 px-4 rounded-full border border-border bg-card/60 flex items-center justify-center gap-3 text-xs font-semibold text-muted-foreground transition-all opacity-80"
+          onClick={handleCustomClick}
+          disabled={isLoading}
+          className="w-full h-11 px-4 rounded-full border border-border bg-card hover:bg-muted/40 cursor-pointer flex items-center justify-center gap-3 text-xs font-semibold text-foreground transition-all shadow-xs hover:shadow-md active:scale-[0.99]"
         >
           <svg className="h-4 w-4" viewBox="0 0 24 24">
             <path
