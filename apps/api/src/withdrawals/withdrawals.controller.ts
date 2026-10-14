@@ -12,7 +12,7 @@ import {
   HttpStatus,
 } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiBearerAuth } from '@nestjs/swagger';
-import { Request } from 'express';
+type Request = any;
 import { WithdrawalsService } from './withdrawals.service';
 import { CreateWithdrawalDto } from './dto/withdrawals.dto';
 import { PaginationDto } from '../common/dto/pagination.dto';

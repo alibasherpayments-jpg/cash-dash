@@ -21,7 +21,8 @@ import { WalletService } from '../wallet/wallet.service';
 import { NotificationsService } from '../notifications/notifications.service';
 import { TelegramService } from '../notifications/telegram.service';
 import { TransactionType, NotificationType, OfferCompletionStatus, OfferCategory } from '@prisma/client';
-import { Request, Response } from 'express';
+type Request = any;
+type Response = any;
 
 @ApiTags('webhooks')
 @Public()

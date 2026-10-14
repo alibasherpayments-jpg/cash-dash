@@ -11,7 +11,8 @@ import {
   Param,
 } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
-import { Request, Response } from 'express';
+type Request = any;
+type Response = any;
 import { AuthService } from './auth.service';
 import {
   RegisterDto,

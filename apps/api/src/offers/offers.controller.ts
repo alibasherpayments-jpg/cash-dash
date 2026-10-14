@@ -7,7 +7,7 @@ import {
   Req,
 } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiBearerAuth } from '@nestjs/swagger';
-import { Request } from 'express';
+type Request = any;
 import { OffersService } from './offers.service';
 import { ListOffersQueryDto } from './dto/offers.dto';
 import { CurrentUser } from '../common/decorators/current-user.decorator';

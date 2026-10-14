@@ -45,3 +45,6 @@ Thumbs.db
 *.sw?
 scripts/
 telegram-bot-state.json
+
+.vercel
+.env*
