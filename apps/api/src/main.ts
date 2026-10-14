@@ -8,10 +8,10 @@ import { ExpressAdapter } from '@nestjs/platform-express';
 import express, { Express, Request, Response } from 'express';
 import { AppModule } from './app.module';
 
-const server: Express = express();
+const server: any = express();
 let isInitialized = false;
 
-export async function bootstrapServer(): Promise<Express> {
+export async function bootstrapServer(): Promise<any> {
   if (isInitialized) {
     return server;
   }
@@ -62,7 +62,7 @@ export async function bootstrapServer(): Promise<Express> {
   return server;
 }
 
-export default async function handler(req: Request, res: Response) {
+export default async function handler(req: any, res: any) {
   const app = await bootstrapServer();
   return app(req, res);
 }

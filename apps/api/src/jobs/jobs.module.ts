@@ -11,28 +11,38 @@ import { QUEUES } from './queues.constants';
 
 export { QUEUES } from './queues.constants';
 
-@Module({
-  imports: [
-    BullModule.forRootAsync({
-      imports: [ConfigModule],
-      inject: [ConfigService],
-      useFactory: (configService: ConfigService) => ({
-        connection: {
-          url: configService.get<string>('redis.url', 'redis://localhost:6379'),
-        },
-      }),
-    }),
-    BullModule.registerQueue(
-      { name: QUEUES.REWARD_PROCESSING },
-      { name: QUEUES.WITHDRAWAL_PROCESSING },
-      { name: QUEUES.NOTIFICATION_DISPATCH },
-      { name: QUEUES.LEADERBOARD_RECALC },
-    ),
-    WalletModule,
-    NotificationsModule,
-    LeaderboardModule,
-  ],
-  providers: [RewardProcessor, LeaderboardProcessor, NotificationProcessor],
-  exports: [BullModule],
-})
+const isServerless = !!process.env.VERCEL || process.env.ENABLE_REDIS_JOBS !== 'true';
+
+@Module(
+  isServerless
+    ? {
+        imports: [WalletModule, NotificationsModule, LeaderboardModule],
+        providers: [],
+        exports: [],
+      }
+    : {
+        imports: [
+          BullModule.forRootAsync({
+            imports: [ConfigModule],
+            inject: [ConfigService],
+            useFactory: (configService: ConfigService) => ({
+              connection: {
+                url: configService.get<string>('redis.url', 'redis://localhost:6379'),
+              },
+            }),
+          }),
+          BullModule.registerQueue(
+            { name: QUEUES.REWARD_PROCESSING },
+            { name: QUEUES.WITHDRAWAL_PROCESSING },
+            { name: QUEUES.NOTIFICATION_DISPATCH },
+            { name: QUEUES.LEADERBOARD_RECALC },
+          ),
+          WalletModule,
+          NotificationsModule,
+          LeaderboardModule,
+        ],
+        providers: [RewardProcessor, LeaderboardProcessor, NotificationProcessor],
+        exports: [BullModule],
+      },
+)
 export class JobsModule {}

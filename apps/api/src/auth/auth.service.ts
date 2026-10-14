@@ -434,11 +434,11 @@ export class AuthService {
       this.jwtService.signAsync(payload, {
         secret: this.configService.get<string>('jwt.accessSecret'),
         expiresIn: this.configService.get<string>('jwt.accessExpiresIn', '15m'),
-      }),
+      } as any),
       this.jwtService.signAsync(payload, {
         secret: this.configService.get<string>('jwt.refreshSecret'),
         expiresIn: this.configService.get<string>('jwt.refreshExpiresIn', '7d'),
-      }),
+      } as any),
     ]);
 
     // Store session
