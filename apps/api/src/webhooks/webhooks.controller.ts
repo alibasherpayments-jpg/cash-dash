@@ -297,6 +297,8 @@ export class WebhooksController {
           username: `Unregistered (${userId || 'N/A'})`,
           userId: userId || 'unknown',
           txId: externalTxId,
+          offerId: offerExternalId,
+          imageUrl: String(payload['icon'] || payload['image'] || '').trim() || undefined,
         })
         .catch(() => {});
 

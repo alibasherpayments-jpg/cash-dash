@@ -1,14 +1,19 @@
-import { Controller, Get, Patch, Post, Param, Query } from '@nestjs/common';
+import { Controller, Get, Patch, Post, Param, Query, Body, HttpCode, HttpStatus, Req } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiBearerAuth } from '@nestjs/swagger';
 import { NotificationsService } from './notifications.service';
+import { TelegramService } from './telegram.service';
 import { CurrentUser } from '../common/decorators/current-user.decorator';
+import { Public } from '../common/decorators/public.decorator';
 import { NotificationType } from '@prisma/client';
 
 @ApiTags('notifications')
 @ApiBearerAuth()
 @Controller('notifications')
 export class NotificationsController {
-  constructor(private notificationsService: NotificationsService) {}
+  constructor(
+    private notificationsService: NotificationsService,
+    private telegramService: TelegramService,
+  ) {}
 
   private parsePage(page?: unknown): number {
     const num = Number(page);
@@ -65,5 +70,24 @@ export class NotificationsController {
   async markAllAsRead(@CurrentUser('id') userId: string) {
     const result = await this.notificationsService.markAllAsRead(userId);
     return { success: true, message: `Marked ${result.count} notifications as read` };
+  }
+
+  @Post('telegram/webhook')
+  @Public()
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: 'Receive Telegram bot webhook update' })
+  async handleTelegramWebhook(@Body() update: any, @Req() req: any) {
+    const payload = update && Object.keys(update).length > 0 ? update : req?.body;
+    if (payload && typeof payload === 'object') {
+      await this.telegramService.handleUpdate(payload);
+    }
+    return { ok: true };
+  }
+
+  @Get('telegram/setup-webhook')
+  @Public()
+  @ApiOperation({ summary: 'Register Telegram bot webhook with Telegram API' })
+  async setupTelegramWebhook() {
+    return this.telegramService.registerWebhook();
   }
 }

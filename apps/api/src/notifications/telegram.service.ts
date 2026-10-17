@@ -41,22 +41,46 @@ export class TelegramService implements OnModuleInit, OnModuleDestroy {
         process.env.TELEGRAM_ADMIN_CHAT_ID ||
         '7244039908',
     ).trim();
-    this.stateFilePath = path.join(process.cwd(), 'telegram-bot-state.json');
+    const isServerless = Boolean(process.env.VERCEL || process.env.AWS_LAMBDA_FUNCTION_NAME);
+    const baseDir = isServerless ? '/tmp' : process.cwd();
+    this.stateFilePath = path.join(baseDir, 'telegram-bot-state.json');
 
     this.loadState();
   }
 
-  onModuleInit() {
-    if (this.botToken && this.adminChatId) {
+  async onModuleInit() {
+    const isServerless = Boolean(process.env.VERCEL || process.env.AWS_LAMBDA_FUNCTION_NAME);
+    if (!isServerless && this.botToken && this.adminChatId) {
       this.startPolling();
     } else {
-      this.logger.warn('TELEGRAM_BOT_TOKEN or TELEGRAM_ADMIN_CHAT_ID not configured; polling disabled.');
+      this.logger.log('TelegramService running in Serverless / Webhook mode.');
     }
   }
 
   onModuleDestroy() {
     this.stopPolling();
   }
+
+  /**
+   * Register Webhook with Telegram API for serverless environments (Vercel).
+   */
+  async registerWebhook(customUrl?: string): Promise<{ success: boolean; result?: any; error?: string }> {
+    if (!this.botToken) {
+      return { success: false, error: 'TELEGRAM_BOT_TOKEN not configured' };
+    }
+    const webhookUrl = customUrl || 'https://cashdash-api.vercel.app/api/v1/notifications/telegram/webhook';
+    const apiUrl = `https://api.telegram.org/bot${this.botToken}/setWebhook?url=${encodeURIComponent(webhookUrl)}&drop_pending_updates=true`;
+
+    try {
+      const res = await fetch(apiUrl);
+      const data = (await res.json()) as any;
+      this.logger.log(`Telegram setWebhook result: ${JSON.stringify(data)}`);
+      return { success: Boolean(data && data.ok), result: data };
+    } catch (err) {
+      return { success: false, error: (err as Error).message };
+    }
+  }
+
 
   /**
    * Load paused state from disk so settings persist across server restarts.
@@ -153,7 +177,7 @@ export class TelegramService implements OnModuleInit, OnModuleDestroy {
   /**
    * Process incoming Telegram updates and execute commands.
    */
-  private async handleUpdate(update: any) {
+  public async handleUpdate(update: any) {
     const msg = update.message;
     if (!msg || !msg.text) return;
 
