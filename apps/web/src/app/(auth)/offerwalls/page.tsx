@@ -40,9 +40,9 @@ const OFFERWALLS: OfferwallItem[] = [
   },
   {
     id: "clickwall",
-    name: "ClickWall.io",
+    name: "ClickWall",
     logo: "/images/offerwalls/clickwall.png",
-    url: "https://clickwall.io/wall?app_id=cashdash",
+    url: "https://clickwall.net/app/iframe/10326",
   },
   {
     id: "pixylabs",
@@ -60,6 +60,9 @@ export default function OfferwallsPage() {
   const getWallUrl = (wall: OfferwallItem) => {
     const subId = user?.id || "guest";
     const separator = wall.url.includes("?") ? "&" : "?";
+    if (wall.id === "clickwall") {
+      return `https://clickwall.net/app/iframe/10326/${encodeURIComponent(subId)}`;
+    }
     if (wall.id === "taskwall") {
       return `${wall.url}${separator}userid=${encodeURIComponent(subId)}`;
     }

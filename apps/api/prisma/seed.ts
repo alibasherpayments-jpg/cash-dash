@@ -98,13 +98,13 @@ async function main() {
 
   const clickwall = await prisma.offerProvider.create({
     data: {
-      name: 'ClickWall.io',
+      name: 'ClickWall',
       type: 'ptc_clicks',
       slug: 'clickwall',
       logoUrl: '/images/offerwalls/clickwall.png',
       apiKeyMasked: 'clickwall_••••••••••••33f7',
       webhookSecret: 'clickwall-secret-cashdash',
-      postbackUrl: 'http://localhost:3001/api/v1/webhooks/providers/clickwall',
+      postbackUrl: 'https://cashdash-api.vercel.app/api/v1/webhooks/providers/clickwall?user_id={user_id}&amount={amount}&payout={payout}&txid={txid}&offer_name={offer_name}&offer_id={offer_id}',
       isActive: true,
       offersCount: 40,
     },

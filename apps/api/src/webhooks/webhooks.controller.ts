@@ -221,7 +221,8 @@ export class WebhooksController {
 
     // 2. Extract transaction ID or generate a unique one
     let rawTxId = String(
-      payload['tx_id'] ||
+      payload['txid'] ||
+        payload['tx_id'] ||
         payload['transaction_id'] ||
         payload['lead_id'] ||
         payload['trans_id'] ||

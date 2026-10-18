@@ -35,7 +35,7 @@ const FEATURED_OFFERWALLS = [
   },
   {
     id: "clickwall",
-    name: "ClickWall.io",
+    name: "ClickWall",
     logo: "/images/offerwalls/clickwall.png",
   },
   {

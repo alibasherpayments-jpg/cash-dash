@@ -90,7 +90,7 @@ export default function AdminOfferwallsPage() {
         } else if (p.slug === "cpalead") {
           postback = `${apiHost}/api/v1/webhooks/providers/cpalead?subid={subid}&payout={payout}&lead_id={lead_id}&campaign_name={campaign_name}`;
         } else if (p.slug === "clickwall") {
-          postback = `${apiHost}/api/v1/webhooks/providers/clickwall?user_id={user_id}&points={points}&trans_id={trans_id}`;
+          postback = `${apiHost}/api/v1/webhooks/providers/clickwall?user_id={user_id}&amount={amount}&payout={payout}&txid={txid}&offer_name={offer_name}&offer_id={offer_id}`;
         } else if (p.slug === "pixylabs") {
           postback = `${apiHost}/api/v1/webhooks/providers/pixylabs?user_id=#{click.publisher.unique1}&click_id=#{id}&payout_usd=#{payout.theyGetInDollars}&points=#{payout.theyGetPoints}&offer_id=#{offer.id}&offer_name=#{offer.name}`;
         } else {
@@ -227,6 +227,11 @@ export default function AdminOfferwallsPage() {
       if (testModalWall.slug === "taskwall") {
         payload.payout = (Number(testPoints) / 700).toFixed(4);
         payload.userid = testUserId;
+      } else if (testModalWall.slug === "clickwall") {
+        payload.user_id = testUserId;
+        payload.txid = txId;
+        payload.amount = Number(testPoints);
+        payload.payout = (Number(testPoints) / 1000).toFixed(4);
       } else {
         payload.points = Number(testPoints);
       }

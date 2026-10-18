@@ -80,13 +80,13 @@ export class CPALeadProvider implements IOfferProvider {
   }
 }
 
-// ─── ClickWall.io Provider ───────────────────────────────────────────────────
+// ─── ClickWall Provider ───────────────────────────────────────────────────────
 
 @Injectable()
 export class ClickWallProvider implements IOfferProvider {
   private readonly logger = new Logger(ClickWallProvider.name);
   readonly slug = 'clickwall';
-  readonly name = 'ClickWall.io';
+  readonly name = 'ClickWall';
 
   validateWebhook(payload: unknown, signatureOrSecret: string, secret: string): boolean {
     if (!signatureOrSecret || !secret) return false;
