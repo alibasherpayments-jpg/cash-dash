@@ -104,9 +104,8 @@ export class WebhooksController {
         '',
     ).trim();
 
-    // Points per USD dollar conversion rate (Taskwall: 700 pts = $1.00 USD, Standard: 1,000 pts = $1.00 USD)
-    const isTaskwall = providerRecord.slug === 'taskwall';
-    const pointsPerDollar = isTaskwall ? 700 : 1000;
+    // Points per USD dollar conversion rate (Platform standard: 700 pts = $1.00 USD)
+    const pointsPerDollar = 700;
 
     let rewardPoints = 0;
     let actualPayoutUsd: number | undefined;
@@ -378,7 +377,7 @@ export class WebhooksController {
       .trigger(user.id, {
         type: NotificationType.REWARD_ADDED,
         title: `🎉 تم احتساب العرض: ${offerTitle}`,
-        message: `تم احتساب عرض "${offerTitle}" بنجاح! حصلت على +${rewardPoints.toLocaleString()} نقطة ($${(rewardPoints / 1000).toFixed(2)} USD) من شركة ${providerRecord.name}.`,
+        message: `تم احتساب عرض "${offerTitle}" بنجاح! حصلت على +${rewardPoints.toLocaleString()} نقطة ($${(rewardPoints / pointsPerDollar).toFixed(2)} USD) من شركة ${providerRecord.name}.`,
         relatedEntityId: completion.id,
         relatedEntityType: 'offerCompletion',
         link: '/wallet',

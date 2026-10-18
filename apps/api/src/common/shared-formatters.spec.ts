@@ -8,20 +8,20 @@ import {
 } from '@cashdash/shared';
 
 describe('Shared Point & Cash Conversion Helpers', () => {
-  it('should convert points to cash accurately with default rate (1,000 pts = $1.00)', () => {
-    expect(pointsToCash(1000)).toBe(1.0);
-    expect(pointsToCash(2500)).toBe(2.5);
-    expect(pointsToCash(500)).toBe(0.5);
+  it('should convert points to cash accurately with default rate (700 pts = $1.00)', () => {
+    expect(pointsToCash(700)).toBe(1.0);
+    expect(pointsToCash(1400)).toBe(2.0);
+    expect(pointsToCash(350)).toBe(0.5);
     expect(pointsToCash(0)).toBe(0);
-    expect(pointsToCash(10000)).toBe(10.0);
+    expect(pointsToCash(7000)).toBe(10.0);
   });
 
   it('should convert cash to points accurately with default rate', () => {
-    expect(cashToPoints(1.0)).toBe(1000);
-    expect(cashToPoints(2.5)).toBe(2500);
-    expect(cashToPoints(0.5)).toBe(500);
+    expect(cashToPoints(1.0)).toBe(700);
+    expect(cashToPoints(2.0)).toBe(1400);
+    expect(cashToPoints(0.5)).toBe(350);
     expect(cashToPoints(0)).toBe(0);
-    expect(cashToPoints(10.0)).toBe(10000);
+    expect(cashToPoints(10.0)).toBe(7000);
   });
 
   it('should support dynamic database-configured conversion rates', () => {

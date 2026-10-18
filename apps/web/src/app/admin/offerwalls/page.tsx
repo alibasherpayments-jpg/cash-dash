@@ -231,7 +231,7 @@ export default function AdminOfferwallsPage() {
         payload.user_id = testUserId;
         payload.txid = txId;
         payload.amount = Number(testPoints);
-        payload.payout = (Number(testPoints) / 1000).toFixed(4);
+        payload.payout = (Number(testPoints) / 700).toFixed(4);
       } else {
         payload.points = Number(testPoints);
       }
@@ -248,7 +248,7 @@ export default function AdminOfferwallsPage() {
       const data = res.data;
       if (data?.credited) {
         setTestResult(
-          `✅ SUCCESS: Real postback processed! Credited +${data.points} points ($${(data.points / 1000).toFixed(2)}) to user '${data.username || testUserId}'. Event Tx: ${data.txId}`
+          `✅ SUCCESS: Real postback processed! Credited +${data.points} points ($${(data.points / 700).toFixed(2)}) to user '${data.username || testUserId}'. Event Tx: ${data.txId}`
         );
         setOfferwalls((prev) =>
           prev.map((w) =>
@@ -311,9 +311,9 @@ export default function AdminOfferwallsPage() {
 
         <Card className="bg-card border-border p-5 rounded-2xl shadow-sm">
           <span className="text-xs text-muted-foreground font-semibold uppercase">Conversion Ratio</span>
-          <div className="text-2xl font-black text-emerald-500 mt-1">1,000 : $1.00</div>
+          <div className="text-2xl font-black text-emerald-500 mt-1">700 : $1.00</div>
           <span className="text-[11px] text-muted-foreground font-medium block mt-0.5">
-            Min. Cashout: 100 pts ($0.10)
+            Min. Cashout: 70 pts ($0.10)
           </span>
         </Card>
 
@@ -665,9 +665,7 @@ export default function AdminOfferwallsPage() {
                 className="bg-background border-border text-foreground font-mono"
               />
               <span className="text-[11px] text-emerald-500 block mt-0.5 font-medium">
-                {testModalWall?.slug === "taskwall"
-                  ? `Taskwall Conversion: 700 pts = $1.00 USD (Simulates $${(Number(testPoints) / 700).toFixed(2)} USD payout)`
-                  : `≈ $${(Number(testPoints) / 1000).toFixed(2)} USD Value (1,000 pts = $1.00)`}
+                ≈ ${(Number(testPoints) / 700).toFixed(2)} USD Value (700 pts = $1.00 USD)
               </span>
             </div>
 

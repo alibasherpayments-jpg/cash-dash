@@ -318,7 +318,7 @@ export default function AdminWithdrawalDetailPage() {
         <div className="p-4 rounded-xl bg-card border border-border shadow-sm">
           <span className="text-[10px] uppercase font-bold text-muted-foreground block">Payout Method</span>
           <span className="text-lg font-bold text-foreground">{data.method}</span>
-          <span className="text-xs text-muted-foreground block">Ratio: 1,000 pts = $1.00 USD</span>
+          <span className="text-xs text-muted-foreground block">Ratio: 700 pts = $1.00 USD</span>
         </div>
 
         <div className="p-4 rounded-xl bg-card border border-border shadow-sm">
@@ -407,7 +407,7 @@ export default function AdminWithdrawalDetailPage() {
               {formatPoints(data.pointsBreakdown?.totalEarned ?? data.wallet?.totalEarned ?? 0)}
             </div>
             <span className="text-[10px] font-medium text-emerald-500 block">
-              ≈ {formatCash((data.pointsBreakdown?.totalEarned ?? data.wallet?.totalEarned ?? 0) / 1000)}
+              ≈ {formatCash((data.pointsBreakdown?.totalEarned ?? data.wallet?.totalEarned ?? 0) / 700)}
             </span>
           </div>
 
@@ -420,7 +420,7 @@ export default function AdminWithdrawalDetailPage() {
               {formatPoints(data.pointsBreakdown?.totalWithdrawn ?? data.wallet?.totalWithdrawn ?? 0)}
             </div>
             <span className="text-[10px] font-medium text-muted-foreground block">
-              ≈ {formatCash((data.pointsBreakdown?.totalWithdrawn ?? data.wallet?.totalWithdrawn ?? 0) / 1000)}
+              ≈ {formatCash((data.pointsBreakdown?.totalWithdrawn ?? data.wallet?.totalWithdrawn ?? 0) / 700)}
             </span>
           </div>
 
@@ -690,7 +690,7 @@ export default function AdminWithdrawalDetailPage() {
                             </span>
                           </td>
                           <td className="py-3 px-4 font-medium text-muted-foreground">
-                            ≈ {formatCash(tx.amount / 1000)}
+                            ≈ {formatCash(tx.amount / 700)}
                           </td>
                           <td className="py-3 px-4 text-right">
                             <Badge

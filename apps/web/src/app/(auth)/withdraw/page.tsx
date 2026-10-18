@@ -143,7 +143,7 @@ export default function WithdrawPage() {
   }, []);
 
   const { settings } = usePlatformSettings();
-  const conversionRate = (wallet as any)?.conversionRate || settings?.conversionRate || 1000;
+  const conversionRate = (wallet as any)?.conversionRate || settings?.conversionRate || 700;
   const availablePoints = wallet?.availablePoints || 0;
   const points = parseInt((pointsInput || "").toString().replace(/,/g, ""), 10) || 0;
   const feePercent = selectedMethod?.feePercent || 0;

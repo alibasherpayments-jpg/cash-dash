@@ -112,7 +112,7 @@ const jsonLd = {
           "name": "What is the points conversion rate?",
           "acceptedAnswer": {
             "@type": "Answer",
-            "text": "1,000 points equals $1.00 USD (or 100 points = $0.10). Conversion rates are dynamically computed across the entire app.",
+            "text": "700 points equals $1.00 USD (or 70 points = $0.10). Conversion rates are dynamically computed across the entire app.",
           },
         },
       ],
@@ -419,7 +419,7 @@ export default function LandingPage() {
                         {formatPointsRaw(offer.reward)} <span className="text-xs font-bold text-accent">{t.common.pts}</span>
                       </p>
                       <p className="text-xs font-medium text-emerald-500">
-                        ≈ {formatCash(offer.reward / 1000)}
+                        ≈ {formatPointsAsCash(offer.reward)}
                       </p>
                     </div>
 

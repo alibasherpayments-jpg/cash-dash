@@ -104,7 +104,7 @@ export default function AdminOverviewPage() {
 
         <div className="flex items-center gap-2">
           <Badge className="bg-emerald-500/10 text-emerald-400 border-emerald-500/20 text-xs font-semibold">
-            ● 1,000 pts = $1.00 USD Standard
+            ● 700 pts = $1.00 USD Standard
           </Badge>
           <Badge className="bg-indigo-500/10 text-indigo-400 border-indigo-500/20 text-xs font-semibold">
             ● Automated Postbacks Active
@@ -217,7 +217,7 @@ export default function AdminOverviewPage() {
             {loading ? <Loader2 className="h-6 w-6 animate-spin" /> : formatPoints(stats.pointsInCirculation)}
           </div>
           <span className="text-[11px] text-muted-foreground mt-1 block">
-            ≈ ${(stats.pointsInCirculation / 1000).toFixed(2)} USD Available
+            ≈ ${(stats.pointsInCirculation / 700).toFixed(2)} USD Available
           </span>
         </Card>
       </div>

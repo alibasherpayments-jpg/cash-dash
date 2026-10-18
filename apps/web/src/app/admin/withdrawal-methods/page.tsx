@@ -154,7 +154,7 @@ export default function AdminWithdrawalMethodsPage() {
                     <td className="py-3.5 px-5">
                       <span className="font-bold text-foreground font-mono">{formatPoints(m.minimumPoints)}</span>
                       <span className="text-[10px] text-emerald-500 block font-semibold">
-                        ≈ {formatCash(m.minimumPoints / 1000)} USD
+                        ≈ {formatCash(m.minimumPoints / 700)} USD
                       </span>
                     </td>
                     <td className="py-3.5 px-5 text-muted-foreground">{m.feePercent}%</td>

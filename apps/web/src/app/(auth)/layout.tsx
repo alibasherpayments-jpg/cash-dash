@@ -36,7 +36,7 @@ import {
   ChevronDown,
   Layers,
 } from "lucide-react";
-import { formatPoints, formatCash } from "@/lib/formatters";
+import { formatPoints, formatCash, pointsToCash } from "@/lib/formatters";
 import { cn } from "@/lib/utils";
 import { ThemeSwitcher } from "@/components/common/theme-switcher";
 
@@ -128,7 +128,7 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
             {formatPoints(wallet?.availablePoints || 0)} <span className="text-xs font-semibold text-accent">{t.common.pts}</span>
           </div>
           <div className="text-xs font-medium text-emerald-500 mt-0.5">
-            ≈ {formatCash((wallet?.availablePoints || 0) / 1000)}
+            ≈ {formatCash(pointsToCash(wallet?.availablePoints || 0))}
           </div>
           <div className="mt-3 grid grid-cols-2 gap-2">
             <Button size="sm" variant="default" className="h-7 text-xs font-semibold" asChild>
@@ -232,7 +232,7 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
               <div className="flex items-center gap-1.5 leading-none">
                 <span className="text-xs font-black text-foreground">{formatPoints(wallet?.availablePoints || 0)}</span>
                 <span className="text-[11px] font-semibold text-muted-foreground hidden sm:inline-block">
-                  ({formatCash((wallet?.availablePoints || 0) / 1000)})
+                  ({formatCash(pointsToCash(wallet?.availablePoints || 0))})
                 </span>
               </div>
             </Link>
@@ -352,7 +352,7 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
               <div className="min-w-0 flex-1">
                 <p className="text-xs font-bold truncate text-foreground">{user?.username || "Member"}</p>
                 <p className="text-[10px] text-emerald-500 font-semibold truncate">
-                  {formatPoints(wallet?.availablePoints || 0)} pts ({formatCash((wallet?.availablePoints || 0) / 1000)})
+                  {formatPoints(wallet?.availablePoints || 0)} pts ({formatCash(pointsToCash(wallet?.availablePoints || 0))})
                 </p>
               </div>
             </div>

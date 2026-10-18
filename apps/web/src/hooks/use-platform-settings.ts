@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import { useQuery } from "@tanstack/react-query";
 import { apiGet } from "@/lib/api-client";
@@ -28,8 +28,8 @@ export function usePlatformSettings() {
         return {
           siteName: "Cash Dash",
           supportEmail: "support@cashdash.com",
-          conversionRate: 1000,
-          minWithdrawalPoints: 100,
+          conversionRate: 700,
+          minWithdrawalPoints: 70,
           leaderboardEnabled: true,
           maintenanceMode: false,
         };

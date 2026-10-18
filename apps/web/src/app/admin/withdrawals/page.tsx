@@ -110,7 +110,7 @@ export default function AdminWithdrawalsPage() {
           userId: w.userId,
           method: w.method?.name || "Payment",
           points: w.points,
-          cashValue: w.cashValue || w.points / 1000,
+          cashValue: w.cashValue || w.points / 700,
           status: w.status,
           riskScore: w.user?.riskAssessment?.riskScore ?? 10,
           destination: parsed.summary,
