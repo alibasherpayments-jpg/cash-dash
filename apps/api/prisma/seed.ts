@@ -124,6 +124,20 @@ async function main() {
     },
   });
 
+  const buckswall = await prisma.offerProvider.create({
+    data: {
+      name: 'BucksWall',
+      type: 'cpi_offers',
+      slug: 'buckswall',
+      logoUrl: '/images/offerwalls/buckswall.png',
+      apiKeyMasked: 'buckswall_••••••••••••55d9',
+      webhookSecret: 'buckswall-secret-cashdash',
+      postbackUrl: 'http://localhost:3001/api/v1/webhooks/providers/buckswall',
+      isActive: true,
+      offersCount: 50,
+    },
+  });
+
   // ----------------------------------------------------
   // 4. Withdrawal Methods: Vodafone Cash & Binance ONLY
   // Min: $0.10 (100 points at 1,000 pts = $1.00 USD)

@@ -43,6 +43,11 @@ const FEATURED_OFFERWALLS = [
     name: "PixyLabs",
     logo: "/images/offerwalls/pixylabs.png",
   },
+  {
+    id: "buckswall",
+    name: "BucksWall",
+    logo: "/images/offerwalls/buckswall.png",
+  },
 ];
 
 export default function DashboardPage() {
@@ -149,7 +154,7 @@ export default function DashboardPage() {
           </Button>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4">
           {FEATURED_OFFERWALLS.map((wall) => (
             <Card
               key={wall.id}
