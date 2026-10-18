@@ -72,18 +72,8 @@ export class WalletService {
     }
 
     await this.prisma.$transaction(async (tx) => {
-      let wallet = await tx.wallet.findUnique({ where: { userId: opts.userId } });
-      if (!wallet) {
-        wallet = await tx.wallet.create({
-          data: {
-            userId: opts.userId,
-            availablePoints: 0,
-            pendingPoints: 0,
-            totalEarned: 0,
-            totalWithdrawn: 0,
-          },
-        });
-      }
+      const wallet = await tx.wallet.findUnique({ where: { userId: opts.userId } });
+      if (!wallet) throw new NotFoundException(`Wallet not found for user: ${opts.userId}`);
 
       const updateData: Prisma.WalletUpdateInput = opts.isPending
         ? { pendingPoints: { increment: opts.amount } }

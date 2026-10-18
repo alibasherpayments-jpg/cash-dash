@@ -93,8 +93,6 @@ export default function AdminOfferwallsPage() {
           postback = `${apiHost}/api/v1/webhooks/providers/clickwall?user_id={user_id}&points={points}&trans_id={trans_id}`;
         } else if (p.slug === "pixylabs") {
           postback = `${apiHost}/api/v1/webhooks/providers/pixylabs?user_id=#{click.publisher.unique1}&click_id=#{id}&payout_usd=#{payout.theyGetInDollars}&points=#{payout.theyGetPoints}&offer_id=#{offer.id}&offer_name=#{offer.name}`;
-        } else if (p.slug === "buckswall") {
-          postback = `${apiHost}/api/v1/webhooks/providers/buckswall?user_id={subid1}&points={currency_amount}&payout_usd={payout}&offer_name={offer_name}&tx_id={subid2}&status={status}`;
         } else {
           postback = `${apiHost}/api/v1/webhooks/providers/${p.slug}?user_id={user_id}&points={points}&tx_id={tx_id}`;
         }
@@ -111,8 +109,6 @@ export default function AdminOfferwallsPage() {
               ? "Fastest Approval"
               : p.slug === "pixylabs"
               ? "High Payouts"
-              : p.slug === "buckswall"
-              ? "Global Offers"
               : "Instant Clicks",
           rating: 4.9,
           avgPayout: "$1.00 - $25.00",

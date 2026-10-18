@@ -50,12 +50,6 @@ const OFFERWALLS: OfferwallItem[] = [
     logo: "/images/offerwalls/pixylabs.png",
     url: "https://offerwall.pixylabs.co/362",
   },
-  {
-    id: "buckswall",
-    name: "BucksWall",
-    logo: "/images/offerwalls/buckswall.png",
-    url: "https://buckswall.com/offerwall.php?placement_id=YOUR_PLACEMENT_ID",
-  },
 ];
 
 export default function OfferwallsPage() {
@@ -74,9 +68,6 @@ export default function OfferwallsPage() {
     }
     if (wall.id === "pixylabs") {
       return `https://offerwall.pixylabs.co/362?uid=${encodeURIComponent(subId)}`;
-    }
-    if (wall.id === "buckswall") {
-      return `${wall.url}${separator}user_id=${encodeURIComponent(subId)}&subid1=${encodeURIComponent(subId)}`;
     }
     return `${wall.url}${separator}user_id=${encodeURIComponent(subId)}&sub_id=${encodeURIComponent(subId)}&subid=${encodeURIComponent(subId)}`;
   };
@@ -101,8 +92,8 @@ export default function OfferwallsPage() {
         </p>
       </div>
 
-      {/* ─── Offerwalls Responsive Grid (Only Logo + Name) ──────────── */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-5 sm:gap-6 pt-4">
+      {/* ─── Offerwalls 4-Card Grid (Only Logo + Name) ──────────── */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5 sm:gap-6 pt-4">
         {OFFERWALLS.map((wall) => (
           <Card
             key={wall.id}

@@ -93,16 +93,14 @@ export class WebhooksController {
     }
 
     // 2. Extract standard parameters
-    // Taskwall sends: userid | CPALead/ClickWall send: sub_id, subid, user_id | BucksWall: subid1, user_id
+    // Taskwall sends: userid | CPALead/ClickWall send: sub_id, subid, user_id
     const userId = String(
       payload['userid'] ??
         payload['sub_id'] ??
         payload['subid'] ??
-        payload['subid1'] ??
         payload['user_id'] ??
         payload['userId'] ??
         payload['uid'] ??
-        payload['user'] ??
         '',
     ).trim();
 
@@ -127,12 +125,6 @@ export class WebhooksController {
 
     if (actualPayoutUsd !== undefined) {
       rewardPoints = Math.round(actualPayoutUsd * pointsPerDollar);
-    } else if (payload['currency_amount'] !== undefined && payload['currency_amount'] !== '') {
-      const ca = parseInt(String(payload['currency_amount']), 10);
-      if (!isNaN(ca) && ca > 0) {
-        rewardPoints = ca;
-        actualPayoutUsd = ca / pointsPerDollar;
-      }
     } else if (payload['pts'] !== undefined && payload['pts'] !== '') {
       const p = parseInt(String(payload['pts']), 10);
       if (!isNaN(p) && p > 0) {
@@ -181,7 +173,6 @@ export class WebhooksController {
       const rawPayout = String(
         payload['payout'] ??
           payload['payout_usd'] ??
-          payload['currency_amount'] ??
           payload['points'] ??
           payload['user_amount'] ??
           payload['amount'] ??

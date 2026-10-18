@@ -6,7 +6,6 @@ import {
   CPALeadProvider,
   ClickWallProvider,
   PixyLabsProvider,
-  BucksWallProvider,
   ProviderRegistry,
 } from './providers/offer-providers';
 
@@ -17,7 +16,6 @@ import {
     CPALeadProvider,
     ClickWallProvider,
     PixyLabsProvider,
-    BucksWallProvider,
     ProviderRegistry,
   ],
   controllers: [OffersController],
