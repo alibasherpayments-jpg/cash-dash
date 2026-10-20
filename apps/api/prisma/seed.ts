@@ -124,6 +124,20 @@ async function main() {
     },
   });
 
+  const mooffers = await prisma.offerProvider.create({
+    data: {
+      name: 'MoOffers',
+      type: 'offerwall',
+      slug: 'mooffers',
+      logoUrl: '/images/offerwalls/mooffers.png',
+      apiKeyMasked: 'mooffers_••••••••••••88d1',
+      webhookSecret: 'mooffers-secret-cashdash',
+      postbackUrl: 'https://cashdash-api.vercel.app/api/v1/webhooks/providers/mooffers',
+      isActive: true,
+      offersCount: 50,
+    },
+  });
+
   // ----------------------------------------------------
   // 4. Withdrawal Methods: Vodafone Cash & Binance ONLY
   // Min: $0.10 (100 points at 1,000 pts = $1.00 USD)

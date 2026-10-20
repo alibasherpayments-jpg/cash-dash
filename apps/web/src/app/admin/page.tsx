@@ -192,7 +192,7 @@ export default function AdminOverviewPage() {
           <div className="text-2xl sm:text-3xl font-black text-foreground">
             {loading ? <Loader2 className="h-6 w-6 animate-spin" /> : `${stats.activeOfferwallsCount} Networks`}
           </div>
-          <span className="text-[11px] text-muted-foreground mt-1 block">Taskwall, CPALead, ClickWall</span>
+          <span className="text-[11px] text-muted-foreground mt-1 block">Taskwall, CPALead, ClickWall, MoOffers</span>
         </Card>
 
         <Card className="bg-card border-border text-card-foreground p-5 rounded-2xl shadow-sm">

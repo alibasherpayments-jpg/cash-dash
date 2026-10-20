@@ -45,11 +45,16 @@ export class WebhooksController {
     @Param('providerId') providerId: string,
     @Query() query: Record<string, unknown>,
     @Headers('x-signature') signature = '',
+    @Headers('x-callback-signature') moSignature = '',
     @Headers('x-event-id') eventId = '',
+    @Headers('x-callback-id') moCallbackId = '',
+    @Headers('idempotency-key') idempotencyKey = '',
     @Req() req: Request,
     @Res() res: Response,
   ) {
-    const result = await this.processPostback(providerId, query, signature, eventId);
+    const effectiveSig = signature || moSignature;
+    const effectiveEventId = eventId || moCallbackId || idempotencyKey;
+    const result = await this.processPostback(providerId, query, effectiveSig, effectiveEventId);
     return this.sendResponse(result, req, res);
   }
 
@@ -61,12 +66,17 @@ export class WebhooksController {
     @Query() query: Record<string, unknown>,
     @Body() body: Record<string, unknown>,
     @Headers('x-signature') signature = '',
+    @Headers('x-callback-signature') moSignature = '',
     @Headers('x-event-id') eventId = '',
+    @Headers('x-callback-id') moCallbackId = '',
+    @Headers('idempotency-key') idempotencyKey = '',
     @Req() req: Request,
     @Res() res: Response,
   ) {
     const combined = { ...query, ...(typeof body === 'object' && body !== null ? body : {}) };
-    const result = await this.processPostback(providerId, combined, signature, eventId);
+    const effectiveSig = signature || moSignature;
+    const effectiveEventId = eventId || moCallbackId || idempotencyKey;
+    const result = await this.processPostback(providerId, combined, effectiveSig, effectiveEventId);
     return this.sendResponse(result, req, res);
   }
 
@@ -218,9 +228,14 @@ export class WebhooksController {
         '',
     ).trim();
 
-    // 2. Extract transaction ID or generate a unique one
+    // 2. Extract transaction ID or generate a unique one (supporting standard networks and MoOffers)
     let rawTxId = String(
-      payload['txid'] ||
+      payload['conversion_no'] ||
+        payload['callback_no'] ||
+        payload['network_tx_id'] ||
+        payload['conversion_id'] ||
+        payload['callback_id'] ||
+        payload['txid'] ||
         payload['tx_id'] ||
         payload['transaction_id'] ||
         payload['lead_id'] ||
@@ -236,6 +251,21 @@ export class WebhooksController {
       rawTxId = `${providerRecord.slug}-${offerExternalId}-${Date.now()}-${Math.random().toString(36).substring(2, 7)}`;
     }
     const externalTxId = rawTxId;
+
+    // 2b. Check conversion status (e.g. MoOffers pending/approved/rejected/reversed)
+    const status = String(payload['status'] ?? '').trim().toLowerCase();
+    if (status === 'pending') {
+      this.logger.log(`Postback for ${providerRecord.slug} has status 'pending' (Tx: ${externalTxId}); acknowledged without crediting.`);
+      return { success: true, message: 'Pending confirmation', credited: false, points: 0, txId: externalTxId };
+    }
+    if (status === 'rejected' || status === 'invalid') {
+      this.logger.log(`Postback for ${providerRecord.slug} has status '${status}' (Tx: ${externalTxId}); acknowledged without crediting.`);
+      return { success: true, message: `Conversion ${status}`, credited: false, points: 0, txId: externalTxId };
+    }
+    if (status === 'reversed') {
+      this.logger.warn(`Postback for ${providerRecord.slug} is a reversal for tx ${externalTxId}.`);
+      return { success: true, message: 'Reversal noted', credited: false, points: 0, txId: externalTxId };
+    }
 
     // 3. Signature / Secret Validation (permissive for macros and default seeds)
     const isMacro =

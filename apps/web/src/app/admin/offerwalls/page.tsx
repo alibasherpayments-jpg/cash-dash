@@ -93,6 +93,8 @@ export default function AdminOfferwallsPage() {
           postback = `${apiHost}/api/v1/webhooks/providers/clickwall?user_id={user_id}&amount={amount}&payout={payout}&txid={txid}&offer_name={offer_name}&offer_id={offer_id}`;
         } else if (p.slug === "pixylabs") {
           postback = `${apiHost}/api/v1/webhooks/providers/pixylabs?user_id=#{click.publisher.unique1}&click_id=#{id}&payout_usd=#{payout.theyGetInDollars}&points=#{payout.theyGetPoints}&offer_id=#{offer.id}&offer_name=#{offer.name}`;
+        } else if (p.slug === "mooffers") {
+          postback = `${apiHost}/api/v1/webhooks/providers/mooffers?uid={uid}&payout={payout}&reward={reward}&conversion_no={conversion_no}&offer_id={offer_id}&offer_name={offer_name}&status={status}`;
         } else {
           postback = `${apiHost}/api/v1/webhooks/providers/${p.slug}?user_id={user_id}&points={points}&tx_id={tx_id}`;
         }
@@ -109,6 +111,8 @@ export default function AdminOfferwallsPage() {
               ? "Fastest Approval"
               : p.slug === "pixylabs"
               ? "High Payouts"
+              : p.slug === "mooffers"
+              ? "Fast Payouts"
               : "Instant Clicks",
           rating: 4.9,
           avgPayout: "$1.00 - $25.00",
@@ -232,6 +236,14 @@ export default function AdminOfferwallsPage() {
         payload.txid = txId;
         payload.amount = Number(testPoints);
         payload.payout = (Number(testPoints) / 700).toFixed(4);
+      } else if (testModalWall.slug === "mooffers") {
+        payload.uid = testUserId;
+        payload.conversion_no = txId;
+        payload.payout = (Number(testPoints) / 700).toFixed(4);
+        payload.reward = Number(testPoints);
+        payload.status = "approved";
+        payload.offer_id = "off_test_mooffers";
+        payload.offer_name = `Admin Test Task (${testModalWall.name})`;
       } else {
         payload.points = Number(testPoints);
       }
