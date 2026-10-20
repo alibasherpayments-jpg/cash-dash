@@ -54,7 +54,7 @@ const OFFERWALLS: OfferwallItem[] = [
     id: "mooffers",
     name: "MoOffers",
     logo: "/images/offerwalls/mooffers.svg",
-    url: "https://wall.mooffers.com/offerwall",
+    url: "https://wall.mooffers.com/offerwall/app_9d4ef29931152938",
   },
 ];
 
@@ -67,8 +67,7 @@ export default function OfferwallsPage() {
     const subId = user?.id || "guest";
     const separator = wall.url.includes("?") ? "&" : "?";
     if (wall.id === "mooffers") {
-      const appId = process.env.NEXT_PUBLIC_MOOFFERS_APP_ID || "app_mooffers";
-      return `https://wall.mooffers.com/offerwall/${appId}?uid=${encodeURIComponent(subId)}&platform=web`;
+      return `https://wall.mooffers.com/offerwall/app_9d4ef29931152938?uid=${encodeURIComponent(subId)}&platform=web`;
     }
     if (wall.id === "clickwall") {
       return `https://clickwall.net/app/iframe/10326/${encodeURIComponent(subId)}`;
