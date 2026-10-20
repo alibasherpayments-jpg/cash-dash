@@ -70,7 +70,7 @@ const DEFAULT_METHODS: WithdrawalMethodItem[] = [
     minimumPoints: 100, // $0.10
     feePercent: 0,
     processingTime: "Instant - 15 Mins",
-    description: "استلام فوري عبر المحفظة الإلكترونية لجميع أرقام فودافون مصر",
+    description: "استلام فوري عبر المحفظة الإلكترونية لجميع أرقام فودافون مصر. الحد الأدنى 10 سنت (100 نقطة).",
     badge: "Most Popular (Egypt)",
     requirements: [
       {
@@ -96,10 +96,10 @@ const DEFAULT_METHODS: WithdrawalMethodItem[] = [
     name: "Binance Pay / Crypto USDT",
     slug: "binance",
     icon: "https://cryptologos.cc/logos/binance-coin-bnb-logo.png",
-    minimumPoints: 1000, // $1.00
-    feePercent: 1.5,
+    minimumPoints: 100, // $0.10
+    feePercent: 0,
     processingTime: "1 - 2 Hours",
-    description: "Receive USDT directly into your Binance Pay account with zero network fee",
+    description: "Receive USDT directly into your Binance Pay account with zero network fee. Min: 100 pts ($0.10).",
     badge: "Crypto (USDT)",
     requirements: [
       {
@@ -143,7 +143,7 @@ export default function WithdrawPage() {
   }, []);
 
   const { settings } = usePlatformSettings();
-  const conversionRate = (wallet as any)?.conversionRate || settings?.conversionRate || 700;
+  const conversionRate = (wallet as any)?.conversionRate || settings?.conversionRate || 1000;
   const availablePoints = wallet?.availablePoints || 0;
   const points = parseInt((pointsInput || "").toString().replace(/,/g, ""), 10) || 0;
   const feePercent = selectedMethod?.feePercent || 0;

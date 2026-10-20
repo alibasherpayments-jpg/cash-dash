@@ -297,7 +297,7 @@ export default function NewWithdrawalMethodPage() {
   };
 
   const minPtsNum = parseInt(minimumPoints, 10) || 0;
-  const minUsd = (minPtsNum / 700).toFixed(2);
+  const minUsd = (minPtsNum / 1000).toFixed(2);
 
   return (
     <div className="max-w-5xl mx-auto space-y-6">
@@ -313,7 +313,7 @@ export default function NewWithdrawalMethodPage() {
             <Sliders className="h-7 w-7 text-amber-500" /> Payment & Withdrawal Method Builder
           </h1>
           <p className="text-xs sm:text-sm text-slate-400 mt-0.5">
-            Configure payout channels with custom member input requirements (700 pts = $1.00 USD)
+            Configure payout channels with custom member input requirements (1,000 pts = $1.00 USD)
           </p>
         </div>
       </div>

@@ -185,7 +185,7 @@ export default function AdminUserDetailPage() {
 
   const availablePoints = userData.wallet?.availablePoints ?? 0;
   const totalEarned = userData.wallet?.totalEarned ?? 0;
-  const totalWithdrawn = (userData.wallet?.totalWithdrawn ?? 0) / 700;
+  const totalWithdrawn = (userData.wallet?.totalWithdrawn ?? 0) / 1000;
   const offersCount = userData._count?.offerCompletions ?? 0;
   const riskScore = userData.riskAssessment?.riskScore ?? 0;
 
@@ -247,13 +247,13 @@ export default function AdminUserDetailPage() {
         <div className="p-4 rounded-xl bg-card border border-border shadow-sm">
           <span className="text-[10px] uppercase font-bold text-muted-foreground block">Available Balance</span>
           <span className="text-xl font-black text-foreground">{formatPoints(availablePoints)}</span>
-          <span className="text-xs text-emerald-500 block">≈ {formatCash(availablePoints / 700)}</span>
+          <span className="text-xs text-emerald-500 block">≈ {formatCash(availablePoints / 1000)}</span>
         </div>
 
         <div className="p-4 rounded-xl bg-card border border-border shadow-sm">
           <span className="text-[10px] uppercase font-bold text-muted-foreground block">Lifetime Earned</span>
           <span className="text-xl font-black text-amber-500">{formatPoints(totalEarned)}</span>
-          <span className="text-xs text-muted-foreground block">≈ {formatCash(totalEarned / 700)}</span>
+          <span className="text-xs text-muted-foreground block">≈ {formatCash(totalEarned / 1000)}</span>
         </div>
 
         <div className="p-4 rounded-xl bg-card border border-border shadow-sm">

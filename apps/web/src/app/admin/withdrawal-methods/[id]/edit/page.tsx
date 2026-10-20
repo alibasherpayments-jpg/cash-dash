@@ -75,7 +75,7 @@ export default function AdminEditWithdrawalMethodPage() {
   };
 
   const minPtsNum = parseInt(minPoints, 10) || 0;
-  const minUsd = (minPtsNum / 700).toFixed(2);
+  const minUsd = (minPtsNum / 1000).toFixed(2);
 
   return (
     <div className="max-w-3xl mx-auto space-y-6">
@@ -91,7 +91,7 @@ export default function AdminEditWithdrawalMethodPage() {
             <Sliders className="h-5 w-5 text-primary" /> Edit Payout Method: {name}
           </CardTitle>
           <CardDescription className="text-xs text-muted-foreground">
-            Modify minimum cashout constraints and gateway processing fee (700 points = $1.00 USD)
+            Modify minimum cashout constraints and gateway processing fee (1,000 points = $1.00 USD)
           </CardDescription>
         </CardHeader>
 
@@ -126,7 +126,7 @@ export default function AdminEditWithdrawalMethodPage() {
                 />
                 <FieldError message={fieldErrors.minPoints} />
                 <span className="text-[10px] text-emerald-500 font-medium block">
-                  ≈ ${(Number(minPoints) / 700).toFixed(2)} USD
+                  ≈ ${(Number(minPoints) / 1000).toFixed(2)} USD
                 </span>
               </div>
 

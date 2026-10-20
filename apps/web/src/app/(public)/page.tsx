@@ -112,7 +112,7 @@ const jsonLd = {
           "name": "What is the points conversion rate?",
           "acceptedAnswer": {
             "@type": "Answer",
-            "text": "700 points equals $1.00 USD (or 70 points = $0.10). Conversion rates are dynamically computed across the entire app.",
+            "text": "1,000 points equals $1.00 USD (or 100 points = $0.10). Conversion rates are dynamically computed across the entire app.",
           },
         },
       ],

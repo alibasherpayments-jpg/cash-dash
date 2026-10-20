@@ -98,7 +98,7 @@ export default function WithdrawalHistoryPage() {
             methodName: w.method?.name || "Payout",
             points: w.points,
             netPoints: w.netPoints || w.points,
-            cashValue: w.cashValue || w.points / 700,
+            cashValue: w.cashValue || w.points / 1000,
             status: w.status,
             destinationMasked: destStr,
             externalTxId: w.externalTxId,

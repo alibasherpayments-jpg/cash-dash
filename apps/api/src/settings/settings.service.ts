@@ -4,12 +4,12 @@ import { PrismaService } from '../prisma/prisma.service';
 const DEFAULT_SETTINGS: Record<string, { value: string; type: string; category: string; label: string }> = {
   site_name: { value: 'Cash Dash', type: 'string', category: 'general', label: 'Site Name' },
   support_email: { value: 'support@cashdash.com', type: 'string', category: 'general', label: 'Support Inquiries Email' },
-  conversion_rate: { value: '700', type: 'number', category: 'financial', label: 'Points per $1 USD' },
-  points_conversion_rate: { value: '700', type: 'number', category: 'financial', label: 'Points per $1 USD (Alias)' },
+  conversion_rate: { value: '1000', type: 'number', category: 'financial', label: 'Points per $1 USD' },
+  points_conversion_rate: { value: '1000', type: 'number', category: 'financial', label: 'Points per $1 USD (Alias)' },
   referral_reward_percent: { value: '10', type: 'number', category: 'referrals', label: 'Referral reward percentage of first withdrawal' },
   referral_percentage: { value: '10', type: 'number', category: 'referrals', label: 'Referral commission percentage (Alias)' },
   referral_bonus_points: { value: '500', type: 'number', category: 'referrals', label: 'Referral bonus points on sign-up' },
-  min_withdrawal_points: { value: '70', type: 'number', category: 'financial', label: 'Minimum withdrawal in points' },
+  min_withdrawal_points: { value: '100', type: 'number', category: 'financial', label: 'Minimum withdrawal in points' },
   max_withdrawal_points: { value: '5000000', type: 'number', category: 'financial', label: 'Maximum withdrawal in points' },
   leaderboard_enabled: { value: 'true', type: 'boolean', category: 'features', label: 'Leaderboard enabled' },
   leaderboard_update_interval: { value: '3600', type: 'number', category: 'features', label: 'Leaderboard update interval (seconds)' },
@@ -141,7 +141,7 @@ export class SettingsService {
   // ─── Typed convenience getters ─────────────────────────────────────────────
 
   async getConversionRate(): Promise<number> {
-    return this.getNumber('conversion_rate', 700);
+    return this.getNumber('conversion_rate', 1000);
   }
 
   async getReferralRewardPercent(): Promise<number> {
@@ -153,7 +153,7 @@ export class SettingsService {
   }
 
   async getMinWithdrawalPoints(): Promise<number> {
-    return this.getNumber('min_withdrawal_points', 70);
+    return this.getNumber('min_withdrawal_points', 100);
   }
 
   async isLeaderboardEnabled(): Promise<boolean> {
