@@ -9,7 +9,7 @@ const DEFAULT_SETTINGS: Record<string, { value: string; type: string; category: 
   referral_reward_percent: { value: '10', type: 'number', category: 'referrals', label: 'Referral reward percentage of first withdrawal' },
   referral_percentage: { value: '10', type: 'number', category: 'referrals', label: 'Referral commission percentage (Alias)' },
   referral_bonus_points: { value: '500', type: 'number', category: 'referrals', label: 'Referral bonus points on sign-up' },
-  min_withdrawal_points: { value: '100', type: 'number', category: 'financial', label: 'Minimum withdrawal in points' },
+  min_withdrawal_points: { value: '50', type: 'number', category: 'financial', label: 'Minimum withdrawal in points' },
   max_withdrawal_points: { value: '5000000', type: 'number', category: 'financial', label: 'Maximum withdrawal in points' },
   leaderboard_enabled: { value: 'true', type: 'boolean', category: 'features', label: 'Leaderboard enabled' },
   leaderboard_update_interval: { value: '3600', type: 'number', category: 'features', label: 'Leaderboard update interval (seconds)' },
@@ -153,7 +153,7 @@ export class SettingsService {
   }
 
   async getMinWithdrawalPoints(): Promise<number> {
-    return this.getNumber('min_withdrawal_points', 100);
+    return this.getNumber('min_withdrawal_points', 50);
   }
 
   async isLeaderboardEnabled(): Promise<boolean> {

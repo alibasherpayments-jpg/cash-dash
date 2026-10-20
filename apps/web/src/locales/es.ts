@@ -361,7 +361,7 @@ export const es: TranslationSchema = {
       q1: "¿Cómo gano puntos en Cash Dash?",
       a1: "Descargando juegos, alcanzando niveles, probando apps o respondiendo encuestas. 1,000 puntos equivalen a $1.00 USD.",
       q2: "¿Cuál es el retiro mínimo?",
-      a2: "El retiro mínimo empieza en solo 100 puntos ($0.10 USD) para pagos instantáneos.",
+      a2: "El retiro mínimo empieza en solo 50 puntos ($0.05 USD) para pagos instantáneos.",
       q3: "¿Cuánto tarda en llegar un retiro?",
       a3: "La mayoría de los retiros automáticos tardan menos de 2 minutos.",
       q4: "¿Cash Dash es completamente gratis?",

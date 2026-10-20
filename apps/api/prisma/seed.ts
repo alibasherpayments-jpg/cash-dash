@@ -33,7 +33,7 @@ async function main() {
     { key: 'support_email', value: 'support@cashdash.io', type: 'string', category: 'general', label: 'Support Email' },
     { key: 'currency_code', value: 'USD', type: 'string', category: 'general', label: 'Default Currency' },
     { key: 'points_conversion_rate', value: '1000', type: 'number', category: 'earning', label: 'Points per $1.00 USD' },
-    { key: 'min_withdrawal_points', value: '100', type: 'number', category: 'earning', label: 'Minimum Withdrawal Points (100 pts = $0.10)' },
+    { key: 'min_withdrawal_points', value: '50', type: 'number', category: 'earning', label: 'Minimum Withdrawal Points (50 pts = $0.05)' },
     { key: 'referral_percentage', value: '10', type: 'number', category: 'earning', label: 'Referral Commission %' },
     { key: 'daily_goal_default_points', value: '500', type: 'number', category: 'earning', label: 'Daily Goal Points' },
     { key: 'leaderboard_enabled', value: 'true', type: 'boolean', category: 'leaderboard', label: 'Leaderboard Public' },
@@ -142,15 +142,15 @@ async function main() {
   // 4. Withdrawal Methods: Vodafone Cash & Binance ONLY
   // Min: $0.10 (100 points at 1,000 pts = $1.00 USD)
   // ----------------------------------------------------
-  console.log('Creating Vodafone Cash and Binance withdrawal methods (Min 100 pts / $0.10)...');
+  console.log('Creating Vodafone Cash and Binance withdrawal methods (Min 50 pts / $0.05)...');
 
   const vodafoneMethod = await prisma.withdrawalMethod.create({
     data: {
       name: 'Vodafone Cash (فودافون كاش)',
       slug: 'vodafone-cash',
       logoUrl: '/images/methods/vodafone-cash.png',
-      description: 'سحب فوري إلى محفظة فودافون كاش في مصر بالجنيه المصري (EGP). الحد الأدنى 10 سنت (100 نقطة).',
-      minimumPoints: 100, // $0.10 USD
+      description: 'سحب فوري إلى محفظة فودافون كاش في مصر بالجنيه المصري (EGP). الحد الأدنى 5 سنت (50 نقطة).',
+      minimumPoints: 50, // $0.05 USD
       maximumPoints: 500000, // $500.00 USD
       feePercent: 0,
       processingTime: 'Instant to 30 mins',
@@ -185,8 +185,8 @@ async function main() {
       name: 'Binance (USDT / Pay / UID)',
       slug: 'binance',
       logoUrl: '/images/methods/binance.png',
-      description: 'سحب فوري مباشر عبر منصة بينانس عبر Binance Pay ID أو UID أو شبكات USDT (BEP20 / TRC20). الحد الأدنى 10 سنت (100 نقطة).',
-      minimumPoints: 100, // $0.10 USD
+      description: 'سحب فوري مباشر عبر منصة بينانس عبر Binance Pay ID أو UID أو شبكات USDT (BEP20 / TRC20). الحد الأدنى 5 سنت (50 نقطة).',
+      minimumPoints: 50, // $0.05 USD
       maximumPoints: 1000000, // $1,000.00 USD
       feePercent: 0,
       processingTime: 'Instant to 2 hours',

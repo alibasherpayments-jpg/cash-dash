@@ -325,7 +325,7 @@ export default function AdminOfferwallsPage() {
           <span className="text-xs text-muted-foreground font-semibold uppercase">Conversion Ratio</span>
           <div className="text-2xl font-black text-emerald-500 mt-1">1,000 : $1.00</div>
           <span className="text-[11px] text-muted-foreground font-medium block mt-0.5">
-            Min. Cashout: 100 pts ($0.10)
+            Min. Cashout: 50 pts ($0.05)
           </span>
         </Card>
 

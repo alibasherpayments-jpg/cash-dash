@@ -67,10 +67,10 @@ const DEFAULT_METHODS: WithdrawalMethodItem[] = [
     name: "Vodafone Cash (فودافون كاش)",
     slug: "vodafone-cash",
     icon: "https://upload.wikimedia.org/wikipedia/commons/thumb/a/a8/Vodafone_icon.svg/512px-Vodafone_icon.svg.png",
-    minimumPoints: 100, // $0.10
+    minimumPoints: 50, // $0.05
     feePercent: 0,
     processingTime: "Instant - 15 Mins",
-    description: "استلام فوري عبر المحفظة الإلكترونية لجميع أرقام فودافون مصر. الحد الأدنى 10 سنت (100 نقطة).",
+    description: "استلام فوري عبر المحفظة الإلكترونية لجميع أرقام فودافون مصر. الحد الأدنى 5 سنت (50 نقطة).",
     badge: "Most Popular (Egypt)",
     requirements: [
       {
@@ -96,10 +96,10 @@ const DEFAULT_METHODS: WithdrawalMethodItem[] = [
     name: "Binance Pay / Crypto USDT",
     slug: "binance",
     icon: "https://cryptologos.cc/logos/binance-coin-bnb-logo.png",
-    minimumPoints: 100, // $0.10
+    minimumPoints: 50, // $0.05
     feePercent: 0,
     processingTime: "1 - 2 Hours",
-    description: "Receive USDT directly into your Binance Pay account with zero network fee. Min: 100 pts ($0.10).",
+    description: "Receive USDT directly into your Binance Pay account with zero network fee. Min: 50 pts ($0.05).",
     badge: "Crypto (USDT)",
     requirements: [
       {
@@ -121,7 +121,7 @@ export default function WithdrawPage() {
 
   const [methods, setMethods] = useState<WithdrawalMethodItem[]>(DEFAULT_METHODS);
   const [selectedMethod, setSelectedMethod] = useState<WithdrawalMethodItem | null>(null);
-  const [pointsInput, setPointsInput] = useState<string>("100");
+  const [pointsInput, setPointsInput] = useState<string>("50");
   const [formData, setFormData] = useState<Record<string, string>>({});
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
   const [confirmModalOpen, setConfirmModalOpen] = useState(false);

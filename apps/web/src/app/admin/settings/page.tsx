@@ -29,7 +29,7 @@ export default function AdminSettingsPage() {
   const [siteName, setSiteName] = useState("Cash Dash");
   const [supportEmail, setSupportEmail] = useState("support@cashdash.com");
   const [conversionRate, setConversionRate] = useState("1000");
-  const [minWithdrawal, setMinWithdrawal] = useState("100");
+  const [minWithdrawal, setMinWithdrawal] = useState("50");
   const [referralPercent, setReferralPercent] = useState("10");
   const [leaderboardEnabled, setLeaderboardEnabled] = useState(true);
   const [maintenanceMode, setMaintenanceMode] = useState(false);
@@ -122,7 +122,7 @@ export default function AdminSettingsPage() {
   };
 
   const rateNum = parseInt(conversionRate, 10) || 1000;
-  const minWNum = parseInt(minWithdrawal, 10) || 100;
+  const minWNum = parseInt(minWithdrawal, 10) || 50;
   const minCashValue = (minWNum / rateNum).toFixed(2);
 
   return (

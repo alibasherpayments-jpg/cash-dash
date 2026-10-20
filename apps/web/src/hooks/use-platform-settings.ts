@@ -29,7 +29,7 @@ export function usePlatformSettings() {
           siteName: "Cash Dash",
           supportEmail: "support@cashdash.com",
           conversionRate: 1000,
-          minWithdrawalPoints: 100,
+          minWithdrawalPoints: 50,
           leaderboardEnabled: true,
           maintenanceMode: false,
         };

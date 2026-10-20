@@ -365,7 +365,7 @@ export const en: TranslationSchema = {
       q1: "How do I earn points on Cash Dash?",
       a1: "You earn points by completing verified partner offers: downloading and reaching target levels in mobile games, testing fintech apps, taking surveys, or referring friends. 1,000 points equals $1.00 USD.",
       q2: "What is the minimum withdrawal amount?",
-      a2: "Minimum cashout starts at just 100 points ($0.10 USD) for instant payouts via Vodafone Cash, InstaPay, and Binance.",
+      a2: "Minimum cashout starts at just 50 points ($0.05 USD) for instant payouts via Vodafone Cash, InstaPay, and Binance.",
       q3: "How long does a withdrawal take to arrive?",
       a3: "Most automated withdrawals via Vodafone Cash and Binance Pay process in under 2 minutes. Other methods typically process within 1-12 hours.",
       q4: "Is Cash Dash completely free to use?",
