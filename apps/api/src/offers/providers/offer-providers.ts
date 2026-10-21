@@ -12,13 +12,13 @@ export interface IOfferProvider {
   processCompletion(externalTxId: string, userId: string, rewardPoints: number): Promise<void>;
 }
 
-// ─── Taskwall.io Provider ─────────────────────────────────────────────────────
-
+// ─── Taskwall Provider ────────────────────────────────────────────────────────
+ 
 @Injectable()
 export class TaskwallProvider implements IOfferProvider {
   private readonly logger = new Logger(TaskwallProvider.name);
   readonly slug = 'taskwall';
-  readonly name = 'Taskwall.io';
+  readonly name = 'Taskwall';
 
   validateWebhook(payload: unknown, signatureOrSecret: string, secret: string): boolean {
     if (!signatureOrSecret || !secret) return false;

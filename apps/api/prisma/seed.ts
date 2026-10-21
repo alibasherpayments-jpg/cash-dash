@@ -67,10 +67,10 @@ async function main() {
   // ----------------------------------------------------
   // 3. Top Offerwall Providers
   // ----------------------------------------------------
-  console.log('Creating offerwall providers (Taskwall.io, CPALead, ClickWall.io)...');
+  console.log('Creating offerwall providers (Taskwall, CPALead, ClickWall.io)...');
   const taskwall = await prisma.offerProvider.create({
     data: {
-      name: 'Taskwall.io',
+      name: 'Taskwall',
       type: 'tasks',
       slug: 'taskwall',
       logoUrl: '/images/offerwalls/taskwall.png',

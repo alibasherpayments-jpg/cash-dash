@@ -25,7 +25,7 @@ import { formatPoints, formatCash, formatPointsAsCash } from "@/lib/formatters";
 const FEATURED_OFFERWALLS = [
   {
     id: "taskwall",
-    name: "Taskwall.io",
+    name: "Taskwall",
     logo: "/images/offerwalls/taskwall.png",
     badge: "Instant Credit ⚡",
     badgeAr: "رصيد فوري ⚡",

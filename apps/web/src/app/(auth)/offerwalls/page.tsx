@@ -49,7 +49,7 @@ interface OfferwallItem {
 const OFFERWALLS: OfferwallItem[] = [
   {
     id: "taskwall",
-    name: "Taskwall.io",
+    name: "Taskwall",
     logo: "/images/offerwalls/taskwall.png",
     url: "https://wall.taskwall.io/?app_id=6404e8a2318aa5f42725dd3c2cbc8d46",
     badge: {
@@ -294,14 +294,36 @@ export default function OfferwallsPage() {
                 </div>
               </div>
 
-              {/* Action Button */}
-              <div className="pt-5">
+              {/* Action Buttons: Modal Viewer + Direct New Tab */}
+              <div className="pt-5 flex items-center gap-2">
                 <Button
                   variant="default"
-                  className="w-full font-bold text-xs sm:text-sm h-11 rounded-xl shadow-md shadow-primary/20 flex items-center justify-center gap-2 group-hover:bg-primary group-hover:text-primary-foreground transition-all active:scale-[0.98]"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    handleOpenWall(wall);
+                  }}
+                  className="flex-1 font-bold text-xs sm:text-sm h-11 rounded-xl shadow-md shadow-primary/20 flex items-center justify-center gap-1.5 group-hover:bg-primary group-hover:text-primary-foreground transition-all active:scale-[0.98]"
                 >
                   <span>{t.offerwalls.openWall}</span>
-                  <ExternalLink className="h-4 w-4 rtl:rotate-180 shrink-0" />
+                </Button>
+
+                <Button
+                  asChild
+                  variant="outline"
+                  className="h-11 px-3 sm:px-3.5 rounded-xl border-border/80 hover:border-primary/50 hover:bg-primary/10 hover:text-primary transition-all shrink-0 active:scale-[0.98]"
+                  title={t.offerwalls.openNewWindow}
+                >
+                  <a
+                    href={getWallUrl(wall)}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    onClick={(e) => e.stopPropagation()}
+                  >
+                    <ExternalLink className="h-4 w-4 rtl:rotate-180" />
+                    <span className="text-xs font-semibold inline-block ms-1">
+                      {isAr ? "تبويب" : "Tab"}
+                    </span>
+                  </a>
                 </Button>
               </div>
             </Card>
@@ -337,13 +359,19 @@ export default function OfferwallsPage() {
 
                 <div className="flex items-center gap-2 pe-10 sm:pe-12 shrink-0">
                   <Button
+                    asChild
                     size="sm"
                     variant="outline"
-                    onClick={() => handleOpenExternal(selectedWall)}
-                    className="text-xs font-semibold gap-1.5 h-8.5 rounded-lg"
+                    className="text-xs font-semibold gap-1.5 h-8.5 rounded-lg border-border hover:border-primary/50 hover:bg-primary/10 hover:text-primary transition-all"
                   >
-                    <ExternalLink className="h-3.5 w-3.5" />
-                    <span className="hidden sm:inline">{t.offerwalls.openNewWindow}</span>
+                    <a
+                      href={getWallUrl(selectedWall)}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                    >
+                      <ExternalLink className="h-3.5 w-3.5 rtl:rotate-180" />
+                      <span>{t.offerwalls.openNewWindow}</span>
+                    </a>
                   </Button>
                 </div>
               </DialogHeader>

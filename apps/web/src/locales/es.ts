@@ -254,7 +254,7 @@ export const es: TranslationSchema = {
     title: "Muros de ofertas asociados",
     subtitle: "Seleccione un muro de ofertas para comenzar a completar tareas y ganar puntos",
     openWall: "Abrir muro",
-    openNewWindow: "Abrir en nueva ventana",
+    openNewWindow: "Abrir en nueva pestaña",
     modalTitle: "Muro de ofertas asociado",
     modalSubtitle: "Complete tareas y gane puntos acreditados instantáneamente en Cash Dash",
     instructions: "Los puntos se acreditarán automáticamente una vez que el proveedor verifique la tarea.",

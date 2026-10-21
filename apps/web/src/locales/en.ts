@@ -254,7 +254,7 @@ export const en: TranslationSchema = {
     title: "Partner Offerwalls",
     subtitle: "Select an offerwall partner below to start completing high-paying tasks and surveys",
     openWall: "Open Wall",
-    openNewWindow: "Open in New Window",
+    openNewWindow: "Open in New Tab",
     modalTitle: "Partner Offerwall",
     modalSubtitle: "Complete tasks and earn instant points credited to your Cash Dash account",
     instructions: "Points will be credited automatically once the provider verifies your completion.",
