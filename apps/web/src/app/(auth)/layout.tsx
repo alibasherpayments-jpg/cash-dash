@@ -39,6 +39,7 @@ import {
 import { formatPoints, formatCash, pointsToCash } from "@/lib/formatters";
 import { cn } from "@/lib/utils";
 import { ThemeSwitcher } from "@/components/common/theme-switcher";
+import { BrandRedirectLoader } from "@/components/common/redirect-loader";
 
 export default function AuthLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
@@ -89,16 +90,7 @@ export default function AuthLayout({ children }: { children: React.ReactNode }) 
   };
 
   if (!mounted || !hasSession) {
-    return (
-      <div className="min-h-screen flex flex-col items-center justify-center bg-background text-foreground">
-        <div className="flex flex-col items-center gap-3 animate-fade-in">
-          <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-primary text-white shadow-lg shadow-primary/25 animate-pulse">
-            <Coins className="h-6 w-6" />
-          </div>
-          <p className="text-xs text-muted-foreground font-medium">Redirecting to register...</p>
-        </div>
-      </div>
-    );
+    return <BrandRedirectLoader />;
   }
 
   return (
