@@ -16,6 +16,9 @@ import {
   ExternalLink,
   Coins,
   ShieldCheck,
+  Zap,
+  CheckCircle2,
+  Sparkles,
 } from "lucide-react";
 
 interface OfferwallItem {
@@ -23,6 +26,24 @@ interface OfferwallItem {
   name: string;
   logo: string;
   url: string;
+  badge: {
+    ar: string;
+    en: string;
+    color: string;
+  };
+  rating: number;
+  category: {
+    ar: string;
+    en: string;
+  };
+  description: {
+    ar: string;
+    en: string;
+  };
+  features: {
+    ar: string[];
+    en: string[];
+  };
 }
 
 const OFFERWALLS: OfferwallItem[] = [
@@ -31,36 +52,126 @@ const OFFERWALLS: OfferwallItem[] = [
     name: "Taskwall.io",
     logo: "/images/offerwalls/taskwall.png",
     url: "https://wall.taskwall.io/?app_id=6404e8a2318aa5f42725dd3c2cbc8d46",
+    badge: {
+      ar: "رصيد فوري ⚡",
+      en: "Instant Credit ⚡",
+      color: "bg-emerald-500/10 text-emerald-500 border-emerald-500/20",
+    },
+    rating: 4.9,
+    category: {
+      ar: "استطلاعات ومهام رقمية",
+      en: "Surveys & Micro-tasks",
+    },
+    description: {
+      ar: "استطلاعات رأي سريعة، أبحاث سوقية، وتجارب استهلاكية موثوقة باحتساب فوري.",
+      en: "Quick opinion surveys, consumer testing, and instant verified reward crediting.",
+    },
+    features: {
+      ar: ["تأكيد تلقائي", "استطلاعات يومية", "متاح عالمياً"],
+      en: ["Auto Verified", "Daily Surveys", "Global Access"],
+    },
   },
   {
     id: "cpalead",
     name: "CPALead",
     logo: "/images/offerwalls/cpalead.png",
     url: "https://www.cdnnd.com/wall/MDUA3yf",
+    badge: {
+      ar: "الأعلى طلباً 🔥",
+      en: "Most Popular 🔥",
+      color: "bg-amber-500/10 text-amber-500 border-amber-500/20",
+    },
+    rating: 4.8,
+    category: {
+      ar: "ألعاب وتطبيقات جوال",
+      en: "Apps & Mobile Games",
+    },
+    description: {
+      ar: "تثبيت ألعاب وتطبيقات الجوال العالمية مع تجارب مجانية بعوائد نقدية ممتازة.",
+      en: "Global mobile games, app installations, and verified trials with top payouts.",
+    },
+    features: {
+      ar: ["ألعاب وتطبيقات", "تحديث مستمر", "دعم iOS وأندرويد"],
+      en: ["Top Apps", "Daily Refresh", "iOS & Android"],
+    },
   },
   {
     id: "clickwall",
     name: "ClickWall",
     logo: "/images/offerwalls/clickwall.png",
     url: "https://clickwall.net/app/iframe/10326",
+    badge: {
+      ar: "نقرات سريعة 🎯",
+      en: "PTC & Clicks 🎯",
+      color: "bg-blue-500/10 text-blue-500 border-blue-500/20",
+    },
+    rating: 4.8,
+    category: {
+      ar: "إعلانات ونقرات PTC",
+      en: "PTC Ads & Quick Tasks",
+    },
+    description: {
+      ar: "مشاهدة إعلانات، نقرات PTC سريعة، زيارة مواقع وتصفح بدون أي شروط معقدة.",
+      en: "PTC clicks, simple ad views, website visits, and mini-tasks with instant tracking.",
+    },
+    features: {
+      ar: ["مهام فورية", "سهل وسريع", "نقاط فورية"],
+      en: ["Instant Tasks", "Easy & Fast", "Instant Points"],
+    },
   },
   {
     id: "pixylabs",
     name: "PixyLabs",
     logo: "/images/offerwalls/pixylabs.png",
     url: "https://offerwall.pixylabs.co/362",
+    badge: {
+      ar: "مكافآت ضخمة 💎",
+      en: "High Payouts 💎",
+      color: "bg-purple-500/10 text-purple-500 border-purple-500/20",
+    },
+    rating: 5.0,
+    category: {
+      ar: "ألعاب كبرى وعروض VIP",
+      en: "Tiered Games & VIP Offers",
+    },
+    description: {
+      ar: "ألعاب فيديو شهيرة ومستويات متعددة تقدم أكبر عدد نقاط ممكن للمهمة الواحدة.",
+      en: "Top mobile games with multi-tier milestones and premium high-point rewards.",
+    },
+    features: {
+      ar: ["أعلى عائد", "ألعاب مشهورة", "مكافآت مستمرة"],
+      en: ["Highest EPC", "Top Titles", "Milestone Rewards"],
+    },
   },
   {
     id: "mooffers",
     name: "MoOffers",
     logo: "/images/offerwalls/mooffers.svg",
     url: "https://wall.mooffers.com/offerwall/app_9d4ef29931152938",
+    badge: {
+      ar: "شريك حصري ⭐",
+      en: "Exclusive Partner ⭐",
+      color: "bg-rose-500/10 text-rose-500 border-rose-500/20",
+    },
+    rating: 4.9,
+    category: {
+      ar: "عروض مباشرة ومعلنون كبار",
+      en: "Direct Advertiser Offers",
+    },
+    description: {
+      ar: "حائط عروض عالمي مباشر مع كبار المعلنين العالميين، يتميز بتأكيد فوري عبر الـ Postback.",
+      en: "Global offerwall direct from top advertisers with real-time postback confirmation.",
+    },
+    features: {
+      ar: ["معلنون مباشرون", "عروض حصرية", "تأكيد آلي"],
+      en: ["Direct Advertisers", "Exclusive Wall", "Auto Postback"],
+    },
   },
 ];
 
 export default function OfferwallsPage() {
   const { user } = useAuthStore();
-  const { t } = useTranslation();
+  const { t, locale } = useTranslation();
   const [selectedWall, setSelectedWall] = useState<OfferwallItem | null>(null);
 
   const getWallUrl = (wall: OfferwallItem) => {
@@ -92,65 +203,121 @@ export default function OfferwallsPage() {
     window.open(getWallUrl(wall), "_blank", "noopener,noreferrer");
   };
 
+  const isAr = locale === "ar";
+
   return (
-    <div className="space-y-8 max-w-6xl mx-auto py-2">
+    <div className="space-y-8 max-w-7xl mx-auto py-2">
       {/* ─── Header ─────────────────────────────────────────────── */}
-      <div className="text-center space-y-2 max-w-2xl mx-auto">
+      <div className="text-center space-y-3 max-w-2xl mx-auto">
         <h1 className="text-3xl sm:text-4xl font-black tracking-tight flex items-center justify-center gap-3">
           <Layers className="h-8 w-8 text-primary" /> {t.offerwalls.title}
         </h1>
-        <p className="text-xs sm:text-sm text-muted-foreground">
+        <p className="text-xs sm:text-sm text-muted-foreground leading-relaxed">
           {t.offerwalls.subtitle}
         </p>
+
+        {/* Micro Trust & Info Badges */}
+        <div className="pt-2 flex flex-wrap items-center justify-center gap-2.5 text-xs text-muted-foreground">
+          <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-emerald-500/10 text-emerald-500 border border-emerald-500/20 font-semibold text-[11px]">
+            <Zap className="h-3 w-3" />
+            {isAr ? "احتساب وتأكيد آلي فوري" : "Instant Postback Crediting"}
+          </span>
+          <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-primary/10 text-primary border border-primary/20 font-semibold text-[11px]">
+            <ShieldCheck className="h-3 w-3" />
+            {isAr ? "شركاء عالميون معتمدون 100%" : "100% Verified Partners"}
+          </span>
+          <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full bg-accent/10 text-accent border border-accent/20 font-semibold text-[11px]">
+            <Sparkles className="h-3 w-3" />
+            {isAr ? "أعلى عوائد للنقاط" : "Highest Payout Rates"}
+          </span>
+        </div>
       </div>
 
-      {/* ─── Offerwalls Card Grid (Only Logo + Name) ──────────── */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-5 sm:gap-6 pt-4">
-        {OFFERWALLS.map((wall) => (
-          <Card
-            key={wall.id}
-            onClick={() => handleOpenWall(wall)}
-            className="border-border hover:border-primary/60 bg-card hover:shadow-2xl hover:shadow-primary/10 transition-all duration-300 rounded-3xl p-6 flex flex-col items-center justify-between text-center cursor-pointer group hover:-translate-y-1"
-          >
-            <div className="w-full flex flex-col items-center space-y-5">
-              {/* Sleek dark-contrast logo viewport */}
-              <div className="w-full h-36 rounded-2xl bg-[#0c0f17] border border-border/70 p-6 flex items-center justify-center shadow-inner group-hover:border-primary/50 group-hover:shadow-lg transition-all duration-300">
-                <img
-                  src={wall.logo}
-                  alt={wall.name}
-                  className="max-h-20 max-w-[85%] object-contain group-hover:scale-105 transition-transform duration-300"
-                />
+      {/* ─── Offerwalls Card Showcase (Balanced & Symmetrical on Desktop) ─── */}
+      <div className="flex flex-wrap justify-center gap-5 sm:gap-6 pt-2">
+        {OFFERWALLS.map((wall) => {
+          const badgeText = isAr ? wall.badge.ar : wall.badge.en;
+          const categoryText = isAr ? wall.category.ar : wall.category.en;
+          const descText = isAr ? wall.description.ar : wall.description.en;
+          const featuresList = isAr ? wall.features.ar : wall.features.en;
+
+          return (
+            <Card
+              key={wall.id}
+              onClick={() => handleOpenWall(wall)}
+              className="w-full sm:w-[calc(50%-12px)] lg:w-[calc(33.333%-16px)] max-w-sm border-border hover:border-primary/60 bg-card hover:shadow-2xl hover:shadow-primary/10 transition-all duration-300 rounded-3xl p-5 sm:p-6 flex flex-col justify-between cursor-pointer group hover:-translate-y-1.5"
+            >
+              <div className="space-y-4">
+                {/* Header: Badge + Rating */}
+                <div className="flex items-center justify-between gap-2">
+                  <span className={`inline-flex items-center px-2.5 py-1 rounded-full text-[11px] font-bold border ${wall.badge.color}`}>
+                    {badgeText}
+                  </span>
+                  <div className="flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-accent/10 border border-accent/20 text-accent text-[11px] font-bold shrink-0">
+                    <span>★</span>
+                    <span>{wall.rating.toFixed(1)}</span>
+                  </div>
+                </div>
+
+                {/* Logo viewport with high contrast & proper aspect ratio */}
+                <div className="w-full h-28 rounded-2xl bg-[#0c0f17] border border-border/80 p-4 flex items-center justify-center relative overflow-hidden shadow-inner group-hover:border-primary/50 group-hover:bg-[#0f1422] transition-all duration-300">
+                  <img
+                    src={wall.logo}
+                    alt={wall.name}
+                    className="max-h-16 max-w-[85%] object-contain drop-shadow-md group-hover:scale-105 transition-transform duration-300"
+                  />
+                </div>
+
+                {/* Title & Category */}
+                <div className="space-y-1">
+                  <h3 className="text-xl font-black text-foreground tracking-tight group-hover:text-primary transition-colors">
+                    {wall.name}
+                  </h3>
+                  <p className="text-xs font-semibold text-primary">
+                    {categoryText}
+                  </p>
+                  <p className="text-xs text-muted-foreground line-clamp-2 leading-relaxed pt-1">
+                    {descText}
+                  </p>
+                </div>
+
+                {/* Feature Chips */}
+                <div className="flex flex-wrap gap-1.5 pt-1">
+                  {featuresList.map((f, i) => (
+                    <span
+                      key={i}
+                      className="px-2 py-0.5 rounded-md bg-secondary/50 border border-border/60 text-[10px] font-medium text-muted-foreground"
+                    >
+                      {f}
+                    </span>
+                  ))}
+                </div>
               </div>
 
-              {/* Company Name */}
-              <h3 className="text-xl font-black text-foreground tracking-tight group-hover:text-primary transition-colors">
-                {wall.name}
-              </h3>
-            </div>
-
-            {/* Launch Button */}
-            <div className="w-full pt-6">
-              <Button
-                variant="default"
-                className="w-full font-bold text-xs h-10 rounded-xl shadow-md shadow-primary/20 flex items-center justify-center gap-2 group-hover:bg-primary group-hover:text-primary-foreground"
-              >
-                <span>{t.offerwalls.openWall} ({wall.name})</span>
-                <ExternalLink className="h-3.5 w-3.5" />
-              </Button>
-            </div>
-          </Card>
-        ))}
+              {/* Action Button */}
+              <div className="pt-5">
+                <Button
+                  variant="default"
+                  className="w-full font-bold text-xs sm:text-sm h-11 rounded-xl shadow-md shadow-primary/20 flex items-center justify-center gap-2 group-hover:bg-primary group-hover:text-primary-foreground transition-all active:scale-[0.98]"
+                >
+                  <span>{t.offerwalls.openWall}</span>
+                  <ExternalLink className="h-4 w-4 rtl:rotate-180 shrink-0" />
+                </Button>
+              </div>
+            </Card>
+          );
+        })}
       </div>
 
       {/* ─── Offerwall Viewer Modal Dialog ──────────────────────── */}
       <Dialog open={!!selectedWall} onOpenChange={(open) => !open && setSelectedWall(null)}>
-        <DialogContent className="w-[96vw] max-w-4xl h-[92dvh] sm:h-[85vh] p-0 flex flex-col overflow-hidden border-border bg-card rounded-2xl">
+        <DialogContent className="w-[96vw] max-w-5xl h-[92dvh] sm:h-[88vh] p-0 flex flex-col overflow-hidden border-border bg-card rounded-2xl">
           {selectedWall && (
             <>
               {/* Modal Header */}
-              <DialogHeader className="px-3.5 sm:px-6 py-3 sm:py-4 border-b border-border flex flex-row items-center justify-between space-y-0 bg-card shrink-0">
+              <DialogHeader className="px-4 sm:px-6 py-3 sm:py-4 border-b border-border flex flex-row items-center justify-between space-y-0 bg-card shrink-0">
                 <div className="flex items-center gap-2.5 sm:gap-3 min-w-0">
-                  <div className="h-8 w-8 sm:h-9 sm:w-9 rounded-xl bg-[#0c0f17] border border-border/60 p-1 flex items-center justify-center shrink-0">
+                  <div className="h-9 w-9 sm:h-10 sm:w-10 rounded-xl bg-[#0c0f17] border border-border/60 p-1.5 flex items-center justify-center shrink-0">
                     <img
                       src={selectedWall.logo}
                       alt={selectedWall.name}
@@ -168,12 +335,12 @@ export default function OfferwallsPage() {
                   </div>
                 </div>
 
-                <div className="flex items-center gap-2 pr-6 sm:pr-8 shrink-0">
+                <div className="flex items-center gap-2 pe-10 sm:pe-12 shrink-0">
                   <Button
                     size="sm"
                     variant="outline"
                     onClick={() => handleOpenExternal(selectedWall)}
-                    className="text-xs font-semibold gap-1.5 h-8"
+                    className="text-xs font-semibold gap-1.5 h-8.5 rounded-lg"
                   >
                     <ExternalLink className="h-3.5 w-3.5" />
                     <span className="hidden sm:inline">{t.offerwalls.openNewWindow}</span>
@@ -193,7 +360,7 @@ export default function OfferwallsPage() {
               </div>
 
               {/* Modal Footer */}
-              <div className="px-6 py-2.5 border-t border-border bg-card/60 flex items-center justify-between text-[11px] text-muted-foreground">
+              <div className="px-4 sm:px-6 py-2.5 border-t border-border bg-card/60 flex items-center justify-between text-[11px] text-muted-foreground">
                 <div className="flex items-center gap-1.5">
                   <Coins className="h-3.5 w-3.5 text-accent" />
                   <span>{t.offerwalls.instructions}</span>

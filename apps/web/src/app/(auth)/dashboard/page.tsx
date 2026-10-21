@@ -27,26 +27,36 @@ const FEATURED_OFFERWALLS = [
     id: "taskwall",
     name: "Taskwall.io",
     logo: "/images/offerwalls/taskwall.png",
+    badge: "Instant Credit ⚡",
+    badgeAr: "رصيد فوري ⚡",
   },
   {
     id: "cpalead",
     name: "CPALead",
     logo: "/images/offerwalls/cpalead.png",
+    badge: "Most Popular 🔥",
+    badgeAr: "الأعلى طلباً 🔥",
   },
   {
     id: "clickwall",
     name: "ClickWall",
     logo: "/images/offerwalls/clickwall.png",
+    badge: "PTC & Clicks 🎯",
+    badgeAr: "نقرات سريعة 🎯",
   },
   {
     id: "pixylabs",
     name: "PixyLabs",
     logo: "/images/offerwalls/pixylabs.png",
+    badge: "High Payouts 💎",
+    badgeAr: "مكافآت ضخمة 💎",
   },
   {
     id: "mooffers",
     name: "MoOffers",
     logo: "/images/offerwalls/mooffers.svg",
+    badge: "Exclusive Partner ⭐",
+    badgeAr: "شريك حصري ⭐",
   },
 ];
 
@@ -54,7 +64,7 @@ export default function DashboardPage() {
   const { user } = useAuthStore();
   const { summary: wallet, transactions } = useWallet();
   const { notifications } = useNotifications();
-  const { t } = useTranslation();
+  const { t, locale } = useTranslation();
 
   const recentTransactions = transactions?.slice(0, 5) || [];
   const recentNotifications = notifications?.slice(0, 3) || [];
@@ -141,42 +151,47 @@ export default function DashboardPage() {
           <div>
             <div className="flex items-center gap-2">
               <Layers className="h-5 w-5 text-primary" />
-              <h3 className="text-xl font-black tracking-tight">Partner Offerwalls</h3>
+              <h3 className="text-xl font-black tracking-tight">{t.offerwalls.title}</h3>
             </div>
-            <p className="text-xs text-muted-foreground">
-              Complete surveys, test applications, and click tasks to earn verified rewards
+            <p className="text-xs text-muted-foreground mt-0.5">
+              {t.offerwalls.subtitle}
             </p>
           </div>
           <Button variant="outline" size="sm" asChild className="text-xs font-semibold">
             <Link href="/offerwalls">
-              View All Walls <ArrowRight className="ml-1.5 h-3.5 w-3.5" />
+              {t.common.viewAll} <ArrowRight className="ms-1.5 h-3.5 w-3.5 rtl:rotate-180" />
             </Link>
           </Button>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4">
+        <div className="flex flex-wrap justify-center gap-4 sm:gap-5">
           {FEATURED_OFFERWALLS.map((wall) => (
             <Card
               key={wall.id}
-              className="border-border hover:border-primary/50 transition-all duration-200 group overflow-hidden relative flex flex-col justify-between p-5 rounded-2xl bg-card hover:shadow-lg"
+              className="w-full sm:w-[calc(50%-10px)] lg:w-[calc(33.333%-14px)] max-w-sm border-border hover:border-primary/50 transition-all duration-300 group overflow-hidden relative flex flex-col justify-between p-5 rounded-2xl bg-card hover:shadow-xl hover:-translate-y-1"
             >
               <div className="flex flex-col items-center text-center space-y-3">
-                <div className="w-full h-24 rounded-xl bg-[#0c0f17] border border-border/70 p-4 flex items-center justify-center">
+                <div className="w-full h-24 rounded-xl bg-[#0c0f17] border border-border/70 p-4 flex items-center justify-center group-hover:border-primary/40 transition-colors">
                   <img
                     src={wall.logo}
                     alt={wall.name}
                     className="max-h-14 max-w-[85%] object-contain group-hover:scale-105 transition-transform duration-200"
                   />
                 </div>
-                <span className="font-bold text-base text-foreground tracking-tight group-hover:text-primary transition-colors">
-                  {wall.name}
-                </span>
+                <div>
+                  <span className="font-bold text-base text-foreground tracking-tight group-hover:text-primary transition-colors block">
+                    {wall.name}
+                  </span>
+                  <span className="text-[11px] text-muted-foreground font-medium mt-0.5 block">
+                    {locale === "ar" ? wall.badgeAr : wall.badge}
+                  </span>
+                </div>
               </div>
 
               <div className="pt-4">
-                <Button size="sm" asChild className="w-full font-bold text-xs h-9 rounded-xl">
+                <Button size="sm" asChild className="w-full font-bold text-xs h-9 rounded-xl shadow-xs">
                   <Link href="/offerwalls">
-                    Open {wall.name} <ExternalLink className="ml-1.5 h-3.5 w-3.5" />
+                    {t.offerwalls.openWall} <ExternalLink className="ms-1.5 h-3.5 w-3.5 rtl:rotate-180" />
                   </Link>
                 </Button>
               </div>

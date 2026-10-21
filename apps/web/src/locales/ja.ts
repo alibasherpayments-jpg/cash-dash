@@ -253,7 +253,7 @@ export const ja: TranslationSchema = {
   offerwalls: {
     title: "提携オファーウォール",
     subtitle: "オファーウォールを選択して、高単価タスクやアンケートを始めましょう",
-    openWall: "オファーウォールを開く",
+    openWall: "ウォールを開く",
     openNewWindow: "新しいウィンドウで開く",
     modalTitle: "提携オファーウォール",
     modalSubtitle: "タスクを達成するとCash Dashアカウントに即座にポイントが付与されます",
