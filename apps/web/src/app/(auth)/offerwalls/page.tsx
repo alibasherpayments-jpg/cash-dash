@@ -178,7 +178,7 @@ export default function OfferwallsPage() {
     const subId = user?.id || "guest";
     const separator = wall.url.includes("?") ? "&" : "?";
     if (wall.id === "mooffers") {
-      return `https://wall.mooffers.com/offerwall/app_9d4ef29931152938?uid=${encodeURIComponent(subId)}&platform=web`;
+      return `https://wall.mooffers.com/offerwall/app_9d4ef29931152938?uid=${encodeURIComponent(subId)}`;
     }
     if (wall.id === "clickwall") {
       return `https://clickwall.net/app/iframe/10326/${encodeURIComponent(subId)}`;
