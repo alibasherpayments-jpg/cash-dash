@@ -10,6 +10,7 @@ import {
   DialogContent,
   DialogHeader,
   DialogTitle,
+  DialogClose,
 } from "@/components/ui/dialog";
 import {
   Layers,
@@ -19,6 +20,7 @@ import {
   Zap,
   CheckCircle2,
   Sparkles,
+  X,
 } from "lucide-react";
 
 interface OfferwallItem {
@@ -294,36 +296,18 @@ export default function OfferwallsPage() {
                 </div>
               </div>
 
-              {/* Action Buttons: Modal Viewer + Direct New Tab */}
-              <div className="pt-5 flex items-center gap-2">
+              {/* Action Button */}
+              <div className="pt-5">
                 <Button
                   variant="default"
                   onClick={(e) => {
                     e.stopPropagation();
                     handleOpenWall(wall);
                   }}
-                  className="flex-1 font-bold text-xs sm:text-sm h-11 rounded-xl shadow-md shadow-primary/20 flex items-center justify-center gap-1.5 group-hover:bg-primary group-hover:text-primary-foreground transition-all active:scale-[0.98]"
+                  className="w-full font-bold text-xs sm:text-sm h-11 rounded-xl shadow-md shadow-primary/20 flex items-center justify-center gap-2 group-hover:bg-primary group-hover:text-primary-foreground transition-all active:scale-[0.98]"
                 >
                   <span>{t.offerwalls.openWall}</span>
-                </Button>
-
-                <Button
-                  asChild
-                  variant="outline"
-                  className="h-11 px-3 sm:px-3.5 rounded-xl border-border/80 hover:border-primary/50 hover:bg-primary/10 hover:text-primary transition-all shrink-0 active:scale-[0.98]"
-                  title={t.offerwalls.openNewWindow}
-                >
-                  <a
-                    href={getWallUrl(wall)}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    onClick={(e) => e.stopPropagation()}
-                  >
-                    <ExternalLink className="h-4 w-4 rtl:rotate-180" />
-                    <span className="text-xs font-semibold inline-block ms-1">
-                      {isAr ? "تبويب" : "Tab"}
-                    </span>
-                  </a>
+                  <ExternalLink className="h-4 w-4 rtl:rotate-180 shrink-0" />
                 </Button>
               </div>
             </Card>
@@ -333,11 +317,11 @@ export default function OfferwallsPage() {
 
       {/* ─── Offerwall Viewer Modal Dialog ──────────────────────── */}
       <Dialog open={!!selectedWall} onOpenChange={(open) => !open && setSelectedWall(null)}>
-        <DialogContent className="w-[96vw] max-w-5xl h-[92dvh] sm:h-[88vh] p-0 flex flex-col overflow-hidden border-border bg-card rounded-2xl">
+        <DialogContent className="w-[96vw] max-w-5xl h-[92dvh] sm:h-[88vh] p-0 flex flex-col overflow-hidden border-border bg-card rounded-2xl [&>button.absolute]:hidden">
           {selectedWall && (
             <>
               {/* Modal Header */}
-              <DialogHeader className="px-4 sm:px-6 py-3 sm:py-4 border-b border-border flex flex-row items-center justify-between space-y-0 bg-card shrink-0">
+              <DialogHeader className="px-4 sm:px-6 py-3 sm:py-3.5 border-b border-border flex flex-row items-center justify-between space-y-0 bg-card shrink-0">
                 <div className="flex items-center gap-2.5 sm:gap-3 min-w-0">
                   <div className="h-9 w-9 sm:h-10 sm:w-10 rounded-xl bg-[#0c0f17] border border-border/60 p-1.5 flex items-center justify-center shrink-0">
                     <img
@@ -357,12 +341,12 @@ export default function OfferwallsPage() {
                   </div>
                 </div>
 
-                <div className="flex items-center gap-2 pe-10 sm:pe-12 shrink-0">
+                {/* Header Actions: Clean Aligned Button & Close */}
+                <div className="flex items-center gap-2 shrink-0">
                   <Button
                     asChild
-                    size="sm"
                     variant="outline"
-                    className="text-xs font-semibold gap-1.5 h-8.5 rounded-lg border-border hover:border-primary/50 hover:bg-primary/10 hover:text-primary transition-all"
+                    className="h-9 px-3.5 sm:px-4 text-xs font-semibold gap-2 rounded-xl border-border/80 hover:border-primary/50 hover:bg-primary/10 hover:text-primary transition-all inline-flex items-center justify-center"
                   >
                     <a
                       href={getWallUrl(selectedWall)}
@@ -373,6 +357,18 @@ export default function OfferwallsPage() {
                       <span>{t.offerwalls.openNewWindow}</span>
                     </a>
                   </Button>
+
+                  <DialogClose asChild>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="h-9 w-9 rounded-xl text-muted-foreground hover:text-foreground hover:bg-accent/60 transition-colors"
+                      title={t.offerwalls.close}
+                    >
+                      <X className="h-4 w-4" />
+                      <span className="sr-only">{t.offerwalls.close}</span>
+                    </Button>
+                  </DialogClose>
                 </div>
               </DialogHeader>
 
