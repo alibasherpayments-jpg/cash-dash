@@ -50,6 +50,30 @@ interface OfferwallItem {
 
 const OFFERWALLS: OfferwallItem[] = [
   {
+    id: "mooffers",
+    name: "MoOffers",
+    logo: "/images/offerwalls/mooffers.svg",
+    url: "https://wall.mooffers.com/offerwall/app_9d4ef29931152938",
+    badge: {
+      ar: "شريك حصري ⭐",
+      en: "Exclusive Partner ⭐",
+      color: "bg-rose-500/10 text-rose-500 border-rose-500/20",
+    },
+    rating: 4.9,
+    category: {
+      ar: "عروض مباشرة ومعلنون كبار",
+      en: "Direct Advertiser Offers",
+    },
+    description: {
+      ar: "حائط عروض عالمي مباشر مع كبار المعلنين العالميين، يتميز بتأكيد فوري عبر الـ Postback.",
+      en: "Global offerwall direct from top advertisers with real-time postback confirmation.",
+    },
+    features: {
+      ar: ["معلنون مباشرون", "عروض حصرية", "تأكيد آلي"],
+      en: ["Direct Advertisers", "Exclusive Wall", "Auto Postback"],
+    },
+  },
+  {
     id: "taskwall",
     name: "Taskwall",
     logo: "/images/offerwalls/taskwall.png",
@@ -71,6 +95,30 @@ const OFFERWALLS: OfferwallItem[] = [
     features: {
       ar: ["تأكيد تلقائي", "استطلاعات يومية", "متاح عالمياً"],
       en: ["Auto Verified", "Daily Surveys", "Global Access"],
+    },
+  },
+  {
+    id: "pixylabs",
+    name: "PixyLabs",
+    logo: "/images/offerwalls/pixylabs.png",
+    url: "https://offerwall.pixylabs.co/362",
+    badge: {
+      ar: "مكافآت ضخمة 💎",
+      en: "High Payouts 💎",
+      color: "bg-purple-500/10 text-purple-500 border-purple-500/20",
+    },
+    rating: 5.0,
+    category: {
+      ar: "ألعاب كبرى وعروض VIP",
+      en: "Tiered Games & VIP Offers",
+    },
+    description: {
+      ar: "ألعاب فيديو شهيرة ومستويات متعددة تقدم أكبر عدد نقاط ممكن للمهمة الواحدة.",
+      en: "Top mobile games with multi-tier milestones and premium high-point rewards.",
+    },
+    features: {
+      ar: ["أعلى عائد", "ألعاب مشهورة", "مكافآت مستمرة"],
+      en: ["Highest EPC", "Top Titles", "Milestone Rewards"],
     },
   },
   {
@@ -119,54 +167,6 @@ const OFFERWALLS: OfferwallItem[] = [
     features: {
       ar: ["مهام فورية", "سهل وسريع", "نقاط فورية"],
       en: ["Instant Tasks", "Easy & Fast", "Instant Points"],
-    },
-  },
-  {
-    id: "pixylabs",
-    name: "PixyLabs",
-    logo: "/images/offerwalls/pixylabs.png",
-    url: "https://offerwall.pixylabs.co/362",
-    badge: {
-      ar: "مكافآت ضخمة 💎",
-      en: "High Payouts 💎",
-      color: "bg-purple-500/10 text-purple-500 border-purple-500/20",
-    },
-    rating: 5.0,
-    category: {
-      ar: "ألعاب كبرى وعروض VIP",
-      en: "Tiered Games & VIP Offers",
-    },
-    description: {
-      ar: "ألعاب فيديو شهيرة ومستويات متعددة تقدم أكبر عدد نقاط ممكن للمهمة الواحدة.",
-      en: "Top mobile games with multi-tier milestones and premium high-point rewards.",
-    },
-    features: {
-      ar: ["أعلى عائد", "ألعاب مشهورة", "مكافآت مستمرة"],
-      en: ["Highest EPC", "Top Titles", "Milestone Rewards"],
-    },
-  },
-  {
-    id: "mooffers",
-    name: "MoOffers",
-    logo: "/images/offerwalls/mooffers.svg",
-    url: "https://wall.mooffers.com/offerwall/app_9d4ef29931152938",
-    badge: {
-      ar: "شريك حصري ⭐",
-      en: "Exclusive Partner ⭐",
-      color: "bg-rose-500/10 text-rose-500 border-rose-500/20",
-    },
-    rating: 4.9,
-    category: {
-      ar: "عروض مباشرة ومعلنون كبار",
-      en: "Direct Advertiser Offers",
-    },
-    description: {
-      ar: "حائط عروض عالمي مباشر مع كبار المعلنين العالميين، يتميز بتأكيد فوري عبر الـ Postback.",
-      en: "Global offerwall direct from top advertisers with real-time postback confirmation.",
-    },
-    features: {
-      ar: ["معلنون مباشرون", "عروض حصرية", "تأكيد آلي"],
-      en: ["Direct Advertisers", "Exclusive Wall", "Auto Postback"],
     },
   },
 ];

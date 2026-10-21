@@ -24,11 +24,25 @@ import { formatPoints, formatCash, formatPointsAsCash } from "@/lib/formatters";
 
 const FEATURED_OFFERWALLS = [
   {
+    id: "mooffers",
+    name: "MoOffers",
+    logo: "/images/offerwalls/mooffers.svg",
+    badge: "Exclusive Partner ⭐",
+    badgeAr: "شريك حصري ⭐",
+  },
+  {
     id: "taskwall",
     name: "Taskwall",
     logo: "/images/offerwalls/taskwall.png",
     badge: "Instant Credit ⚡",
     badgeAr: "رصيد فوري ⚡",
+  },
+  {
+    id: "pixylabs",
+    name: "PixyLabs",
+    logo: "/images/offerwalls/pixylabs.png",
+    badge: "High Payouts 💎",
+    badgeAr: "مكافآت ضخمة 💎",
   },
   {
     id: "cpalead",
@@ -43,20 +57,6 @@ const FEATURED_OFFERWALLS = [
     logo: "/images/offerwalls/clickwall.png",
     badge: "PTC & Clicks 🎯",
     badgeAr: "نقرات سريعة 🎯",
-  },
-  {
-    id: "pixylabs",
-    name: "PixyLabs",
-    logo: "/images/offerwalls/pixylabs.png",
-    badge: "High Payouts 💎",
-    badgeAr: "مكافآت ضخمة 💎",
-  },
-  {
-    id: "mooffers",
-    name: "MoOffers",
-    logo: "/images/offerwalls/mooffers.svg",
-    badge: "Exclusive Partner ⭐",
-    badgeAr: "شريك حصري ⭐",
   },
 ];
 

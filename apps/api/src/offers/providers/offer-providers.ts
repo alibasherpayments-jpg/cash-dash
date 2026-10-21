@@ -223,6 +223,6 @@ export class ProviderRegistry {
   }
 
   getAllProviders(): IOfferProvider[] {
-    return [this.taskwall, this.cpalead, this.clickwall, this.pixylabs, this.mooffers];
+    return [this.mooffers, this.taskwall, this.pixylabs, this.cpalead, this.clickwall];
   }
 }
