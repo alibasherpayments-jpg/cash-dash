@@ -33,6 +33,15 @@ export async function bootstrapServer(): Promise<any> {
   });
 
   app.use(cookieParser(configService.get<string>('cookie.secret', 'default-cookie-secret')));
+
+  // Normalize /webhooks to /api/v1/webhooks in case provider drops /api/v1 prefix
+  server.use((req: any, _res: any, next: any) => {
+    if (req.url && req.url.startsWith('/webhooks/')) {
+      req.url = '/api/v1' + req.url;
+    }
+    next();
+  });
+
   app.setGlobalPrefix('api/v1');
 
   app.useGlobalPipes(
@@ -64,7 +73,12 @@ export async function bootstrapServer(): Promise<any> {
 
 export default async function handler(req: any, res: any) {
   const app = await bootstrapServer();
-  return app(req, res);
+  return new Promise((resolve, reject) => {
+    res.on('finish', resolve);
+    res.on('close', resolve);
+    res.on('error', reject);
+    app(req, res);
+  });
 }
 
 if (!process.env.VERCEL) {

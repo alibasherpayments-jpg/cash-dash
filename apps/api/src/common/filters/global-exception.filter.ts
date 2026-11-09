@@ -52,6 +52,10 @@ export class GlobalExceptionFilter implements ExceptionFilter {
         default:
           this.logger.error(`Prisma error ${exception.code}: ${exception.message}`);
       }
+    } else if (typeof (exception as any)?.status === 'number' || typeof (exception as any)?.statusCode === 'number') {
+      status = (exception as any).status || (exception as any).statusCode;
+      message = (exception as any).message || message;
+      error = (exception as any).name || (status === 400 ? 'BAD_REQUEST' : error);
     } else if (exception instanceof Error) {
       this.logger.error(`Unhandled error: ${exception.message}`, exception.stack);
     }

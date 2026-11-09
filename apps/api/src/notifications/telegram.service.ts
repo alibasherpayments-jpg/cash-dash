@@ -315,9 +315,9 @@ export class TelegramService implements OnModuleInit, OnModuleDestroy {
       .filter(Boolean)
       .join('\n');
 
-    // Attempt to resolve offer image if not passed directly
+    // Attempt to resolve offer image if not passed directly (Taskwall ONLY)
     let imageUrl = payload.imageUrl;
-    if (!imageUrl && payload.offerId) {
+    if (!imageUrl && payload.offerId && payload.provider && payload.provider.toLowerCase().includes('taskwall')) {
       imageUrl = await this.getTaskwallOfferIcon(payload.offerId);
     }
 
@@ -343,8 +343,13 @@ export class TelegramService implements OnModuleInit, OnModuleDestroy {
 
     const now = Date.now();
     if (now - this.lastCacheFetchTime > 10 * 60 * 1000 || this.offerIconsCache.size === 0) {
+      const controller = new AbortController();
+      const timeout = setTimeout(() => controller.abort(), 1500);
       try {
-        const res = await fetch('https://wall.taskwall.io/api/?app_id=6404e8a2318aa5f42725dd3c2cbc8d46&userid=admin');
+        const res = await fetch('https://wall.taskwall.io/api/?app_id=6404e8a2318aa5f42725dd3c2cbc8d46&userid=admin', {
+          signal: controller.signal,
+        });
+        clearTimeout(timeout);
         if (res.ok) {
           const data = (await res.json()) as any;
           const offers = Array.isArray(data) ? data : (data.offers || []);
@@ -356,6 +361,7 @@ export class TelegramService implements OnModuleInit, OnModuleDestroy {
           this.lastCacheFetchTime = now;
         }
       } catch (err) {
+        clearTimeout(timeout);
         this.logger.debug(`Could not cache Taskwall icons: ${(err as Error).message}`);
       }
     }
@@ -371,7 +377,7 @@ export class TelegramService implements OnModuleInit, OnModuleDestroy {
 
     const url = `https://api.telegram.org/bot${this.botToken}/sendPhoto`;
     const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), 15000);
+    const timeout = setTimeout(() => controller.abort(), 3000);
 
     try {
       const res = await fetch(url, {
@@ -411,7 +417,7 @@ export class TelegramService implements OnModuleInit, OnModuleDestroy {
 
     const url = `https://api.telegram.org/bot${this.botToken}/sendMessage`;
     const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), 15000);
+    const timeout = setTimeout(() => controller.abort(), 3000);
 
     try {
       const res = await fetch(url, {
