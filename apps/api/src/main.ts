@@ -74,9 +74,12 @@ export async function bootstrapServer(): Promise<any> {
 export default async function handler(req: any, res: any) {
   const app = await bootstrapServer();
   return new Promise((resolve, reject) => {
-    res.on('finish', resolve);
-    res.on('close', resolve);
-    res.on('error', reject);
+    if (res.writableEnded || res.finished) {
+      return resolve(undefined);
+    }
+    res.once('finish', resolve);
+    res.once('close', resolve);
+    res.once('error', reject);
     app(req, res);
   });
 }
