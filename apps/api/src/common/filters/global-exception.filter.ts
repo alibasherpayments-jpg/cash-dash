@@ -32,6 +32,11 @@ export class GlobalExceptionFilter implements ExceptionFilter {
         message = (resp['message'] as string) || message;
         error = (resp['error'] as string) || error;
       }
+    } else if (exception instanceof Prisma.PrismaClientInitializationError) {
+      status = HttpStatus.SERVICE_UNAVAILABLE;
+      message = 'Database service is currently unreachable or quota exceeded. Please verify database connection.';
+      error = 'DATABASE_UNAVAILABLE';
+      this.logger.error(`Database initialization error: ${exception.message}`);
     } else if (exception instanceof Prisma.PrismaClientKnownRequestError) {
       switch (exception.code) {
         case 'P2002':
